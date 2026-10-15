@@ -1,5 +1,5 @@
 import AppIntents
-import SwiftUI
+import Foundation
 
 // MARK: - Resume Last Read Position Intent
 public struct ResumeQuranIntent: AppIntent {
@@ -9,11 +9,7 @@ public struct ResumeQuranIntent: AppIntent {
 
     public init() {}
 
-    @MainActor
     public func perform() async throws -> some IntentResult {
-        if let url = URL(string: "bayan://resume") {
-            await UIApplication.shared.open(url)
-        }
         return .result()
     }
 }

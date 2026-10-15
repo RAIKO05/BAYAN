@@ -1,5 +1,5 @@
 import AppIntents
-import SwiftUI
+import Foundation
 
 // MARK: - 1-Tap Quran Audio Recognition Intent
 public struct RecognizeQuranIntent: AppIntent {
@@ -9,12 +9,7 @@ public struct RecognizeQuranIntent: AppIntent {
 
     public init() {}
 
-    @MainActor
     public func perform() async throws -> some IntentResult {
-        // Deep-links directly to the listening radar orb
-        if let url = URL(string: "bayan://identify") {
-            await UIApplication.shared.open(url)
-        }
         return .result()
     }
 }

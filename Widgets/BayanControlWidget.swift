@@ -16,6 +16,6 @@ public struct BayanControlWidget: ControlWidget {
             }
         }
         .displayName("Identify Quran")
-        .descriptionContext(.init("Tap to identify Surah, Ayah, and Reciter with Bayan."))
+        .description("Tap to identify Surah, Ayah, and Reciter with Bayan.")
     }
 }
