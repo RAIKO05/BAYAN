@@ -1,0 +1,16 @@
+# Xcode & Apple Builds
+build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+.DS_Store
+
+# Reference audio clips (downloaded on demand)
+scripts/reference_audio/
+
+# System / IDE
+.vscode/
+*.swp
+*~
+Thumbs.db

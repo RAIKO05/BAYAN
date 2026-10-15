@@ -1,0 +1,402 @@
+[
+  {
+    "surah_id": 1,
+    "surah_name_english": "Al-Fatihah",
+    "surah_name_arabic": "الفاتحة",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\001001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/001001.mp3"
+  },
+  {
+    "surah_id": 18,
+    "surah_name_english": "Al-Kahf",
+    "surah_name_arabic": "الكهف",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\018001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/018001.mp3"
+  },
+  {
+    "surah_id": 36,
+    "surah_name_english": "Ya-Sin",
+    "surah_name_arabic": "يس",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\036001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/036001.mp3"
+  },
+  {
+    "surah_id": 55,
+    "surah_name_english": "Ar-Rahman",
+    "surah_name_arabic": "الرحمن",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\055001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/055001.mp3"
+  },
+  {
+    "surah_id": 67,
+    "surah_name_english": "Al-Mulk",
+    "surah_name_arabic": "الملك",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\067001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/067001.mp3"
+  },
+  {
+    "surah_id": 112,
+    "surah_name_english": "Al-Ikhlas",
+    "surah_name_arabic": "الإخلاص",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\112001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/112001.mp3"
+  },
+  {
+    "surah_id": 113,
+    "surah_name_english": "Al-Falaq",
+    "surah_name_arabic": "الفلق",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\113001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/113001.mp3"
+  },
+  {
+    "surah_id": 114,
+    "surah_name_english": "An-Nas",
+    "surah_name_arabic": "الناس",
+    "reciter_id": "alafasy",
+    "reciter_name": "Mishary Rashid Alafasy",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\alafasy\\114001.mp3",
+    "url": "https://everyayah.com/data/Alafasy_128kbps/114001.mp3"
+  },
+  {
+    "surah_id": 1,
+    "surah_name_english": "Al-Fatihah",
+    "surah_name_arabic": "الفاتحة",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\001001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/001001.mp3"
+  },
+  {
+    "surah_id": 18,
+    "surah_name_english": "Al-Kahf",
+    "surah_name_arabic": "الكهف",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\018001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/018001.mp3"
+  },
+  {
+    "surah_id": 36,
+    "surah_name_english": "Ya-Sin",
+    "surah_name_arabic": "يس",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\036001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/036001.mp3"
+  },
+  {
+    "surah_id": 55,
+    "surah_name_english": "Ar-Rahman",
+    "surah_name_arabic": "الرحمن",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\055001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/055001.mp3"
+  },
+  {
+    "surah_id": 67,
+    "surah_name_english": "Al-Mulk",
+    "surah_name_arabic": "الملك",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\067001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/067001.mp3"
+  },
+  {
+    "surah_id": 112,
+    "surah_name_english": "Al-Ikhlas",
+    "surah_name_arabic": "الإخلاص",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\112001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/112001.mp3"
+  },
+  {
+    "surah_id": 113,
+    "surah_name_english": "Al-Falaq",
+    "surah_name_arabic": "الفلق",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\113001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/113001.mp3"
+  },
+  {
+    "surah_id": 114,
+    "surah_name_english": "An-Nas",
+    "surah_name_arabic": "الناس",
+    "reciter_id": "abdulbasit_mujawwad",
+    "reciter_name": "Abdul Basit (Mujawwad)",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\abdulbasit_mujawwad\\114001.mp3",
+    "url": "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/114001.mp3"
+  },
+  {
+    "surah_id": 1,
+    "surah_name_english": "Al-Fatihah",
+    "surah_name_arabic": "الفاتحة",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\001001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001001.mp3"
+  },
+  {
+    "surah_id": 18,
+    "surah_name_english": "Al-Kahf",
+    "surah_name_arabic": "الكهف",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\018001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/018001.mp3"
+  },
+  {
+    "surah_id": 36,
+    "surah_name_english": "Ya-Sin",
+    "surah_name_arabic": "يس",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\036001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/036001.mp3"
+  },
+  {
+    "surah_id": 55,
+    "surah_name_english": "Ar-Rahman",
+    "surah_name_arabic": "الرحمن",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\055001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/055001.mp3"
+  },
+  {
+    "surah_id": 67,
+    "surah_name_english": "Al-Mulk",
+    "surah_name_arabic": "الملك",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\067001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067001.mp3"
+  },
+  {
+    "surah_id": 112,
+    "surah_name_english": "Al-Ikhlas",
+    "surah_name_arabic": "الإخلاص",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\112001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112001.mp3"
+  },
+  {
+    "surah_id": 113,
+    "surah_name_english": "Al-Falaq",
+    "surah_name_arabic": "الفلق",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\113001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/113001.mp3"
+  },
+  {
+    "surah_id": 114,
+    "surah_name_english": "An-Nas",
+    "surah_name_arabic": "الناس",
+    "reciter_id": "minshawi_murattal",
+    "reciter_name": "Mohamed Siddiq Al-Minshawi",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\minshawi_murattal\\114001.mp3",
+    "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/114001.mp3"
+  },
+  {
+    "surah_id": 1,
+    "surah_name_english": "Al-Fatihah",
+    "surah_name_arabic": "الفاتحة",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\001001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/001001.mp3"
+  },
+  {
+    "surah_id": 18,
+    "surah_name_english": "Al-Kahf",
+    "surah_name_arabic": "الكهف",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\018001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/018001.mp3"
+  },
+  {
+    "surah_id": 36,
+    "surah_name_english": "Ya-Sin",
+    "surah_name_arabic": "يس",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\036001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/036001.mp3"
+  },
+  {
+    "surah_id": 55,
+    "surah_name_english": "Ar-Rahman",
+    "surah_name_arabic": "الرحمن",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\055001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/055001.mp3"
+  },
+  {
+    "surah_id": 67,
+    "surah_name_english": "Al-Mulk",
+    "surah_name_arabic": "الملك",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\067001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/067001.mp3"
+  },
+  {
+    "surah_id": 112,
+    "surah_name_english": "Al-Ikhlas",
+    "surah_name_arabic": "الإخلاص",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\112001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/112001.mp3"
+  },
+  {
+    "surah_id": 113,
+    "surah_name_english": "Al-Falaq",
+    "surah_name_arabic": "الفلق",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\113001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/113001.mp3"
+  },
+  {
+    "surah_id": 114,
+    "surah_name_english": "An-Nas",
+    "surah_name_arabic": "الناس",
+    "reciter_id": "husary_murattal",
+    "reciter_name": "Mahmoud Khalil Al-Husary",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\husary_murattal\\114001.mp3",
+    "url": "https://everyayah.com/data/Husary_128kbps/114001.mp3"
+  },
+  {
+    "surah_id": 1,
+    "surah_name_english": "Al-Fatihah",
+    "surah_name_arabic": "الفاتحة",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\001001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/001001.mp3"
+  },
+  {
+    "surah_id": 18,
+    "surah_name_english": "Al-Kahf",
+    "surah_name_arabic": "الكهف",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\018001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/018001.mp3"
+  },
+  {
+    "surah_id": 36,
+    "surah_name_english": "Ya-Sin",
+    "surah_name_arabic": "يس",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\036001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/036001.mp3"
+  },
+  {
+    "surah_id": 55,
+    "surah_name_english": "Ar-Rahman",
+    "surah_name_arabic": "الرحمن",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\055001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/055001.mp3"
+  },
+  {
+    "surah_id": 67,
+    "surah_name_english": "Al-Mulk",
+    "surah_name_arabic": "الملك",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\067001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/067001.mp3"
+  },
+  {
+    "surah_id": 112,
+    "surah_name_english": "Al-Ikhlas",
+    "surah_name_arabic": "الإخلاص",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\112001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/112001.mp3"
+  },
+  {
+    "surah_id": 113,
+    "surah_name_english": "Al-Falaq",
+    "surah_name_arabic": "الفلق",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\113001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/113001.mp3"
+  },
+  {
+    "surah_id": 114,
+    "surah_name_english": "An-Nas",
+    "surah_name_arabic": "الناس",
+    "reciter_id": "sudais",
+    "reciter_name": "Abdur-Rahman As-Sudais",
+    "riwayah": "Hafs 'an 'Asim",
+    "file_path": "reference_audio\\sudais\\114001.mp3",
+    "url": "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/114001.mp3"
+  }
+]
