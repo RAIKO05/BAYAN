@@ -85,10 +85,10 @@ struct ListeningRadarOrb: View {
                         y: 10
                     )
 
-                // Central Icon / Logo
-                VStack(spacing: 6) {
-                    Image(systemName: isListening ? "waveform" : "waveform.circle.fill")
-                        .font(.system(size: 58, weight: .light))
+                // Central Icon / Logo (Open Quran)
+                VStack(spacing: 8) {
+                    Image(systemName: isListening ? "book.pages.fill" : "book.fill")
+                        .font(.system(size: 52, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color.white, BayanTheme.goldSoft],

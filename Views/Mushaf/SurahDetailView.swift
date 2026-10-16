@@ -56,9 +56,9 @@ struct SurahDetailView: View {
                                 .padding(.vertical, 8)
                         }
 
-                        // Sample Ayahs List
+                        // All Ayahs in Surah
                         LazyVStack(spacing: 16) {
-                            ForEach(1...min(surah.totalAyahs, 20), id: \.self) { ayahNum in
+                            ForEach(1...surah.totalAyahs, id: \.self) { ayahNum in
                                 AyahRow(
                                     surah: surah,
                                     ayahNumber: ayahNum,

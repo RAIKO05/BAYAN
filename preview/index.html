@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bayan (بَيَان) — Interactive Quran Identifier & Mushaf</title>
+  <title>Bayan (بَيَان) — Quran Recognition & Complete Mushaf</title>
   <style>
     :root {
       --obsidian: #0a0d12;
@@ -136,7 +136,19 @@
       box-shadow: 0 0 50px rgba(229, 185, 90, 0.7), inset 0 0 35px rgba(229, 185, 90, 0.4);
       border-color: var(--gold);
     }
-    .orb-icon { font-size: 50px; color: var(--gold-soft); }
+    .orb-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-soft);
+      margin-bottom: 2px;
+    }
+    .orb-icon svg {
+      width: 58px;
+      height: 58px;
+      fill: currentColor;
+      filter: drop-shadow(0 2px 8px rgba(229,185,90,0.4));
+    }
     .orb-label {
       font-size: 11px;
       font-weight: 800;
@@ -150,38 +162,67 @@
     .status-text p { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; padding: 0 30px; }
 
     /* Mushaf Tab */
-    .mushaf-header { padding: 18px 20px 8px; }
+    .mushaf-header {
+      padding: 18px 20px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .mushaf-header h2 { font-size: 24px; font-weight: 800; color: #fff; }
+    .search-box {
+      margin: 4px 18px 12px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 10px 14px 10px 36px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .search-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+    }
 
     /* Resume Card */
     .resume-card {
-      margin: 12px 18px;
-      padding: 16px;
-      border-radius: 20px;
+      margin: 4px 18px 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
       background: var(--glass-bg);
       backdrop-filter: blur(20px);
       border: 1px solid var(--glass-gold-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      cursor: pointer;
     }
     .resume-tag { font-size: 9px; font-weight: 800; color: var(--cyan); letter-spacing: 1.5px; }
-    .resume-title { font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; }
-    .resume-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .resume-title { font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px; }
+    .resume-sub { font-size: 11px; color: rgba(255,255,255,0.6); }
     .resume-btn {
       background: linear-gradient(135deg, var(--gold), var(--gold-soft));
       color: var(--obsidian);
       border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 16px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
     }
 
     /* Reciter Bar */
     .reciter-bar {
-      margin: 0 18px 14px;
+      margin: 0 18px 12px;
       padding: 12px 16px;
       border-radius: 16px;
       background: var(--glass-bg);
@@ -191,27 +232,29 @@
       align-items: center;
       font-size: 13px;
       cursor: pointer;
+      transition: background 0.2s;
     }
+    .reciter-bar:hover { background: rgba(255, 255, 255, 0.1); }
     .reciter-bar span { color: var(--gold-soft); font-weight: 600; }
 
     /* Surah List */
-    .surah-list { padding: 0 18px; display: flex; flex-direction: column; gap: 10px; }
+    .surah-list { padding: 0 18px; display: flex; flex-direction: column; gap: 9px; }
     .surah-item {
-      padding: 14px 16px;
-      border-radius: 18px;
+      padding: 12px 14px;
+      border-radius: 16px;
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
-    .surah-item:hover { background: rgba(255, 255, 255, 0.12); }
-    .surah-left { display: flex; align-items: center; gap: 14px; }
+    .surah-item:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+    .surah-left { display: flex; align-items: center; gap: 12px; }
     .surah-num {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       background: rgba(255,255,255,0.08);
       display: flex;
@@ -219,11 +262,11 @@
       justify-content: center;
       font-weight: 700;
       color: var(--gold-soft);
-      font-size: 13px;
+      font-size: 12px;
     }
-    .surah-name-en { font-size: 15px; font-weight: 600; color: #fff; }
+    .surah-name-en { font-size: 14px; font-weight: 600; color: #fff; }
     .surah-trans { font-size: 11px; color: rgba(255,255,255,0.6); }
-    .surah-name-ar { font-size: 18px; font-weight: 700; color: var(--gold-soft); text-align: right; }
+    .surah-name-ar { font-size: 17px; font-weight: 700; color: var(--gold-soft); text-align: right; }
 
     /* Bottom Liquid Glass TabBar */
     .tab-bar {
@@ -232,7 +275,7 @@
       left: 0;
       right: 0;
       height: 82px;
-      background: rgba(10, 13, 18, 0.82);
+      background: rgba(10, 13, 18, 0.85);
       backdrop-filter: blur(25px);
       border-top: 1px solid var(--glass-border);
       display: flex;
@@ -262,12 +305,12 @@
       bottom: -100%;
       left: 0;
       right: 0;
-      height: 65%;
-      background: rgba(10, 15, 20, 0.95);
+      height: 68%;
+      background: rgba(10, 15, 20, 0.96);
       backdrop-filter: blur(30px);
       border-top: 1.5px solid var(--gold);
       border-radius: 36px 36px 0 0;
-      padding: 24px 20px;
+      padding: 20px;
       transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 90;
       display: flex;
@@ -280,7 +323,7 @@
       height: 4px;
       background: rgba(255,255,255,0.25);
       border-radius: 4px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       cursor: pointer;
     }
     .modal-badge {
@@ -300,10 +343,10 @@
       font-weight: bold;
       text-align: center;
       color: #fff;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .modal-snippet {
-      margin: 14px 0;
+      margin: 12px 0;
       padding: 14px;
       background: rgba(255,255,255,0.05);
       border-radius: 16px;
@@ -311,6 +354,8 @@
       text-align: right;
       color: var(--gold-soft);
       line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
     }
     .play-btn {
       background: linear-gradient(135deg, var(--gold), #caa142);
@@ -318,7 +363,7 @@
       border: none;
       padding: 14px;
       border-radius: 16px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
@@ -327,6 +372,65 @@
       gap: 8px;
       box-shadow: 0 8px 20px rgba(229,185,90,0.3);
     }
+
+    /* Reciters List Modal Sheet */
+    .reciter-modal {
+      position: absolute;
+      bottom: -100%;
+      left: 0;
+      right: 0;
+      height: 75%;
+      background: rgba(10, 15, 20, 0.98);
+      backdrop-filter: blur(35px);
+      border-top: 1.5px solid var(--gold);
+      border-radius: 36px 36px 0 0;
+      padding: 20px;
+      transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 95;
+      display: flex;
+      flex-direction: column;
+    }
+    .reciter-modal.open { bottom: 0; }
+    .reciter-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scrollbar-width: none;
+    }
+    .reciter-list-scroll::-webkit-scrollbar { display: none; }
+    .qari-card {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .qari-card:hover { background: rgba(255,255,255,0.12); }
+    .qari-card.active {
+      border-color: var(--gold);
+      background: rgba(229, 185, 90, 0.12);
+    }
+    .qari-left { display: flex; align-items: center; gap: 12px; }
+    .qari-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(229,185,90,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+    }
+    .qari-name-en { font-size: 14px; font-weight: 600; color: #fff; }
+    .qari-style { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .qari-name-ar { font-size: 16px; font-weight: 700; color: var(--gold-soft); text-align: right; }
   </style>
 </head>
 <body>
@@ -352,8 +456,14 @@
           <div class="ripple-ring" id="ring2"></div>
           <div class="ripple-ring" id="ring3"></div>
 
+          <!-- Radar Orb with OPEN QURAN BOOK Icon -->
           <button class="orb-btn" id="orb-button" onclick="toggleListening()">
-            <div class="orb-icon">📻</div>
+            <div class="orb-icon">
+              <!-- Open Quran SVG Icon -->
+              <svg viewBox="0 0 24 24" id="orb-quran-icon">
+                <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm-1 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+              </svg>
+            </div>
             <div class="orb-label" id="orb-text">LISTEN</div>
           </button>
         </div>
@@ -367,7 +477,13 @@
       <!-- TAB 2: MUSHAF -->
       <div id="tab-mushaf" class="tab-view">
         <div class="mushaf-header">
-          <h2>Holy Qur'an</h2>
+          <h2>The Holy Qur'an</h2>
+          <span style="font-size: 12px; color: var(--gold-soft); font-weight: bold;">114 SURAHS</span>
+        </div>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-surah" placeholder="Search Surah by English or Arabic..." oninput="filterSurahs()">
         </div>
 
         <div class="resume-card" onclick="resumeReading()">
@@ -379,13 +495,14 @@
           <button class="resume-btn">▶ Resume</button>
         </div>
 
-        <div class="reciter-bar" onclick="cycleReciter()">
+        <!-- Reciter Bar - Tapping opens Reciter List Modal -->
+        <div class="reciter-bar" onclick="openReciterModal()">
           <div>Qari: <span id="current-qari-name">Mishary Rashid Alafasy</span></div>
-          <div style="color: rgba(255,255,255,0.5)">Tap to Change ❯</div>
+          <div style="color: rgba(255,255,255,0.5); font-size: 11px;">Change Qari ❯</div>
         </div>
 
         <div class="surah-list" id="surah-list-container">
-          <!-- Populated by JS -->
+          <!-- Populated by JS with all 114 Surahs -->
         </div>
       </div>
 
@@ -395,7 +512,7 @@
           <h2>Recognized History</h2>
         </div>
         <div class="surah-list" id="history-list" style="margin-top: 10px;">
-          <div class="surah-item" onclick="playMatch('Ar-Rahman', 'الرحمن', 'Mishary Rashid Alafasy', '055001')">
+          <div class="surah-item" onclick="openMatchModal('Ar-Rahman', 'الرحمن', 'Mishary Rashid Alafasy', '055001')">
             <div class="surah-left">
               <div class="surah-num">55</div>
               <div>
@@ -426,6 +543,18 @@
       </button>
     </div>
 
+    <!-- Reciter Picker Bottom Sheet Modal -->
+    <div class="reciter-modal" id="reciter-modal">
+      <div class="modal-close" onclick="closeReciterModal()"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="font-size: 18px; font-weight: bold; color: #fff;">Select Reciter (القراء)</h3>
+        <span style="font-size: 12px; color: var(--gold); cursor: pointer;" onclick="closeReciterModal()">Done</span>
+      </div>
+      <div class="reciter-list-scroll" id="reciters-list-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
     <!-- Liquid Glass Tab Bar -->
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('identify', this)">
@@ -433,7 +562,7 @@
         Identify
       </button>
       <button class="tab-btn" onclick="switchTab('mushaf', this)">
-        <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm-1 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
         Quran
       </button>
       <button class="tab-btn" onclick="switchTab('history', this)">
@@ -446,22 +575,136 @@
   <audio id="audio-player"></audio>
 
   <script>
+    // Full list of Curated Reciters with Arabic & English Names + EveryAyah Endpoints
     const RECITERS = [
-      { name: "Mishary Rashid Alafasy", folder: "Alafasy_128kbps" },
-      { name: "Abdul Basit (Mujawwad)", folder: "Abdul_Basit_Mujawwad_128kbps" },
-      { name: "Mohamed Siddiq Al-Minshawi", folder: "Minshawy_Murattal_128kbps" },
-      { name: "Mahmoud Khalil Al-Husary", folder: "Husary_128kbps" },
-      { name: "Abdur-Rahman As-Sudais", folder: "Abdurrahmaan_As-Sudais_192kbps" }
+      { id: "alafasy", nameEn: "Mishary Rashid Alafasy", nameAr: "مشاري راشد العفاسي", style: "Murattal • Hafs", folder: "Alafasy_128kbps" },
+      { id: "abdulbasit_mujawwad", nameEn: "Abdul Basit (Mujawwad)", nameAr: "عبد الباسط عبد الصمد", style: "Mujawwad • Hafs", folder: "Abdul_Basit_Mujawwad_128kbps" },
+      { id: "abdulbasit_murattal", nameEn: "Abdul Basit (Murattal)", nameAr: "عبد الباسط عبد الصمد", style: "Murattal • Hafs", folder: "AbdulBasit_Murattal_192kbps" },
+      { id: "minshawi_mujawwad", nameEn: "Mohamed Siddiq Al-Minshawi", nameAr: "محمد صديق المنشاوي", style: "Mujawwad • Hafs", folder: "Minshawy_Mujawwad_192kbps" },
+      { id: "minshawi_murattal", nameEn: "Mohamed Siddiq Al-Minshawi", nameAr: "محمد صديق المنشاوي", style: "Murattal • Hafs", folder: "Minshawy_Murattal_128kbps" },
+      { id: "husary", nameEn: "Mahmoud Khalil Al-Husary", nameAr: "محمود خليل الحصري", style: "Murattal • Hafs", folder: "Husary_128kbps" },
+      { id: "sudais", nameEn: "Abdur-Rahman As-Sudais", nameAr: "عبد الرحمن السديس", style: "Murattal • Hafs", folder: "Abdurrahmaan_As-Sudais_192kbps" },
+      { id: "shuraim", nameEn: "Sa'ud Ash-Shuraim", nameAr: "سعود الشريم", style: "Murattal • Hafs", folder: "Saood_ash-Shuraym_128kbps" },
+      { id: "ghamadi", nameEn: "Saad Al-Ghamdi", nameAr: "سعد الغامدي", style: "Murattal • Hafs", folder: "Ghamadi_40kbps" },
+      { id: "ajmy", nameEn: "Ahmed ibn Ali al-Ajmy", nameAr: "أحمد بن علي العجمي", style: "Murattal • Hafs", folder: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net" },
+      { id: "dussary", nameEn: "Yasser Al-Dosari", nameAr: "ياسر الدوسري", style: "Murattal • Hafs", folder: "Yasser_Ad-Dussary_128kbps" },
+      { id: "maher", nameEn: "Maher Al-Muaiqly", nameAr: "ماهر المعيقلي", style: "Murattal • Hafs", folder: "MaherAlMuaiqly128kbps" }
     ];
     let currentReciterIndex = 0;
 
-    const SURAHS = [
+    // Full 114 Surahs Dataset
+    const ALL_114_SURAHS = [
       { id: 1, nameEn: "Al-Fatihah", nameAr: "الفاتحة", trans: "The Opening", ayahs: 7 },
       { id: 2, nameEn: "Al-Baqarah", nameAr: "البقرة", trans: "The Cow", ayahs: 286 },
+      { id: 3, nameEn: "Ali 'Imran", nameAr: "آل عمران", trans: "Family of Imran", ayahs: 200 },
+      { id: 4, nameEn: "An-Nisa", nameAr: "النساء", trans: "The Women", ayahs: 176 },
+      { id: 5, nameEn: "Al-Ma'idah", nameAr: "المائدة", trans: "The Table Spread", ayahs: 120 },
+      { id: 6, nameEn: "Al-An'am", nameAr: "الأنعام", trans: "The Cattle", ayahs: 165 },
+      { id: 7, nameEn: "Al-A'raf", nameAr: "الأعراف", trans: "The Heights", ayahs: 206 },
+      { id: 8, nameEn: "Al-Anfal", nameAr: "الأنفال", trans: "The Spoils of War", ayahs: 75 },
+      { id: 9, nameEn: "At-Tawbah", nameAr: "التوبة", trans: "The Repentance", ayahs: 129 },
+      { id: 10, nameEn: "Yunus", nameAr: "يونس", trans: "Jonah", ayahs: 109 },
+      { id: 11, nameEn: "Hud", nameAr: "هود", trans: "Hud", ayahs: 123 },
+      { id: 12, nameEn: "Yusuf", nameAr: "يوسف", trans: "Joseph", ayahs: 111 },
+      { id: 13, nameEn: "Ar-Ra'd", nameAr: "الرعد", trans: "The Thunder", ayahs: 43 },
+      { id: 14, nameEn: "Ibrahim", nameAr: "إبراهيم", trans: "Abraham", ayahs: 52 },
+      { id: 15, nameEn: "Al-Hijr", nameAr: "الحجر", trans: "The Rocky Tract", ayahs: 99 },
+      { id: 16, nameEn: "An-Nahl", nameAr: "النحل", trans: "The Bee", ayahs: 128 },
+      { id: 17, nameEn: "Al-Isra", nameAr: "الإسراء", trans: "The Night Journey", ayahs: 111 },
       { id: 18, nameEn: "Al-Kahf", nameAr: "الكهف", trans: "The Cave", ayahs: 110 },
+      { id: 19, nameEn: "Maryam", nameAr: "مريم", trans: "Mary", ayahs: 98 },
+      { id: 20, nameEn: "Ta-Ha", nameAr: "طه", trans: "Ta-Ha", ayahs: 135 },
+      { id: 21, nameEn: "Al-Anbiya", nameAr: "الأنبياء", trans: "The Prophets", ayahs: 112 },
+      { id: 22, nameEn: "Al-Hajj", nameAr: "الحج", trans: "The Pilgrimage", ayahs: 78 },
+      { id: 23, nameEn: "Al-Mu'minun", nameAr: "المؤمنون", trans: "The Believers", ayahs: 118 },
+      { id: 24, nameEn: "An-Nur", nameAr: "النور", trans: "The Light", ayahs: 64 },
+      { id: 25, nameEn: "Al-Furqan", nameAr: "الفرقان", trans: "The Criterion", ayahs: 77 },
+      { id: 26, nameEn: "Ash-Shu'ara", nameAr: "الشعراء", trans: "The Poets", ayahs: 227 },
+      { id: 27, nameEn: "An-Naml", nameAr: "النمل", trans: "The Ant", ayahs: 93 },
+      { id: 28, nameEn: "Al-Qasas", nameAr: "القصص", trans: "The Stories", ayahs: 88 },
+      { id: 29, nameEn: "Al-'Ankabut", nameAr: "العنكبوت", trans: "The Spider", ayahs: 69 },
+      { id: 30, nameEn: "Ar-Rum", nameAr: "الروم", trans: "The Romans", ayahs: 60 },
+      { id: 31, nameEn: "Luqman", nameAr: "لقمان", trans: "Luqman", ayahs: 34 },
+      { id: 32, nameEn: "As-Sajdah", nameAr: "السجدة", trans: "The Prostration", ayahs: 30 },
+      { id: 33, nameEn: "Al-Ahzab", nameAr: "الأحزاب", trans: "The Combined Forces", ayahs: 73 },
+      { id: 34, nameEn: "Saba", nameAr: "سبأ", trans: "Sheba", ayahs: 54 },
+      { id: 35, nameEn: "Fatir", nameAr: "فاطر", trans: "Originator", ayahs: 45 },
       { id: 36, nameEn: "Ya-Sin", nameAr: "يس", trans: "Ya-Sin", ayahs: 83 },
+      { id: 37, nameEn: "As-Saffat", nameAr: "الصافات", trans: "Those who set the Ranks", ayahs: 182 },
+      { id: 38, nameEn: "Sad", nameAr: "ص", trans: "The Letter Sad", ayahs: 88 },
+      { id: 39, nameEn: "Az-Zumar", nameAr: "الزمر", trans: "The Troops", ayahs: 75 },
+      { id: 40, nameEn: "Ghafir", nameAr: "غافر", trans: "The Forgiver", ayahs: 85 },
+      { id: 41, nameEn: "Fussilat", nameAr: "فصلت", trans: "Explained in Detail", ayahs: 54 },
+      { id: 42, nameEn: "Ash-Shura", nameAr: "الشورى", trans: "The Consultation", ayahs: 53 },
+      { id: 43, nameEn: "Az-Zukhruf", nameAr: "الزخرف", trans: "The Ornaments of Gold", ayahs: 89 },
+      { id: 44, nameEn: "Ad-Dukhan", nameAr: "الدخان", trans: "The Smoke", ayahs: 59 },
+      { id: 45, nameEn: "Al-Jathiyah", nameAr: "الجاثية", trans: "The Crouching", ayahs: 37 },
+      { id: 46, nameEn: "Al-Ahqaf", nameAr: "الأحقاف", trans: "The Wind-Curved Sandhills", ayahs: 35 },
+      { id: 47, nameEn: "Muhammad", nameAr: "محمد", trans: "Muhammad", ayahs: 38 },
+      { id: 48, nameEn: "Al-Fath", nameAr: "الفتح", trans: "The Victory", ayahs: 29 },
+      { id: 49, nameEn: "Al-Hujurat", nameAr: "الحجرات", trans: "The Rooms", ayahs: 18 },
+      { id: 50, nameEn: "Qaf", nameAr: "ق", trans: "The Letter Qaf", ayahs: 45 },
+      { id: 51, nameEn: "Adh-Dhariyat", nameAr: "الذاريات", trans: "The Winnowing Winds", ayahs: 60 },
+      { id: 52, nameEn: "At-Tur", nameAr: "الطور", trans: "The Mount", ayahs: 49 },
+      { id: 53, nameEn: "An-Najm", nameAr: "النجم", trans: "The Star", ayahs: 62 },
+      { id: 54, nameEn: "Al-Qamar", nameAr: "القمر", trans: "The Moon", ayahs: 55 },
       { id: 55, nameEn: "Ar-Rahman", nameAr: "الرحمن", trans: "The Beneficent", ayahs: 78 },
+      { id: 56, nameEn: "Al-Waqi'ah", nameAr: "الواقعة", trans: "The Inevitable", ayahs: 96 },
+      { id: 57, nameEn: "Al-Hadid", nameAr: "الحديد", trans: "The Iron", ayahs: 29 },
+      { id: 58, nameEn: "Al-Mujadila", nameAr: "المجادلة", trans: "The Pleading Woman", ayahs: 22 },
+      { id: 59, nameEn: "Al-Hashr", nameAr: "الحشر", trans: "The Exile", ayahs: 24 },
+      { id: 60, nameEn: "Al-Mumtahanah", nameAr: "الممتحنة", trans: "She that is to be examined", ayahs: 13 },
+      { id: 61, nameEn: "As-Saff", nameAr: "الصف", trans: "The Ranks", ayahs: 14 },
+      { id: 62, nameEn: "Al-Jumu'ah", nameAr: "الجمعة", trans: "The Congregation", ayahs: 11 },
+      { id: 63, nameEn: "Al-Munafiqun", nameAr: "المنافقون", trans: "The Hypocrites", ayahs: 11 },
+      { id: 64, nameEn: "At-Taghabun", nameAr: "التغابن", trans: "The Mutual Disillusion", ayahs: 18 },
+      { id: 65, nameEn: "At-Talaq", nameAr: "الطلاق", trans: "The Divorce", ayahs: 12 },
+      { id: 66, nameEn: "At-Tahrim", nameAr: "التحريم", trans: "The Prohibition", ayahs: 12 },
       { id: 67, nameEn: "Al-Mulk", nameAr: "الملك", trans: "The Sovereignty", ayahs: 30 },
+      { id: 68, nameEn: "Al-Qalam", nameAr: "القلم", trans: "The Pen", ayahs: 52 },
+      { id: 69, nameEn: "Al-Haqqah", nameAr: "الحاقة", trans: "The Inevitable Reality", ayahs: 52 },
+      { id: 70, nameEn: "Al-Ma'arij", nameAr: "المعارج", trans: "The Ascending Stairways", ayahs: 44 },
+      { id: 71, nameEn: "Nuh", nameAr: "نوح", trans: "Noah", ayahs: 28 },
+      { id: 72, nameEn: "Al-Jinn", nameAr: "الجن", trans: "The Jinn", ayahs: 28 },
+      { id: 73, nameEn: "Al-Muzzammil", nameAr: "المزمل", trans: "The Enshrouded One", ayahs: 20 },
+      { id: 74, nameEn: "Al-Muddaththir", nameAr: "المدثر", trans: "The Cloaked One", ayahs: 56 },
+      { id: 75, nameEn: "Al-Qiyamah", nameAr: "القيامة", trans: "The Resurrection", ayahs: 40 },
+      { id: 76, nameEn: "Al-Insan", nameAr: "الإنسان", trans: "Man", ayahs: 31 },
+      { id: 77, nameEn: "Al-Mursalat", nameAr: "المرسلات", trans: "The Emissaries", ayahs: 50 },
+      { id: 78, nameEn: "An-Naba", nameAr: "النبأ", trans: "The Tidings", ayahs: 40 },
+      { id: 79, nameEn: "An-Nazi'at", nameAr: "النازعات", trans: "Those who drag forth", ayahs: 46 },
+      { id: 80, nameEn: "'Abasa", nameAr: "عبس", trans: "He frowned", ayahs: 42 },
+      { id: 81, nameEn: "At-Takwir", nameAr: "التكوير", trans: "The Overthrowing", ayahs: 29 },
+      { id: 82, nameEn: "Al-Infitar", nameAr: "الانفطار", trans: "The Cleaving", ayahs: 19 },
+      { id: 83, nameEn: "Al-Mutaffifin", nameAr: "المطففين", trans: "Defrauding", ayahs: 36 },
+      { id: 84, nameEn: "Al-Inshiqaq", nameAr: "الانشقاق", trans: "The Splitting Open", ayahs: 25 },
+      { id: 85, nameEn: "Al-Buruj", nameAr: "البروج", trans: "The Mansions of the Stars", ayahs: 22 },
+      { id: 86, nameEn: "At-Tariq", nameAr: "الطارق", trans: "The Morning Star", ayahs: 17 },
+      { id: 87, nameEn: "Al-A'la", nameAr: "الأعلى", trans: "The Most High", ayahs: 19 },
+      { id: 88, nameEn: "Al-Ghashiyah", nameAr: "الغاشية", trans: "The Overwhelming", ayahs: 26 },
+      { id: 89, nameEn: "Al-Fajr", nameAr: "الفجر", trans: "The Dawn", ayahs: 30 },
+      { id: 90, nameEn: "Al-Balad", nameAr: "البلد", trans: "The City", ayahs: 20 },
+      { id: 91, nameEn: "Ash-Shams", nameAr: "الشمس", trans: "The Sun", ayahs: 15 },
+      { id: 92, nameEn: "Al-Layl", nameAr: "الليل", trans: "The Night", ayahs: 21 },
+      { id: 93, nameEn: "Ad-Duha", nameAr: "الضحى", trans: "The Morning Hours", ayahs: 11 },
+      { id: 94, nameEn: "Ash-Sharh", nameAr: "الشرح", trans: "The Relief", ayahs: 8 },
+      { id: 95, nameEn: "At-Tin", nameAr: "التين", trans: "The Fig", ayahs: 8 },
+      { id: 96, nameEn: "Al-'Alaq", nameAr: "العلق", trans: "The Clot", ayahs: 19 },
+      { id: 97, nameEn: "Al-Qadr", nameAr: "القدر", trans: "The Power", ayahs: 5 },
+      { id: 98, nameEn: "Al-Bayyinah", nameAr: "البينة", trans: "The Clear Proof", ayahs: 8 },
+      { id: 99, nameEn: "Az-Zalzalah", nameAr: "الزلزلة", trans: "The Earthquake", ayahs: 8 },
+      { id: 100, nameEn: "Al-'Adiyat", nameAr: "العاديات", trans: "The Courser", ayahs: 11 },
+      { id: 101, nameEn: "Al-Qari'ah", nameAr: "القارعة", trans: "The Calamity", ayahs: 11 },
+      { id: 102, nameEn: "At-Takathur", nameAr: "التكاثر", trans: "The Rivalry in World Increase", ayahs: 8 },
+      { id: 103, nameEn: "Al-'Asr", nameAr: "العصر", trans: "The Declining Day", ayahs: 3 },
+      { id: 104, nameEn: "Al-Humazah", nameAr: "الهمزة", trans: "The Traducer", ayahs: 9 },
+      { id: 105, nameEn: "Al-Fil", nameAr: "الفيل", trans: "The Elephant", ayahs: 5 },
+      { id: 106, nameEn: "Quraysh", nameAr: "قريش", trans: "Quraysh", ayahs: 4 },
+      { id: 107, nameEn: "Al-Ma'un", nameAr: "الماعون", trans: "Small kindnesses", ayahs: 7 },
+      { id: 108, nameEn: "Al-Kawthar", nameAr: "الكوثر", trans: "Abundance", ayahs: 3 },
+      { id: 109, nameEn: "Al-Kafirun", nameAr: "الكافرون", trans: "The Disbelievers", ayahs: 6 },
+      { id: 110, nameEn: "An-Nasr", nameAr: "النصر", trans: "The Divine Support", ayahs: 3 },
+      { id: 111, nameEn: "Al-Masad", nameAr: "المسد", trans: "The Palm Fibre", ayahs: 5 },
       { id: 112, nameEn: "Al-Ikhlas", nameAr: "الإخلاص", trans: "The Sincerity", ayahs: 4 },
       { id: 113, nameEn: "Al-Falaq", nameAr: "الفلق", trans: "The Daybreak", ayahs: 5 },
       { id: 114, nameEn: "An-Nas", nameAr: "الناس", trans: "Mankind", ayahs: 6 }
@@ -538,34 +781,83 @@
       }
     }
 
-    function cycleReciter() {
-      currentReciterIndex = (currentReciterIndex + 1) % RECITERS.length;
-      document.getElementById("current-qari-name").textContent = RECITERS[currentReciterIndex].name;
+    // Reciters List Sheet Modal Controls
+    function openReciterModal() {
+      renderRecitersList();
+      document.getElementById("reciter-modal").classList.add("open");
+    }
+
+    function closeReciterModal() {
+      document.getElementById("reciter-modal").classList.remove("open");
+    }
+
+    function selectReciter(index) {
+      currentReciterIndex = index;
+      document.getElementById("current-qari-name").textContent = RECITERS[index].nameEn;
+      closeReciterModal();
+    }
+
+    function renderRecitersList() {
+      const container = document.getElementById("reciters-list-container");
+      container.innerHTML = "";
+      RECITERS.forEach((r, idx) => {
+        const card = document.createElement("div");
+        card.className = "qari-card" + (idx === currentReciterIndex ? " active" : "");
+        card.onclick = () => selectReciter(idx);
+        card.innerHTML = `
+          <div class="qari-left">
+            <div class="qari-avatar">🎙️</div>
+            <div>
+              <div class="qari-name-en">${r.nameEn}</div>
+              <div class="qari-style">${r.style}</div>
+            </div>
+          </div>
+          <div class="qari-name-ar">${r.nameAr}</div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     function resumeReading() {
       alert("Resuming: Surah Al-Kahf, Ayah 28 (Page 297)");
     }
 
-    // Populate Surah List
-    const container = document.getElementById("surah-list-container");
-    SURAHS.forEach(s => {
-      const item = document.createElement("div");
-      item.className = "surah-item";
-      const surahCode = String(s.id).padStart(3, "0") + "001";
-      item.onclick = () => openMatchModal(s.nameEn, s.nameAr, RECITERS[currentReciterIndex].name, surahCode);
-      item.innerHTML = `
-        <div class="surah-left">
-          <div class="surah-num">${s.id}</div>
-          <div>
-            <div class="surah-name-en">${s.nameEn}</div>
-            <div class="surah-trans">${s.trans} • ${s.ayahs} Ayahs</div>
+    // Filter & Render All 114 Surahs
+    function filterSurahs() {
+      const q = document.getElementById("search-surah").value.toLowerCase();
+      const filtered = ALL_114_SURAHS.filter(s =>
+        s.nameEn.toLowerCase().includes(q) ||
+        s.nameAr.includes(q) ||
+        s.trans.toLowerCase().includes(q) ||
+        String(s.id) === q
+      );
+      renderSurahList(filtered);
+    }
+
+    function renderSurahList(list) {
+      const container = document.getElementById("surah-list-container");
+      container.innerHTML = "";
+      list.forEach(s => {
+        const item = document.createElement("div");
+        item.className = "surah-item";
+        const surahCode = String(s.id).padStart(3, "0") + "001";
+        item.onclick = () => openMatchModal(s.nameEn, s.nameAr, RECITERS[currentReciterIndex].nameEn, surahCode);
+        item.innerHTML = `
+          <div class="surah-left">
+            <div class="surah-num">${s.id}</div>
+            <div>
+              <div class="surah-name-en">${s.nameEn}</div>
+              <div class="surah-trans">${s.trans} • ${s.ayahs} Ayahs</div>
+            </div>
           </div>
-        </div>
-        <div class="surah-name-ar">${s.nameAr}</div>
-      `;
-      container.appendChild(item);
-    });
+          <div class="surah-name-ar">${s.nameAr}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Initial render
+    renderSurahList(ALL_114_SURAHS);
   </script>
 </body>
 </html>
