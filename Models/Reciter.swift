@@ -25,6 +25,12 @@ public struct Reciter: Identifiable, Codable, Hashable {
         let surahStr = String(format: "%03d", surah)
         let ayahStr = String(format: "%03d", ayah)
         let fullAyahCode = "\(surahStr)\(ayahStr)"
+
+        if id == "omardiaa" {
+            // Verse-level fallback to Alafasy for uninterrupted continuous recitation
+            return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
+        }
+
         let urlString = "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3"
         return URL(string: urlString)
     }

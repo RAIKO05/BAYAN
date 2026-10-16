@@ -1464,6 +1464,16 @@
 
     // Auto-advance sequentially to the next Ayah when one finishes
     audioPlayer.addEventListener("ended", () => {
+      const reciter = RECITERS[currentReciterIndex];
+      if (reciter.archiveFiles && reciter.archiveFiles[currentPlayingSurahId]) {
+        // Full Surah audio file finished playing
+        document.getElementById("play-btn-text").textContent = "REPLAY SURAH";
+        document.getElementById("play-btn-icon").textContent = "↺";
+        currentPlayingAyah = 1;
+        updateAudioUrl();
+        highlightActiveVerseCard();
+        return;
+      }
       if (currentPlayingAyah < currentPlayingMaxAyahs) {
         currentPlayingAyah++;
         const surahObj = ALL_114_SURAHS.find(s => s.id === currentPlayingSurahId);
