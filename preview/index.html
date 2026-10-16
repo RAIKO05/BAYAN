@@ -305,12 +305,12 @@
       bottom: -100%;
       left: 0;
       right: 0;
-      height: 68%;
-      background: rgba(10, 15, 20, 0.96);
-      backdrop-filter: blur(30px);
+      height: 88%;
+      background: rgba(10, 15, 20, 0.98);
+      backdrop-filter: blur(35px);
       border-top: 1.5px solid var(--gold);
       border-radius: 36px 36px 0 0;
-      padding: 20px;
+      padding: 18px 20px 24px;
       transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 90;
       display: flex;
@@ -319,11 +319,11 @@
     .match-modal.open { bottom: 0; }
     .modal-close {
       align-self: center;
-      width: 40px;
-      height: 4px;
+      width: 44px;
+      height: 5px;
       background: rgba(255,255,255,0.25);
       border-radius: 4px;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       cursor: pointer;
     }
     .modal-badge {
@@ -339,23 +339,69 @@
       border: 1px solid var(--glass-gold-border);
     }
     .modal-arabic {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: bold;
       text-align: center;
       color: #fff;
-      margin-top: 8px;
+      margin-top: 6px;
     }
-    .modal-snippet {
-      margin: 12px 0;
+    .modal-verses-scroll {
+      flex: 1;
+      overflow-y: auto;
+      margin: 12px 0 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: none;
+    }
+    .modal-verses-scroll::-webkit-scrollbar { display: none; }
+    .verse-card {
       padding: 14px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 16px;
-      font-size: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .verse-card.playing {
+      border-color: var(--gold);
+      background: rgba(229,185,90,0.12);
+      box-shadow: 0 0 15px rgba(229,185,90,0.2);
+    }
+    .verse-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .verse-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--glass-gold-border);
+      color: var(--gold-soft);
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .verse-text-ar {
+      font-size: 20px;
+      line-height: 1.8;
       text-align: right;
       color: var(--gold-soft);
-      line-height: 1.6;
-      max-height: 140px;
-      overflow-y: auto;
+      font-weight: 500;
+    }
+    .verse-text-en {
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.4;
     }
     .play-btn {
       background: linear-gradient(135deg, var(--gold), #caa142);
@@ -534,8 +580,8 @@
       <div style="text-align: center; color: var(--gold-soft); font-size: 15px;" id="modal-en-name">Surah Ar-Rahman • Ayah 1–4</div>
       <div style="text-align: center; font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px;" id="modal-qari">Sheikh Mishary Rashid Alafasy (Hafs)</div>
 
-      <div class="modal-snippet" id="modal-snippet">
-        ٱلرَّحْمَٰنُ ۝ عَلَّمَ ٱلْقُرْءَانَ ۝ خَلَقَ ٱلْإِنسَٰنَ ۝ عَلَّمَهُ ٱلْبَيَانَ
+      <div class="modal-verses-scroll" id="modal-verses-container">
+        <!-- Dynamically rendered full Surah Ayahs -->
       </div>
 
       <button class="play-btn" id="modal-play-btn" onclick="toggleAudioPlayback()">
@@ -754,22 +800,70 @@
       }
     }
 
-    // Surah Verses Lookup for accurate display
-    const SURAH_VERSES = {
-      1: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ ۝ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ مَٰلِكِ يَوْمِ ٱلدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ ۝ صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
-      2: "الم ۝ ذَٰلِكَ ٱلْكِتَٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ ۝ ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَٰهُمْ يُنفِقُونَ",
-      18: "ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ۝ قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ ٱلْمُؤْمِنِينَ",
-      36: "يس ۝ وَٱلْقُرْءَانِ ٱلْحَكِيمِ ۝ إِنَّكَ لَمِنَ ٱلْمُرْسَلِينَ ۝ عَلَىٰ صِرَٰطٍ مُّسْتَقِيمٍ",
-      55: "ٱلرَّحْمَٰنُ ۝ عَلَّمَ ٱلْقُرْءَانَ ۝ خَلَقَ ٱلْإِنسَٰنَ ۝ عَلَّمَهُ ٱلْبَيَانَ",
-      67: "تَبَٰرَكَ ٱلَّذِي بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ ۝ ٱلَّذِي خَلَقَ ٱلْمَوْتَ وَٱلْحَيَوٰةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا",
-      112: "قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
-      113: "قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
-      114: "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ"
-    };
-
-    let currentPlayingSurahId = 1;
-    let currentPlayingAyah = 1;
-    let currentPlayingMaxAyahs = 7;
+    function getAyahText(surahId, ayahNum) {
+      if (surahId === 1) {
+        const fatihah = [
+          "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+          "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+          "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+          "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+          "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+          "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+          "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ"
+        ];
+        return fatihah[ayahNum - 1] || "آيَةٌ مِن كِتَابِ ٱللَّهِ";
+      }
+      if (surahId === 112) {
+        const ikhlas = [
+          "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+          "ٱللَّهُ ٱلصَّمَدُ",
+          "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+          "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ"
+        ];
+        return ikhlas[ayahNum - 1] || "آيَةٌ مِن كِتَابِ ٱللَّهِ";
+      }
+      if (surahId === 113) {
+        const falaq = [
+          "قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ",
+          "مِن شَرِّ مَا خَلَقَ",
+          "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+          "وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِي ٱلْعُقَدِ",
+          "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ"
+        ];
+        return falaq[ayahNum - 1] || "آيَةٌ مِن كِتَابِ ٱللَّهِ";
+      }
+      if (surahId === 114) {
+        const nas = [
+          "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+          "مَلِكِ ٱلنَّاسِ",
+          "إِلَٰهِ ٱلنَّاسِ",
+          "مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ",
+          "ٱلَّذِي يُوَسْوِسُ فِي صُدُورِ ٱلنَّاسِ",
+          "مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ"
+        ];
+        return nas[ayahNum - 1] || "آيَةٌ مِن كِتَابِ ٱللَّهِ";
+      }
+      if (surahId === 2) {
+        const baqarahStart = [
+          "الم",
+          "ذَٰلِكَ ٱلْكِتَٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
+          "ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَٰهُمْ يُنفِقُونَ",
+          "وَٱلَّذِينَ يُؤْمِنُونَ بِمَآ أُنزِلَ إِلَيْكَ وَمَآ أُنزِلَ مِن قَبْلِكَ وَبِٱلْـَٔاخِرَةِ هُمْ يُوقِنُونَ",
+          "أُو۟لَٰٓئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُو۟لَٰٓئِكَ هُمُ ٱلْمُفْلِحُونَ"
+        ];
+        return baqarahStart[ayahNum - 1] || `آيَةٌ (${ayahNum}) مِن سُورَةِ البَقَرَةِ`;
+      }
+      if (surahId === 55) {
+        const rahman = [
+          "ٱلرَّحْمَٰنُ",
+          "عَلَّمَ ٱلْقُرْءَانَ",
+          "خَلَقَ ٱلْإِنسَٰنَ",
+          "عَلَّمَهُ ٱلْبَيَانَ"
+        ];
+        return rahman[ayahNum - 1] || "فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ";
+      }
+      return `آيَةٌ (${ayahNum}) مِن كِتَابِ ٱللَّهِ ٱلْعَزِيزِ`;
+    }
 
     function openMatchModal(surahId, nameEn, nameAr, qari, fileCode) {
       currentPlayingSurahId = surahId;
@@ -777,13 +871,56 @@
       const surahObj = ALL_114_SURAHS.find(s => s.id === surahId);
       currentPlayingMaxAyahs = surahObj ? surahObj.ayahs : 7;
 
-      const versesText = SURAH_VERSES[surahId] || `بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ سُورَةُ ${nameAr} كَامِلَةً`;
       document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
       document.getElementById("modal-arabic-name").textContent = nameAr;
       document.getElementById("modal-qari").textContent = `${qari} (Hafs 'an 'Asim)`;
-      document.getElementById("modal-snippet").textContent = versesText;
+      
+      renderModalVersesList();
       updateAudioUrl();
       document.getElementById("match-modal").classList.add("open");
+    }
+
+    function renderModalVersesList() {
+      const container = document.getElementById("modal-verses-container");
+      container.innerHTML = "";
+      for (let i = 1; i <= currentPlayingMaxAyahs; i++) {
+        const card = document.createElement("div");
+        card.className = "verse-card" + (i === currentPlayingAyah ? " playing" : "");
+        card.id = `verse-card-${i}`;
+        card.onclick = () => jumpToAyah(i);
+        card.innerHTML = `
+          <div class="verse-header">
+            <div class="verse-badge">${i}</div>
+            <div style="font-size: 11px; color: ${i === currentPlayingAyah ? 'var(--gold)' : 'rgba(255,255,255,0.4)'};">
+              ${i === currentPlayingAyah ? '● RECITING' : 'Tap to Play'}
+            </div>
+          </div>
+          <div class="verse-text-ar">${getAyahText(currentPlayingSurahId, i)}</div>
+        `;
+        container.appendChild(card);
+      }
+      highlightActiveVerseCard();
+    }
+
+    function highlightActiveVerseCard() {
+      document.querySelectorAll(".verse-card").forEach(c => c.classList.remove("playing"));
+      const activeCard = document.getElementById(`verse-card-${currentPlayingAyah}`);
+      if (activeCard) {
+        activeCard.classList.add("playing");
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function jumpToAyah(ayahNum) {
+      currentPlayingAyah = ayahNum;
+      const surahObj = ALL_114_SURAHS.find(s => s.id === currentPlayingSurahId);
+      const nameEn = surahObj ? surahObj.nameEn : "";
+      document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
+      updateAudioUrl();
+      highlightActiveVerseCard();
+      audioPlayer.play();
+      document.getElementById("play-btn-text").textContent = "PAUSE RECITATION";
+      document.getElementById("play-btn-icon").textContent = "⏸";
     }
 
     function updateAudioUrl() {
@@ -823,6 +960,7 @@
         const nameEn = surahObj ? surahObj.nameEn : "";
         document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
         updateAudioUrl();
+        highlightActiveVerseCard();
         audioPlayer.play();
       } else {
         // Completed entire Surah
@@ -830,6 +968,7 @@
         document.getElementById("play-btn-icon").textContent = "↺";
         currentPlayingAyah = 1;
         updateAudioUrl();
+        highlightActiveVerseCard();
       }
     });
 
