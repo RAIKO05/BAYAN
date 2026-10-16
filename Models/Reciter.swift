@@ -126,6 +126,14 @@ public struct Reciter: Identifiable, Codable, Hashable {
             style: .murattal,
             riwayah: .hafs,
             serverSubdomain: "Maher_AlMuaiqly_64kbps"
+        ),
+        Reciter(
+            id: "omardiaa",
+            nameArabic: "عمر ضياء الدين",
+            nameEnglish: "Omar Diaa Aldeen",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Omar_Diaa_Aldeen"
         )
     ]
 }

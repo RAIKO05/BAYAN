@@ -22,6 +22,7 @@ targets:
       - path: Views
       - path: Intents
       - path: Assets.xcassets
+      - path: Resources
     dependencies:
       - target: BayanWidgets
       - sdk: ShazamKit.framework

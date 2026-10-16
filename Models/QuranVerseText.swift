@@ -1,7 +1,33 @@
 import Foundation
 
 public struct QuranVerseText {
+    // Lazy-loaded offline cache for all 6,236 Ayahs across all 114 Surahs
+    private static var arabicCache: [String: [String]] = {
+        guard let url = Bundle.main.url(forResource: "quran_uthmani", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let dict = try? JSONDecoder().decode([String: [String]].self, from: data) else {
+            return [:]
+        }
+        return dict
+    }()
+
+    private static var translationCache: [String: [String]] = {
+        guard let url = Bundle.main.url(forResource: "quran_translation_en", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let dict = try? JSONDecoder().decode([String: [String]].self, from: data) else {
+            return [:]
+        }
+        return dict
+    }()
+
     public static func arabic(surahId: Int, ayahNumber: Int) -> String {
+        // Check offline bundled full Quran dataset first
+        if let surahAyahs = arabicCache[String(surahId)],
+           ayahNumber >= 1,
+           ayahNumber <= surahAyahs.count {
+            return surahAyahs[ayahNumber - 1]
+        }
+
         switch surahId {
         case 1: // Al-Fatihah
             switch ayahNumber {
@@ -79,6 +105,13 @@ public struct QuranVerseText {
     }
 
     public static func translation(surahId: Int, ayahNumber: Int) -> String {
+        // Check offline bundled translation first
+        if let surahTrans = translationCache[String(surahId)],
+           ayahNumber >= 1,
+           ayahNumber <= surahTrans.count {
+            return surahTrans[ayahNumber - 1]
+        }
+
         switch surahId {
         case 1:
             switch ayahNumber {
