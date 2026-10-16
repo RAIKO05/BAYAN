@@ -143,16 +143,30 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
             guard let self = self else { return }
             self.stopAudioEngine()
 
-            let surahTitle = mediaItem.title ?? "Al-Fatihah"
+            let rawTitle = mediaItem.title ?? "Al-Fatihah"
             let reciterName = mediaItem.artist ?? "Mishary Rashid Alafasy"
 
+            // Clean title prefixes like "Sourate", "Surat", "Surah", "سورة"
+            let cleanedTitle = rawTitle
+                .replacingOccurrences(of: "Sourate", with: "", options: .caseInsensitive)
+                .replacingOccurrences(of: "Surah", with: "", options: .caseInsensitive)
+                .replacingOccurrences(of: "Surat", with: "", options: .caseInsensitive)
+                .replacingOccurrences(of: "سورة", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
             let matchedSurah = QuranDataService.shared.allSurahs.first {
-                $0.nameEnglish.localizedCaseInsensitiveContains(surahTitle) ||
-                $0.nameArabic.contains(surahTitle)
+                cleanedTitle.localizedCaseInsensitiveContains($0.nameEnglish) ||
+                $0.nameEnglish.localizedCaseInsensitiveContains(cleanedTitle) ||
+                cleanedTitle.contains($0.nameArabic) ||
+                $0.nameArabic.contains(cleanedTitle)
+            } ?? QuranDataService.shared.allSurahs.first {
+                rawTitle.localizedCaseInsensitiveContains($0.nameEnglish) ||
+                rawTitle.contains($0.nameArabic)
             } ?? Surah.sampleFatihah
 
             let matchedReciter = Reciter.standardCatalog.first {
-                $0.nameEnglish.localizedCaseInsensitiveContains(reciterName)
+                $0.nameEnglish.localizedCaseInsensitiveContains(reciterName) ||
+                reciterName.localizedCaseInsensitiveContains($0.nameEnglish)
             } ?? Reciter.standardCatalog[0]
 
             let result = RecognitionResult(
@@ -171,41 +185,27 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     public func session(_ session: SHSession, didNotFindMatchFor signature: SHSignature, error: Error?) {
-        // Fallback to Quranic acoustic fingerprinting
         DispatchQueue.main.async { [weak self] in
             self?.fallbackToCorpusAnalysis()
         }
     }
 
-    // MARK: - Intelligent Quranic Acoustic Correlator Fallback
-    // When cloud catalog is unavailable or ambient noise is present, cross-references
-    // detected spectral frequencies and Tajweed rhythm against Quran database
+    // MARK: - Honest Recognition Correlator (No Fake Demo Matches)
     private func fallbackToCorpusAnalysis() {
         guard isMatchingActive else { return }
 
         Task { @MainActor [weak self] in
             guard let self = self else { return }
             self.state = .analyzing
-            try? await Task.sleep(nanoseconds: 800_000_000)
+            try? await Task.sleep(nanoseconds: 600_000_000)
 
             self.stopAudioEngine()
 
-            // Correlate with active recitation database
-            let surah = QuranDataService.shared.allSurahs.first { $0.id == 55 } ?? Surah.sampleFatihah
-            let reciter = Reciter.standardCatalog[0]
-
-            let result = RecognitionResult(
-                surah: surah,
-                startAyah: 1,
-                endAyah: min(surah.totalAyahs, 4),
-                reciter: reciter,
-                arabicSnippet: QuranVerseText.arabic(surahId: surah.id, ayahNumber: 1),
-                translationSnippet: QuranVerseText.translation(surahId: surah.id, ayahNumber: 1),
-                confidence: 0.96
-            )
-
-            QuranSyncManager.shared.addRecognition(result)
-            self.state = .matched(result)
+            if self.currentDecibels < 0.18 {
+                self.state = .failed("No recitation detected. Please bring your phone closer to the audio source.")
+            } else {
+                self.state = .failed("Could not identify this recitation. Ensure the audio is clear Quran recitation and try again.")
+            }
         }
     }
 

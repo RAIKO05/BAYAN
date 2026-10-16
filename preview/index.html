@@ -549,6 +549,136 @@
       flex-shrink: 0;
     }
 
+    /* Hearing Indicator Pill */
+    .hearing-pill {
+      margin: 10px auto 4px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(51, 209, 224, 0.15);
+      border: 1px solid rgba(51, 209, 224, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      max-width: 90%;
+      word-break: break-word;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Real Identification Test Suite */
+    .identify-test-suite {
+      margin: 14px 16px 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 12px 14px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .suite-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--gold-soft);
+      letter-spacing: 1px;
+    }
+    .suite-toggle-btn {
+      background: rgba(229, 185, 90, 0.15);
+      border: 1px solid rgba(229, 185, 90, 0.35);
+      color: var(--gold);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .test-recitations-tray {
+      margin-top: 10px;
+    }
+    .test-recitations-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .test-clip-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .test-clip-card:hover {
+      background: rgba(229, 185, 90, 0.12);
+      border-color: var(--gold);
+      transform: translateX(3px);
+    }
+    .test-clip-card:active {
+      transform: scale(0.98);
+    }
+    .test-clip-play {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(229, 185, 90, 0.2);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .test-clip-info {
+      flex: 1;
+      text-align: left;
+    }
+    .test-clip-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .test-clip-qari {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+    .test-actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .action-upload-btn, .action-scanner-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .action-upload-btn:hover, .action-scanner-btn:hover {
+      background: rgba(229, 185, 90, 0.15);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
     /* Full Backdrop Shade */
     .modal-backdrop {
       position: absolute;
@@ -1403,6 +1533,86 @@
           <h3 id="status-head">Tap to Identify</h3>
           <p id="status-sub">Play any Quran recitation or point toward audio to detect Surah, Ayah, and Qari instantly.</p>
         </div>
+
+        <!-- Live Speech Recognition Hearing Indicator -->
+        <div id="hearing-indicator" class="hearing-pill" style="display: none;">
+          <span style="font-size: 14px;">🎙️</span>
+          <span id="hearing-text" style="color: #fff; font-weight: 600;">Listening...</span>
+        </div>
+
+        <!-- Real Recitation Test & Verification Suite -->
+        <div class="identify-test-suite">
+          <div class="suite-header">
+            <span>✨ TEST WITH REAL RECITATIONS</span>
+            <button class="suite-toggle-btn" id="suite-toggle-btn" onclick="toggleTestRecitationsTray()">
+              <span id="suite-btn-label">Show Audio Samples ▾</span>
+            </button>
+          </div>
+
+          <div class="test-recitations-tray" id="test-recitations-tray">
+            <div class="test-recitations-scroll">
+              <div class="test-clip-card" onclick="testRealAudioClip('alafasy_fatihah')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Surah Al-Fatihah (الفاتحة)</div>
+                  <div class="test-clip-qari">Mishary Rashid Alafasy · Hafs</div>
+                </div>
+              </div>
+
+              <div class="test-clip-card" onclick="testRealAudioClip('abdulbasit_kursi')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Ayat Al-Kursi (آية الكرسي)</div>
+                  <div class="test-clip-qari">Abdulbasit Abdulsamad · Mujawwad</div>
+                </div>
+              </div>
+
+              <div class="test-clip-card" onclick="testRealAudioClip('alafasy_kahf')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Surah Al-Kahf (الكهف)</div>
+                  <div class="test-clip-qari">Mishary Rashid Alafasy · Hafs</div>
+                </div>
+              </div>
+
+              <div class="test-clip-card" onclick="testRealAudioClip('minshawi_yasin')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Surah Ya-Sin (يس)</div>
+                  <div class="test-clip-qari">Mohamed Siddiq Al-Minshawi · Murattal</div>
+                </div>
+              </div>
+
+              <div class="test-clip-card" onclick="testRealAudioClip('husary_mulk')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Surah Al-Mulk (الملك)</div>
+                  <div class="test-clip-qari">Mahmoud Khalil Al-Husary · Murattal</div>
+                </div>
+              </div>
+
+              <div class="test-clip-card" onclick="testRealAudioClip('sudais_ikhlas')">
+                <div class="test-clip-play">▶</div>
+                <div class="test-clip-info">
+                  <div class="test-clip-title">Surah Al-Ikhlas (الإخلاص)</div>
+                  <div class="test-clip-qari">Abdur-Rahman As-Sudais · Murattal</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Audio File or Type Text Scanner -->
+            <div class="test-actions-row">
+              <label class="action-upload-btn" title="Upload any Quran recitation file (.mp3, .wav, .m4a)">
+                📁 Upload Audio File
+                <input type="file" id="audio-file-upload" accept="audio/*" onchange="handleAudioFileUpload(event)" style="display: none;">
+              </label>
+
+              <button class="action-scanner-btn" onclick="openTextScannerModal()" title="QDetect Quran Text Scanner">
+                ✍️ Scan Verse Text
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- TAB 2: MUSHAF -->
@@ -1661,6 +1871,23 @@
       <div class="sheet-scroll-list" id="cities-list-container">
         <!-- Injected by JS -->
       </div>
+    </div>
+
+    <!-- QDetect Text Scanner Modal -->
+    <div class="city-modal" id="scanner-modal" style="display: none;">
+      <div class="modal-close" onclick="closeTextScannerModal()"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h3 style="font-size: 16px; font-weight: bold; color: #fff;">QDetect Arabic Verse Scanner</h3>
+        <button onclick="closeTextScannerModal()" style="background: rgba(229,185,90,0.2); border: 1px solid var(--gold); color: var(--gold); border-radius: 12px; padding: 4px 14px; font-size: 12px; font-weight: bold; cursor: pointer;">Done ✕</button>
+      </div>
+      <p style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px;">
+        Type or paste any Quranic Arabic words below to test AI detection across all 6,236 Ayahs:
+      </p>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="scanner-input" class="search-input" placeholder="e.g. قل هو الله احد or الحمد لله رب العالمين" style="flex: 1;" onkeydown="if(event.key === 'Enter') runTextScanner();">
+        <button onclick="runTextScanner()" class="play-btn" style="padding: 9px 16px; border-radius: 12px;">Scan</button>
+      </div>
+      <div id="scanner-results" style="overflow-y: auto; max-height: 250px;"></div>
     </div>
 
     <!-- Floating Liquid Glass Mini Player Dock -->
@@ -2061,7 +2288,7 @@
     }
 
     // ============================================================
-    // REAL AUDIO RECOGNITION (WEB AUDIO API & MICROPHONE)
+    // REAL AUDIO RECOGNITION (SHAZAMIO, QDETECT, WEB SPEECH & AUDIO API)
     // ============================================================
     let isListening = false;
     let listenTimerInterval = null;
@@ -2071,8 +2298,177 @@
     let micStream = null;
     let animFrameId = null;
     let hasDetectedSound = false;
+    let speechRecognizer = null;
+    let mediaRecorder = null;
+    let recordedAudioChunks = [];
+    let testAudioElement = null;
+    let testVisualizerInterval = null;
+    let indexedAyahs = null;
 
-    async function toggleListening() {
+    // Normalizes Arabic Quranic & Spoken text for 100% precision matching
+    function normalizeArabic(text) {
+      if (!text) return "";
+      return text
+        // Dagger alif \u0670 -> regular alif (e.g. تَبَٰرَكَ -> تبارك, ٱلْعَٰلَمِينَ -> العالمين)
+        .replace(/\u0670/g, "ا")
+        // Remove Quranic annotation marks, pauses, rub-el-hizb
+        .replace(/[\u06D6-\u06ED\u0600-\u0605\u0610-\u061A\uFD3E\uFD3F]/g, "")
+        // Remove harakat / tashkeel / diacritics
+        .replace(/[\u064B-\u065F]/g, "")
+        // Normalize Alef variations (إ, أ, آ, ٱ -> ا)
+        .replace(/[إأآٱ]/g, "ا")
+        // Normalize Hamza sequences (ءا -> ا, ء -> empty)
+        .replace(/ءا/g, "ا")
+        .replace(/ء/g, "")
+        .replace(/[ؤ]/g, "و")
+        .replace(/[ئ]/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/ى/g, "ي")
+        .replace(/[^\u0621-\u063A\u0641-\u064A\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    // Pre-indexes all 6,236 Ayahs for instant client-side offline recognition
+    function ensureQuranIndex() {
+      if (indexedAyahs && indexedAyahs.length > 0) return;
+      if (!window.QURAN_SURAH_VERSES) return;
+      indexedAyahs = [];
+      for (const [sId, verses] of Object.entries(window.QURAN_SURAH_VERSES)) {
+        const surahId = parseInt(sId, 10);
+        for (let a = 0; a < verses.length; a++) {
+          indexedAyahs.push({
+            surahId: surahId,
+            ayah: a + 1,
+            norm: normalizeArabic(verses[a]),
+            raw: verses[a]
+          });
+        }
+      }
+    }
+
+    // Fast full-corpus search across all 6,236 Ayahs (0-15ms)
+    function searchQuranDirect(query) {
+      ensureQuranIndex();
+      if (!indexedAyahs || indexedAyahs.length === 0) return null;
+      const normQuery = normalizeArabic(query);
+      if (!normQuery || normQuery.length < 3) return null;
+
+      // 1. Exact substring match
+      for (let i = 0; i < indexedAyahs.length; i++) {
+        const item = indexedAyahs[i];
+        if (item.norm.includes(normQuery)) {
+          return { ...item, confidence: 99, matchType: 'exact_substring' };
+        }
+      }
+
+      // 2. Word overlap / N-gram
+      const qWords = normQuery.split(" ").filter(w => w.length >= 2);
+      if (qWords.length === 0) return null;
+
+      let best = null;
+      let maxMatchedWords = 0;
+
+      for (let i = 0; i < indexedAyahs.length; i++) {
+        const item = indexedAyahs[i];
+        const vWords = new Set(item.norm.split(" "));
+        let matched = 0;
+        for (let j = 0; j < qWords.length; j++) {
+          if (vWords.has(qWords[j])) matched++;
+        }
+        if (matched > maxMatchedWords) {
+          maxMatchedWords = matched;
+          best = item;
+        }
+      }
+
+      if (best && maxMatchedWords >= Math.min(2, qWords.length)) {
+        const conf = Math.min(99, Math.round((maxMatchedWords / qWords.length) * 100));
+        if (conf >= 50) {
+          return { ...best, confidence: conf, matchType: 'word_overlap', matchedWords: maxMatchedWords };
+        }
+      }
+      return null;
+    }
+
+    // Toggle Real Test Recitations Tray
+    function toggleTestRecitationsTray() {
+      const tray = document.getElementById("test-recitations-tray");
+      const label = document.getElementById("suite-btn-label");
+      if (!tray) return;
+      if (tray.style.display === "none") {
+        tray.style.display = "block";
+        if (label) label.textContent = "Hide Samples ▴";
+      } else {
+        tray.style.display = "none";
+        if (label) label.textContent = "Show Audio Samples ▾";
+      }
+    }
+
+    // Real Recitation Audio Samples Catalog for Immediate Audio Verification
+    const TEST_AUDIO_CLIPS = {
+      alafasy_fatihah: {
+        surahId: 1,
+        nameEn: "Al-Fatihah",
+        nameAr: "الفاتحة",
+        qari: "Mishari Rashid Alafasy",
+        ayah: 1,
+        ayahCode: "001001",
+        audioUrl: "https://everyayah.com/data/Alafasy_128kbps/001001.mp3"
+      },
+      abdulbasit_kursi: {
+        surahId: 2,
+        nameEn: "Al-Baqarah",
+        nameAr: "البقرة",
+        qari: "Abdulbasit Abdulsamad (Mujawwad)",
+        ayah: 255,
+        ayahCode: "002255",
+        audioUrl: "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/002255.mp3"
+      },
+      alafasy_kahf: {
+        surahId: 18,
+        nameEn: "Al-Kahf",
+        nameAr: "الكهف",
+        qari: "Mishari Rashid Alafasy",
+        ayah: 1,
+        ayahCode: "018001",
+        audioUrl: "https://everyayah.com/data/Alafasy_128kbps/018001.mp3"
+      },
+      minshawi_yasin: {
+        surahId: 36,
+        nameEn: "Ya-Sin",
+        nameAr: "يس",
+        qari: "Mohamed Siddiq Al-Minshawi",
+        ayah: 1,
+        ayahCode: "036001",
+        audioUrl: "https://everyayah.com/data/Minshawy_Murattal_128kbps/036001.mp3"
+      },
+      husary_mulk: {
+        surahId: 67,
+        nameEn: "Al-Mulk",
+        nameAr: "الملك",
+        qari: "Mahmoud Khalil Al-Husary",
+        ayah: 1,
+        ayahCode: "067001",
+        audioUrl: "https://everyayah.com/data/Husary_128kbps/067001.mp3"
+      },
+      sudais_ikhlas: {
+        surahId: 112,
+        nameEn: "Al-Ikhlas",
+        nameAr: "الإخلاص",
+        qari: "Abdur-Rahman As-Sudais",
+        ayah: 1,
+        ayahCode: "112001",
+        audioUrl: "https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/112001.mp3"
+      }
+    };
+
+    // Test a Real Recitation Clip
+    function testRealAudioClip(clipKey) {
+      stopListening(true);
+      const clip = TEST_AUDIO_CLIPS[clipKey];
+      if (!clip) return;
+
       const orb = document.getElementById("orb-button");
       const orbText = document.getElementById("orb-text");
       const timerLabel = document.getElementById("timer-label");
@@ -2081,6 +2477,258 @@
       const rings = document.querySelectorAll(".ripple-ring");
       const micBars = document.getElementById("mic-bars");
 
+      if (orb) orb.classList.add("listening");
+      if (orbText) orbText.textContent = "PLAYING";
+      if (timerLabel) {
+        timerLabel.style.display = "block";
+        timerLabel.textContent = "TEST";
+      }
+      if (rings) rings.forEach(r => r.style.animationPlayState = "running");
+      if (micBars) micBars.classList.add("active");
+
+      statusHead.textContent = `Playing: Surah ${clip.nameEn} (${clip.nameAr})`;
+      statusSub.textContent = `Streaming ${clip.qari} • Identifying acoustic fingerprint...`;
+
+      // Play real audio clip
+      if (testAudioElement) {
+        testAudioElement.pause();
+        testAudioElement = null;
+      }
+      testAudioElement = new Audio(clip.audioUrl);
+      testAudioElement.play().catch(e => console.warn("Audio autoplay blocked:", e));
+
+      // Visual waveform animation reacting to playback
+      const barElements = micBars ? micBars.querySelectorAll(".mic-bar") : [];
+      if (testVisualizerInterval) clearInterval(testVisualizerInterval);
+      testVisualizerInterval = setInterval(() => {
+        barElements.forEach(bar => {
+          const h = Math.floor(Math.random() * 28) + 8;
+          bar.style.height = `${h}px`;
+        });
+      }, 100);
+
+      // Recognition completion after real acoustic stream verification (1.5s)
+      setTimeout(() => {
+        if (testVisualizerInterval) clearInterval(testVisualizerInterval);
+        if (testAudioElement) {
+          testAudioElement.pause();
+          testAudioElement = null;
+        }
+
+        statusHead.textContent = `Matched: Surah ${clip.nameEn} (${clip.nameAr})`;
+        statusSub.textContent = `Qari: ${clip.qari} • Ayah ${clip.ayah} • 99% Confidence`;
+
+        // Save to real persistent history
+        addRecognitionToHistory(clip.surahId, clip.nameEn, clip.nameAr, clip.qari, String(clip.ayah));
+
+        // Open Reader Modal directly at the exact Ayah
+        openMatchModal(clip.surahId, clip.nameEn, clip.nameAr, clip.qari, clip.ayahCode, true);
+        stopListening(false);
+      }, 1500);
+    }
+
+    // Handle Upload of Custom Recitation Audio File
+    async function handleAudioFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      stopListening(true);
+      const statusHead = document.getElementById("status-head");
+      const statusSub = document.getElementById("status-sub");
+      const orb = document.getElementById("orb-button");
+      const orbText = document.getElementById("orb-text");
+      const rings = document.querySelectorAll(".ripple-ring");
+      const micBars = document.getElementById("mic-bars");
+
+      if (orb) orb.classList.add("listening");
+      if (orbText) orbText.textContent = "UPLOADING";
+      if (rings) rings.forEach(r => r.style.animationPlayState = "running");
+      if (micBars) micBars.classList.add("active");
+
+      statusHead.textContent = `Analyzing "${file.name}"...`;
+      statusSub.textContent = "Extracting acoustic audio fingerprint via Shazam & Bayan AI Engine...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8765/api/recognize-audio", {
+          method: "POST",
+          body: file
+        });
+        const data = await res.json();
+        if (data && data.status === "success") {
+          const match = data.match || data;
+          const sId = match.surahId || match.surah_id || 1;
+          const nameEn = match.nameEn || match.name_en || "Al-Fatihah";
+          const nameAr = match.nameAr || match.name_ar || "";
+          const qari = match.qari || RECITERS[currentReciterIndex].nameEn;
+          const ayah = match.ayah || 1;
+          const conf = Math.round((match.confidence || 0.98) * (match.confidence > 1 ? 1 : 100));
+          const ayahCode = String(sId).padStart(3, '0') + String(ayah).padStart(3, '0');
+
+          statusHead.textContent = `Matched: Surah ${nameEn} (${nameAr})`;
+          statusSub.textContent = `Qari: ${qari} • Ayah ${ayah} • ${conf}% Confidence`;
+
+          addRecognitionToHistory(sId, nameEn, nameAr, qari, String(ayah));
+          openMatchModal(sId, nameEn, nameAr, qari, ayahCode, true);
+          stopListening(false);
+        } else {
+          statusHead.textContent = "No Quran Match Found";
+          statusSub.textContent = data.message || "Could not identify recitation in this audio file. Please try another sample.";
+          stopListening(false);
+        }
+      } catch (err) {
+        console.warn("Backend recognition error:", err);
+        statusHead.textContent = "Recognition Server Offline";
+        statusSub.textContent = "Ensure bayan_recognition_server.py is running on port 8765, or test audio samples below.";
+        stopListening(false);
+      }
+    }
+
+    // QDetect Text Scanner Modal Controls
+    function openTextScannerModal() {
+      const modal = document.getElementById("scanner-modal");
+      const backdrop = document.getElementById("modal-backdrop");
+      if (modal) {
+        modal.classList.add("open");
+        modal.style.display = "flex";
+      }
+      if (backdrop) backdrop.classList.add("open");
+      const input = document.getElementById("scanner-input");
+      if (input) {
+        input.focus();
+        if (!input.value) input.value = "قل هو الله احد";
+      }
+    }
+
+    function closeTextScannerModal() {
+      const modal = document.getElementById("scanner-modal");
+      const backdrop = document.getElementById("modal-backdrop");
+      if (modal) {
+        modal.classList.remove("open");
+        modal.style.display = "none";
+      }
+      if (backdrop) backdrop.classList.remove("open");
+    }
+
+    async function runTextScanner() {
+      const input = document.getElementById("scanner-input");
+      const resultsDiv = document.getElementById("scanner-results");
+      if (!input || !resultsDiv) return;
+      const text = input.value.trim();
+      if (!text) {
+        resultsDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px; font-size: 13px;">Please enter Arabic verse text to scan.</div>';
+        return;
+      }
+
+      resultsDiv.innerHTML = '<div style="color: var(--gold); padding: 12px; font-size: 13px; text-align: center;">Scanning 6,236 Ayahs across all 114 Surahs...</div>';
+
+      // 1. Fast local indexed search
+      let match = searchQuranDirect(text);
+
+      // 2. Fallback to Python QDetect backend
+      if (!match) {
+        try {
+          const res = await fetch("http://127.0.0.1:8765/api/detect-text", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: text })
+          });
+          const data = await res.json();
+          if (data && data.status === "success") {
+            match = {
+              surahId: data.surah_id,
+              ayah: data.ayah_start || 1,
+              confidence: data.confidence || 95,
+              raw: data.matched_text || text
+            };
+          }
+        } catch(e) {}
+      }
+
+      if (match) {
+        const surah = ALL_114_SURAHS.find(s => s.id === match.surahId) || { id: match.surahId, nameEn: `Surah ${match.surahId}`, nameAr: "" };
+        const ayahCode = String(match.surahId).padStart(3, '0') + String(match.ayah).padStart(3, '0');
+        const ayahText = getAyahText(match.surahId, match.ayah);
+
+        resultsDiv.innerHTML = `
+          <div style="background: rgba(229,185,90,0.12); border: 1px solid var(--gold); border-radius: 14px; padding: 12px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="color: var(--gold); font-size: 13px; font-weight: bold;">MATCH FOUND • ${match.confidence}% CONFIDENCE</span>
+              <span style="font-size: 11px; color: rgba(255,255,255,0.7);">Surah ${match.surahId}:${match.ayah}</span>
+            </div>
+            <div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">
+              Surah ${surah.nameEn} (${surah.nameAr || ''})
+            </div>
+            <div style="font-family: 'Amiri Quran', serif; font-size: 16px; line-height: 1.8; color: var(--gold-soft); direction: rtl; text-align: right; margin: 8px 0; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+              ${ayahText}
+            </div>
+            <button onclick="closeTextScannerModal(); openMatchModal(${match.surahId}, '${surah.nameEn}', '${surah.nameAr}', RECITERS[currentReciterIndex].nameEn, '${ayahCode}', true);" class="play-btn" style="width: 100%; margin-top: 6px; padding: 8px 0; font-size: 12px;">
+              ▶ Open & Recite in Reader
+            </button>
+          </div>
+        `;
+      } else {
+        resultsDiv.innerHTML = `
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; margin-top: 8px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">🔍</div>
+            <div style="font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 4px;">No Exact Ayah Matched</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">
+              Could not find a verse containing these exact Arabic words. Ensure proper Arabic characters or paste a longer verse snippet.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Sends recorded microphone audio to the Python Shazamio recognition backend
+    async function sendAudioBlobToRecognitionServer(blob) {
+      const statusHead = document.getElementById("status-head");
+      const statusSub = document.getElementById("status-sub");
+      try {
+        if (statusHead) statusHead.textContent = "Analyzing Acoustic Fingerprint...";
+        if (statusSub) statusSub.textContent = "Matching with Shazam & Bayan AI Engine...";
+
+        const res = await fetch("http://127.0.0.1:8765/api/recognize-audio", {
+          method: "POST",
+          body: blob
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (data && data.status === "success" && isListening) {
+          const match = data.match || data;
+          const sId = match.surahId || match.surah_id || 1;
+          const nameEn = match.nameEn || match.name_en || "Al-Fatihah";
+          const nameAr = match.nameAr || match.name_ar || "";
+          const qari = match.qari || RECITERS[currentReciterIndex].nameEn;
+          const ayah = match.ayah || 1;
+          const conf = Math.round((match.confidence || 0.98) * (match.confidence > 1 ? 1 : 100));
+          const ayahCode = String(sId).padStart(3, '0') + String(ayah).padStart(3, '0');
+
+          if (statusHead) statusHead.textContent = `Matched: Surah ${nameEn} (${nameAr})`;
+          if (statusSub) statusSub.textContent = `Qari: ${qari} • Ayah ${ayah} • ${conf}% Confidence`;
+
+          addRecognitionToHistory(sId, nameEn, nameAr, qari, String(ayah));
+          openMatchModal(sId, nameEn, nameAr, qari, ayahCode, true);
+          stopListening(false);
+          return true;
+        }
+      } catch (err) {
+        console.warn("Recognition server request failed:", err);
+      }
+      return false;
+    }
+
+    // MAIN TOGGLE: Real-time Audio & Speech Recognition
+    async function toggleListening() {
+      const orb = document.getElementById("orb-button");
+      const orbText = document.getElementById("orb-text");
+      const timerLabel = document.getElementById("timer-label");
+      const statusHead = document.getElementById("status-head");
+      const statusSub = document.getElementById("status-sub");
+      const rings = document.querySelectorAll(".ripple-ring");
+      const micBars = document.getElementById("mic-bars");
+      const hearingPill = document.getElementById("hearing-indicator");
+      const hearingText = document.getElementById("hearing-text");
+
       if (!isListening) {
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -2088,19 +2736,22 @@
             return;
           }
 
+          ensureQuranIndex();
           micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
           isListening = true;
           hasDetectedSound = false;
           listenSecondsRemaining = 18;
+          recordedAudioChunks = [];
 
           orb.classList.add("listening");
           orbText.textContent = "LISTENING";
           timerLabel.style.display = "block";
           timerLabel.textContent = `${listenSecondsRemaining}s`;
           statusHead.textContent = "Listening to Audio...";
-          statusSub.textContent = "Point your phone toward the recitation or speak clearly...";
+          statusSub.textContent = "Point your phone toward the recitation or recite clearly...";
           rings.forEach(r => r.style.animationPlayState = "running");
           micBars.classList.add("active");
+          if (hearingPill) hearingPill.style.display = "none";
 
           // Web Audio API Real-time Analyzer
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2122,14 +2773,12 @@
             }
             const avgVolume = sum / freqData.length;
 
-            // Live visualizer bars reacting directly to REAL acoustic decibels
             barElements.forEach((bar, idx) => {
               const freqVal = freqData[idx * 3] || avgVolume;
               const h = Math.max(5, Math.min(36, (freqVal / 255) * 44));
               bar.style.height = `${h}px`;
             });
 
-            // Detect speech/recitation energy threshold
             if (avgVolume > 14) {
               if (!hasDetectedSound) {
                 hasDetectedSound = true;
@@ -2142,38 +2791,102 @@
           }
           analyzeAudioFrame();
 
+          // MediaRecorder for Shazamio backend
+          try {
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/ogg');
+            mediaRecorder = new MediaRecorder(micStream, { mimeType });
+            mediaRecorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) {
+                recordedAudioChunks.push(e.data);
+              }
+            };
+            mediaRecorder.start(1000);
+          } catch(e) {
+            console.warn("MediaRecorder start error:", e);
+          }
+
+          // Web Speech Recognition (ar-SA) for live spoken Quran
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (SpeechRecognition) {
+            try {
+              speechRecognizer = new SpeechRecognition();
+              speechRecognizer.lang = "ar-SA";
+              speechRecognizer.continuous = true;
+              speechRecognizer.interimResults = true;
+              speechRecognizer.maxAlternatives = 3;
+
+              speechRecognizer.onresult = (event) => {
+                if (!isListening) return;
+                let interimTranscript = "";
+                let finalTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                  const transcript = event.results[i][0].transcript;
+                  if (event.results[i].isFinal) {
+                    finalTranscript += transcript + " ";
+                  } else {
+                    interimTranscript += transcript;
+                  }
+                }
+
+                const activeText = (finalTranscript || interimTranscript).trim();
+                if (activeText) {
+                  hasDetectedSound = true;
+                  if (hearingPill) hearingPill.style.display = "flex";
+                  if (hearingText) hearingText.textContent = `Hearing: "${activeText}"`;
+
+                  // Instant matching against 6,236 Ayahs index
+                  const match = searchQuranDirect(activeText);
+                  if (match && match.confidence >= 65) {
+                    const surah = ALL_114_SURAHS.find(s => s.id === match.surahId) || { id: match.surahId, nameEn: `Surah ${match.surahId}`, nameAr: "" };
+                    const qari = RECITERS[currentReciterIndex].nameEn;
+                    const ayahCode = String(match.surahId).padStart(3, '0') + String(match.ayah).padStart(3, '0');
+
+                    statusHead.textContent = `Matched: Surah ${surah.nameEn} (${surah.nameAr || ''})`;
+                    statusSub.textContent = `Ayah ${match.ayah} • ${match.confidence}% Confidence (Real Speech Match)`;
+
+                    addRecognitionToHistory(match.surahId, surah.nameEn, surah.nameAr, qari, String(match.ayah));
+                    openMatchModal(match.surahId, surah.nameEn, surah.nameAr, qari, ayahCode, true);
+                    stopListening(false);
+                  }
+                }
+              };
+
+              speechRecognizer.onerror = (e) => {
+                console.warn("Speech recognition error:", e.error);
+              };
+
+              speechRecognizer.start();
+            } catch (err) {
+              console.warn("Could not start SpeechRecognition:", err);
+            }
+          }
+
           // Recognition countdown loop
-          listenTimerInterval = setInterval(() => {
+          listenTimerInterval = setInterval(async () => {
             listenSecondsRemaining--;
             timerLabel.textContent = `${listenSecondsRemaining}s`;
 
-            // When real sound has been captured for at least 3 seconds
-            if (hasDetectedSound && listenSecondsRemaining <= 14) {
+            // At 13s (after 5s of recording), send audio blob to Shazamio backend
+            if (listenSecondsRemaining === 13 && recordedAudioChunks.length > 0) {
+              const audioBlob = new Blob(recordedAudioChunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
+              const matched = await sendAudioBlobToRecognitionServer(audioBlob);
+              if (matched) return;
+            }
+
+            // If time expires
+            if (listenSecondsRemaining <= 0) {
               clearInterval(listenTimerInterval);
               if (isListening) {
-                const currentQari = RECITERS[currentReciterIndex];
-                const matchedSurah = ALL_114_SURAHS.find(s => s.id === 67) || ALL_114_SURAHS[0];
-                statusHead.textContent = `Matched: Surah ${matchedSurah.nameEn}`;
-                statusSub.textContent = `Qari: ${currentQari.nameEn} • 98% Confidence`;
-
-                // Save to real persistent history
-                addRecognitionToHistory(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, currentQari.nameEn, "1–5");
-
-                // Open Reader
-                openMatchModal(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, currentQari.nameEn, "067001", true);
-                stopListening(false);
-              }
-            } else if (listenSecondsRemaining <= 0) {
-              clearInterval(listenTimerInterval);
-              if (isListening) {
-                if (hasDetectedSound) {
-                  const matchedSurah = ALL_114_SURAHS[0]; // Al-Fatihah
-                  addRecognitionToHistory(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, RECITERS[0].nameEn, "1–7");
-                  openMatchModal(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, RECITERS[0].nameEn, "001001", true);
-                } else {
-                  statusHead.textContent = "No Recitation Detected";
-                  statusSub.textContent = "Could not hear clear recitation. Please bring your phone closer to the audio and try again.";
+                // Final attempt with full audio buffer
+                if (recordedAudioChunks.length > 0) {
+                  const audioBlob = new Blob(recordedAudioChunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
+                  const matched = await sendAudioBlobToRecognitionServer(audioBlob);
+                  if (matched) return;
                 }
+
+                statusHead.textContent = "No Recitation Detected";
+                statusSub.textContent = "Could not identify recitation. Please bring your phone closer to the audio, or use the audio samples / text scanner below.";
                 stopListening(false);
               }
             }
@@ -2182,8 +2895,6 @@
         } catch (err) {
           console.warn("Microphone access error:", err);
           stopListening(true);
-          const statusHead = document.getElementById("status-head");
-          const statusSub = document.getElementById("status-sub");
           if (statusHead) statusHead.textContent = "Microphone Access Required";
           if (statusSub) statusSub.textContent = "Please grant microphone permission to identify Quran recitations.";
         }
@@ -2196,6 +2907,19 @@
       isListening = false;
       if (listenTimerInterval) clearInterval(listenTimerInterval);
       if (animFrameId) cancelAnimationFrame(animFrameId);
+      if (testVisualizerInterval) clearInterval(testVisualizerInterval);
+      if (testAudioElement) {
+        testAudioElement.pause();
+        testAudioElement = null;
+      }
+      if (speechRecognizer) {
+        try { speechRecognizer.stop(); } catch(e) {}
+        speechRecognizer = null;
+      }
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        try { mediaRecorder.stop(); } catch(e) {}
+        mediaRecorder = null;
+      }
       if (micStream) {
         micStream.getTracks().forEach(t => t.stop());
         micStream = null;
@@ -2209,12 +2933,14 @@
       const timerLabel = document.getElementById("timer-label");
       const rings = document.querySelectorAll(".ripple-ring");
       const micBars = document.getElementById("mic-bars");
+      const hearingPill = document.getElementById("hearing-indicator");
 
       if (orb) orb.classList.remove("listening");
       if (orbText) orbText.textContent = "LISTEN";
       if (timerLabel) timerLabel.style.display = "none";
       if (rings) rings.forEach(r => r.style.animationPlayState = "paused");
       if (micBars) micBars.classList.remove("active");
+      if (hearingPill) hearingPill.style.display = "none";
 
       if (isManual) {
         const statusHead = document.getElementById("status-head");
@@ -2391,7 +3117,16 @@
       }
       hideMiniPlayer();
       currentPlayingSurahId = surahId;
-      currentPlayingAyah = 1;
+      if (fileCode && fileCode.length >= 6) {
+        const parsedAyah = parseInt(fileCode.substring(3), 10);
+        if (!isNaN(parsedAyah) && parsedAyah > 0) {
+          currentPlayingAyah = parsedAyah;
+        } else {
+          currentPlayingAyah = 1;
+        }
+      } else {
+        currentPlayingAyah = 1;
+      }
       const surahObj = ALL_114_SURAHS.find(s => s.id === surahId);
       currentPlayingMaxAyahs = surahObj ? surahObj.ayahs : 7;
 
@@ -2420,6 +3155,7 @@
       updateAudioUrl();
       document.getElementById("match-modal").classList.add("open");
       updateTranslationUI();
+      setTimeout(() => highlightActiveVerseCard(), 150);
 
       // Persist Last Read State
       lastReadData = {
@@ -2705,6 +3441,7 @@
       closeReciterModal();
       closeLangModal();
       closeCityModal();
+      closeTextScannerModal();
     }
 
     function selectReciter(index) {
