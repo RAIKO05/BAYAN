@@ -35,7 +35,27 @@
       overflow-y: auto;
     }
 
-    /* Universal Responsive iPhone Canvas (Adapts to iPhone SE, Mini, Standard, Plus, Pro Max) */
+    /* Mobile & DevTools Viewport Adaptation (iPhone 12 Pro 390x844 or physical devices) */
+    @media (max-width: 500px), (max-height: 900px) and (max-width: 600px) {
+      body {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: 100% !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+      .iphone-frame {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+    }
+
+    /* Universal Responsive iPhone Canvas */
     .iphone-frame {
       width: 100%;
       max-width: 414px;
@@ -52,21 +72,149 @@
       overflow: hidden;
     }
 
-    /* Dynamic Island / Notch compatible across all iPhone models */
-    .dynamic-island {
-      width: 124px;
-      height: 30px;
-      background: #000;
-      border-radius: 20px;
-      margin: 10px auto 4px;
-      z-index: 100;
+    /* Authentic iOS Status Bar */
+    .iphone-status-bar {
+      position: relative;
+      height: 44px;
+      width: 100%;
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      z-index: 100;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .status-left {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      min-width: 54px;
+    }
+
+    /* Center: Authentic iPhone 12 Pro Hardware Notch Cutout */
+    .notch-cutout {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 184px;
+      height: 28px;
+      background: #000000;
+      border-radius: 0 0 18px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .notch-cutout:active {
+      transform: translateX(-50%) scale(0.97);
+    }
+    .speaker-grill {
+      width: 48px;
+      height: 3.5px;
+      background: #1c1c1e;
+      border-radius: 2px;
+      border: 0.5px solid #2a2a2c;
+    }
+    .camera-lens {
+      width: 9px;
+      height: 9px;
+      background: #090e14;
+      border-radius: 50%;
+      border: 1px solid #1a2430;
+      box-shadow: inset 0 0 3px rgba(0, 150, 255, 0.25);
+    }
+
+    /* Dynamic Island (for iPhone 16 Pro mode) */
+    .dynamic-island {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 30px;
+      background: #000000;
+      border-radius: 20px;
+      display: none;
       align-items: center;
       justify-content: space-between;
       padding: 0 12px;
       font-size: 10px;
       color: var(--gold);
-      flex-shrink: 0;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dynamic-island:active {
+      transform: translateX(-50%) scale(0.97);
+    }
+
+    /* Right: Cellular, Wi-Fi, and Battery Status */
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 54px;
+      justify-content: flex-end;
+      color: #ffffff;
+    }
+    .status-icon {
+      width: 15px;
+      height: 11px;
+      fill: currentColor;
+    }
+    .battery-icon {
+      width: 22px;
+      height: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 3px;
+      padding: 1px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .battery-level {
+      width: 76%;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 1.5px;
+    }
+    .battery-cap {
+      position: absolute;
+      right: -3px;
+      top: 3px;
+      width: 1.5px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 0 1px 1px 0;
+    }
+
+    /* Device Switcher Mini Banner in Header */
+    .device-switcher-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      margin: 6px auto 0;
+      transition: all 0.2s;
+    }
+    .device-switcher-pill:hover {
+      background: rgba(229, 185, 90, 0.15);
+      border-color: var(--gold);
+      color: var(--gold-soft);
     }
 
     /* Content Area */
@@ -847,11 +995,42 @@
 <body>
 
   <div class="iphone-frame">
-    <!-- Dynamic Island -->
-    <div class="dynamic-island">
-      <span id="island-time">12:30</span>
-      <span id="island-status">بَيَان</span>
-      <span>●</span>
+    <!-- Authentic iOS Status Bar: iPhone 12 Pro (Classic Notch) vs iPhone 16 Pro (Dynamic Island) -->
+    <div class="iphone-status-bar" id="iphone-status-bar">
+      <!-- Left: Clock (for iPhone 12 Pro Notch mode) -->
+      <div class="status-left" id="status-left">
+        <span id="notch-time">12:30</span>
+      </div>
+
+      <!-- Center: Authentic iPhone 12 Pro Hardware Notch -->
+      <div class="notch-cutout" id="notch-cutout" onclick="toggleDeviceMode()" title="iPhone 12 Pro Notch (Tap to switch)">
+        <div class="speaker-grill"></div>
+        <div class="camera-lens"></div>
+      </div>
+
+      <!-- Center: Dynamic Island (visible in iPhone 16 Pro mode) -->
+      <div class="dynamic-island" id="dynamic-island" onclick="toggleDeviceMode()" title="iPhone 16 Pro Dynamic Island (Tap to switch)">
+        <span id="island-time">12:30</span>
+        <span id="island-status">بَيَان</span>
+        <span style="color: var(--cyan);">●</span>
+      </div>
+
+      <!-- Right: Cellular, Wi-Fi, and Battery Status -->
+      <div class="status-right" id="status-right">
+        <svg class="status-icon" viewBox="0 0 17 12">
+          <rect x="0" y="9" width="3" height="3" rx="0.5"/>
+          <rect x="4.5" y="6" width="3" height="6" rx="0.5"/>
+          <rect x="9" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="13.5" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg class="status-icon" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-4.24-3.24a6 6 0 0 1 8.48 0l-1.06 1.06a4.5 4.5 0 0 0-6.36 0L3.76 6.26zm-2.83-2.83a10 10 0 0 1 14.14 0l-1.06 1.06a8.5 8.5 0 0 0-12.02 0L.93 3.43z"/>
+        </svg>
+        <div class="battery-icon">
+          <div class="battery-level"></div>
+          <div class="battery-cap"></div>
+        </div>
+      </div>
     </div>
 
     <div class="content-area">
@@ -862,6 +1041,9 @@
           <p>QURAN AUDIO RECOGNIZER</p>
           <div class="engine-pill">
             <span>⚡ RecitID & QDetect AI · 200+ Sheikhs · 94% Accuracy</span>
+          </div>
+          <div class="device-switcher-pill" onclick="toggleDeviceMode()" title="Toggle between iPhone 12 Pro (Notch) and iPhone 16 Pro (Island)">
+            <span id="device-switch-text">📱 iPhone 12 Pro (Notch)</span> ▾
           </div>
         </div>
 
@@ -1296,12 +1478,53 @@
     let currentAudioUrl = "";
     const audioPlayer = document.getElementById("audio-player");
 
-    // Dynamic Clock
-    setInterval(() => {
+    // Dynamic Status Bar Clock
+    function updateClock() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-      document.getElementById("island-time").textContent = timeStr;
-    }, 1000);
+      const notchClock = document.getElementById("notch-time");
+      if (notchClock) notchClock.textContent = timeStr;
+      const islandClock = document.getElementById("island-time");
+      if (islandClock) islandClock.textContent = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Device Hardware Display Mode (iPhone 12 Pro Notch vs iPhone 16 Pro Island)
+    let currentDeviceMode = "notch"; // iPhone 12 Pro Notch by default
+    try {
+      currentDeviceMode = localStorage.getItem("bayan_device_mode") || "notch";
+    } catch (e) {}
+
+    function applyDeviceMode(mode) {
+      currentDeviceMode = mode;
+      try {
+        localStorage.setItem("bayan_device_mode", mode);
+      } catch (e) {}
+      
+      const notchEl = document.getElementById("notch-cutout");
+      const islandEl = document.getElementById("dynamic-island");
+      const statusLeft = document.getElementById("status-left");
+      const switchPill = document.getElementById("device-switch-text");
+
+      if (mode === "notch") {
+        if (notchEl) notchEl.style.display = "flex";
+        if (islandEl) islandEl.style.display = "none";
+        if (statusLeft) statusLeft.style.visibility = "visible";
+        if (switchPill) switchPill.textContent = "📱 iPhone 12 Pro (Notch)";
+      } else {
+        if (notchEl) notchEl.style.display = "none";
+        if (islandEl) islandEl.style.display = "flex";
+        if (statusLeft) statusLeft.style.visibility = "hidden";
+        if (switchPill) switchPill.textContent = "🏝️ iPhone 16 Pro (Dynamic Island)";
+      }
+    }
+
+    function toggleDeviceMode() {
+      const newMode = (currentDeviceMode === "notch") ? "island" : "notch";
+      applyDeviceMode(newMode);
+    }
+    applyDeviceMode(currentDeviceMode);
 
     // Tab Navigation
     function switchTab(tabId, el) {
