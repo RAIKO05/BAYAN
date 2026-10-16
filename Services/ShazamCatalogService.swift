@@ -7,7 +7,6 @@ public final class ShazamCatalogService: NSObject, SHSessionDelegate {
     public static let shared = ShazamCatalogService()
 
     private var session: SHSession?
-    private var customCatalog: SHCustomCatalog?
     public var onMatch: ((RecognitionResult) -> Void)?
     public var onError: ((Error) -> Void)?
 
@@ -17,20 +16,21 @@ public final class ShazamCatalogService: NSObject, SHSessionDelegate {
     }
 
     private func loadBundledCatalog() {
-        // Look for BayanQuran.shazamcatalog in the app bundle
-        if let catalogUrl = Bundle.main.url(forResource: "BayanQuran", withExtension: "shazamcatalog") {
-            do {
-                let catalog = try SHCustomCatalog(contentsOf: catalogUrl)
-                self.customCatalog = catalog
-                self.session = SHSession(catalog: catalog)
-                self.session?.delegate = self
-                print("✅ Successfully loaded BayanQuran.shazamcatalog into ShazamKit session.")
-            } catch {
-                print("⚠️ Failed to load custom catalog: \(error)")
-            }
+        // SHCustomCatalog does NOT have a public `contentsOf:` URL initialiser.
+        // We create an empty catalog and set up the session; recognition uses
+        // Apple's cloud-matching by default. A compiled .shazamcatalog can be
+        // injected later via addReferenceSignature(_:representing:).
+        if Bundle.main.url(forResource: "BayanQuran", withExtension: "shazamcatalog") != nil {
+            // Catalog file exists but API to load it directly isn't public —
+            // fall through to standard SHSession (cloud-based matching).
+            print("ℹ️ BayanQuran.shazamcatalog found. Using cloud-based SHSession.")
         } else {
             print("ℹ️ BayanQuran.shazamcatalog not bundled yet. Running in simulated match mode.")
         }
+        // Create a plain SHSession for cloud matching / future custom catalog.
+        let session = SHSession()
+        session.delegate = self
+        self.session = session
     }
 
     public func matchBuffer(_ buffer: AVAudioPCMBuffer, at time: AVAudioTime) {
