@@ -512,7 +512,7 @@
           <h2>Recognized History</h2>
         </div>
         <div class="surah-list" id="history-list" style="margin-top: 10px;">
-          <div class="surah-item" onclick="openMatchModal('Ar-Rahman', 'الرحمن', 'Mishary Rashid Alafasy', '055001')">
+          <div class="surah-item" onclick="openMatchModal(55, 'Ar-Rahman', 'الرحمن', 'Mishary Rashid Alafasy', '055001')">
             <div class="surah-left">
               <div class="surah-num">55</div>
               <div>
@@ -741,7 +741,7 @@
           if (isListening) {
             statusHead.textContent = "Recognized: Surah Ar-Rahman";
             statusSub.textContent = "Matched Sheikh Mishary Rashid Alafasy";
-            openMatchModal("Ar-Rahman", "الرحمن", "Mishary Rashid Alafasy", "055001");
+            openMatchModal(55, "Ar-Rahman", "الرحمن", "Mishary Rashid Alafasy", "055001");
             toggleListening();
           }
         }, 2500);
@@ -754,10 +754,25 @@
       }
     }
 
-    function openMatchModal(nameEn, nameAr, qari, fileCode) {
-      document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah 1–4`;
+    // Surah Verses Lookup for accurate display
+    const SURAH_VERSES = {
+      1: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ ۝ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ مَٰلِكِ يَوْمِ ٱلدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ ۝ صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+      2: "الم ۝ ذَٰلِكَ ٱلْكِتَٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ ۝ ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَٰهُمْ يُنفِقُونَ",
+      18: "ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ۝ قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ ٱلْمُؤْمِنِينَ",
+      36: "يس ۝ وَٱلْقُرْءَانِ ٱلْحَكِيمِ ۝ إِنَّكَ لَمِنَ ٱلْمُرْسَلِينَ ۝ عَلَىٰ صِرَٰطٍ مُّسْتَقِيمٍ",
+      55: "ٱلرَّحْمَٰنُ ۝ عَلَّمَ ٱلْقُرْءَانَ ۝ خَلَقَ ٱلْإِنسَٰنَ ۝ عَلَّمَهُ ٱلْبَيَانَ",
+      67: "تَبَٰرَكَ ٱلَّذِي بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ ۝ ٱلَّذِي خَلَقَ ٱلْمَوْتَ وَٱلْحَيَوٰةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا",
+      112: "قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+      113: "قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+      114: "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ"
+    };
+
+    function openMatchModal(surahId, nameEn, nameAr, qari, fileCode) {
+      const versesText = SURAH_VERSES[surahId] || `بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ سُورَةُ ${nameAr} كَامِلَةً`;
+      document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah 1–${surahId === 1 ? '7' : '4'}`;
       document.getElementById("modal-arabic-name").textContent = nameAr;
       document.getElementById("modal-qari").textContent = `${qari} (Hafs 'an 'Asim)`;
+      document.getElementById("modal-snippet").textContent = versesText;
       currentAudioUrl = `https://everyayah.com/data/${RECITERS[currentReciterIndex].folder}/${fileCode}.mp3`;
       document.getElementById("match-modal").classList.add("open");
     }
@@ -841,7 +856,7 @@
         const item = document.createElement("div");
         item.className = "surah-item";
         const surahCode = String(s.id).padStart(3, "0") + "001";
-        item.onclick = () => openMatchModal(s.nameEn, s.nameAr, RECITERS[currentReciterIndex].nameEn, surahCode);
+        item.onclick = () => openMatchModal(s.id, s.nameEn, s.nameAr, RECITERS[currentReciterIndex].nameEn, surahCode);
         item.innerHTML = `
           <div class="surah-left">
             <div class="surah-num">${s.id}</div>

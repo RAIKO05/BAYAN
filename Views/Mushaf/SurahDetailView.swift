@@ -164,25 +164,11 @@ private struct AyahRow: View {
     }
 
     private func sampleArabicAyah(ayahNumber: Int) -> String {
-        switch ayahNumber {
-        case 1: return "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ"
-        case 2: return "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
-        case 3: return "مَٰلِكِ يَوْمِ ٱلدِّينِ"
-        case 4: return "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ"
-        case 5: return "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ"
-        default: return "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ"
-        }
+        QuranVerseText.arabic(surahId: surah.id, ayahNumber: ayahNumber)
     }
 
     private func sampleEnglishAyah(ayahNumber: Int) -> String {
-        switch ayahNumber {
-        case 1: return "[All] praise is [due] to Allah, Lord of the worlds."
-        case 2: return "The Entirely Merciful, the Especially Merciful."
-        case 3: return "Sovereign of the Day of Recompense."
-        case 4: return "It is You we worship and You we ask for help."
-        case 5: return "Guide us to the straight path."
-        default: return "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray."
-        }
+        QuranVerseText.translation(surahId: surah.id, ayahNumber: ayahNumber)
     }
 }
 
