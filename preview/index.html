@@ -431,37 +431,44 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(8px);
       z-index: 120;
+      display: none;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.25s ease;
     }
     .modal-backdrop.open {
+      display: block;
       opacity: 1;
-      pointer-events: auto;
     }
 
     /* Reciters List Modal Sheet */
     .reciter-modal {
       position: absolute;
-      bottom: -110%;
+      bottom: 0;
       left: 0;
       right: 0;
-      height: 80%;
+      height: 78%;
       background: rgba(10, 15, 20, 0.99);
       backdrop-filter: blur(35px);
       border-top: 2px solid var(--gold);
       border-radius: 36px 36px 0 0;
       padding: 18px 20px 24px;
-      transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 150;
-      display: flex;
+      display: none;
       flex-direction: column;
-      box-shadow: 0 -20px 60px rgba(0,0,0,0.9);
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.95);
+      animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    .reciter-modal.open { bottom: 0 !important; }
+    .reciter-modal.open {
+      display: flex !important;
+    }
+
+    @keyframes slideUpModal {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
     .reciter-list-scroll {
       flex: 1;
       overflow-y: auto;
