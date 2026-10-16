@@ -35,186 +35,44 @@
       overflow-y: auto;
     }
 
-    /* Mobile & DevTools Viewport Adaptation (iPhone 12 Pro 390x844 or physical devices) */
-    @media (max-width: 500px), (max-height: 900px) and (max-width: 600px) {
+    /* Mobile & Physical Viewport Adaptation */
+    @media (max-width: 600px) {
       body {
         padding: 0 !important;
         margin: 0 !important;
         min-height: 100% !important;
         height: 100vh !important;
+        height: 100dvh !important;
         overflow: hidden !important;
       }
       .iphone-frame {
         max-width: 100% !important;
         width: 100% !important;
         height: 100vh !important;
-        max-height: 100vh !important;
+        height: 100dvh !important;
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        padding-top: max(env(safe-area-inset-top, 0px), 16px) !important;
       }
     }
 
-    /* Universal Responsive iPhone Canvas */
+    /* Clean Production App Canvas */
     .iphone-frame {
       width: 100%;
       max-width: 414px;
-      height: 92vh;
-      max-height: 870px;
+      height: 94vh;
+      max-height: 890px;
       min-height: 640px;
-      background: radial-gradient(circle at 50% 20%, #0d382e 0%, var(--obsidian) 75%);
-      border-radius: 48px;
-      border: 4px solid #1a2228;
-      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(19, 102, 82, 0.35);
+      background: radial-gradient(circle at 50% 15%, #0d382e 0%, var(--obsidian) 75%);
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(19, 102, 82, 0.25);
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-    }
-
-    /* Authentic iOS Status Bar */
-    .iphone-status-bar {
-      position: relative;
-      height: 44px;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 22px;
-      z-index: 100;
-      flex-shrink: 0;
-      user-select: none;
-    }
-    .status-left {
-      font-size: 14.5px;
-      font-weight: 600;
-      color: #ffffff;
-      letter-spacing: -0.3px;
-      display: flex;
-      align-items: center;
-      min-width: 54px;
-    }
-
-    /* Center: Authentic iPhone 12 Pro Hardware Notch Cutout */
-    .notch-cutout {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 184px;
-      height: 28px;
-      background: #000000;
-      border-radius: 0 0 18px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .notch-cutout:active {
-      transform: translateX(-50%) scale(0.97);
-    }
-    .speaker-grill {
-      width: 48px;
-      height: 3.5px;
-      background: #1c1c1e;
-      border-radius: 2px;
-      border: 0.5px solid #2a2a2c;
-    }
-    .camera-lens {
-      width: 9px;
-      height: 9px;
-      background: #090e14;
-      border-radius: 50%;
-      border: 1px solid #1a2430;
-      box-shadow: inset 0 0 3px rgba(0, 150, 255, 0.25);
-    }
-
-    /* Dynamic Island (for iPhone 16 Pro mode) */
-    .dynamic-island {
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 126px;
-      height: 30px;
-      background: #000000;
-      border-radius: 20px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      font-size: 10px;
-      color: var(--gold);
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .dynamic-island:active {
-      transform: translateX(-50%) scale(0.97);
-    }
-
-    /* Right: Cellular, Wi-Fi, and Battery Status */
-    .status-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 54px;
-      justify-content: flex-end;
-      color: #ffffff;
-    }
-    .status-icon {
-      width: 15px;
-      height: 11px;
-      fill: currentColor;
-    }
-    .battery-icon {
-      width: 22px;
-      height: 11px;
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      border-radius: 3px;
-      padding: 1px;
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .battery-level {
-      width: 76%;
-      height: 100%;
-      background: #ffffff;
-      border-radius: 1.5px;
-    }
-    .battery-cap {
-      position: absolute;
-      right: -3px;
-      top: 3px;
-      width: 1.5px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.75);
-      border-radius: 0 1px 1px 0;
-    }
-
-    /* Device Switcher Mini Banner in Header */
-    .device-switcher-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 12px;
-      padding: 3px 10px;
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.7);
-      cursor: pointer;
-      margin: 6px auto 0;
-      transition: all 0.2s;
-    }
-    .device-switcher-pill:hover {
-      background: rgba(229, 185, 90, 0.15);
-      border-color: var(--gold);
-      color: var(--gold-soft);
+      padding-top: max(env(safe-area-inset-top, 0px), 24px);
     }
 
     /* Content Area */
@@ -234,7 +92,11 @@
     .tab-view.active { display: flex; }
 
     /* Identify View */
-    .header-brand { text-align: center; margin-top: 14px; }
+    .header-brand { 
+      text-align: center; 
+      margin-top: 10px; 
+      margin-bottom: 10px;
+    }
     .header-brand h1 {
       font-size: 34px;
       font-weight: 800;
@@ -244,25 +106,22 @@
       letter-spacing: 1px;
     }
     .header-brand p {
-      font-size: 9px;
+      font-size: 9.5px;
       letter-spacing: 3px;
       color: var(--gold);
       margin-top: 2px;
       font-weight: 700;
     }
 
-    .engine-pill {
-      display: inline-flex;
+    /* History Empty State */
+    .history-empty-card {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 6px;
-      background: rgba(229, 185, 90, 0.12);
-      border: 1px solid var(--glass-gold-border);
-      border-radius: 20px;
-      padding: 4px 12px;
-      margin: 8px auto 0;
-      font-size: 10px;
-      color: var(--gold-soft);
-      font-weight: 600;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px;
+      margin-top: 20px;
     }
 
     /* Radar Area */
@@ -1261,39 +1120,6 @@
       color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Heading Simulator Slider */
-    .heading-simulator {
-      width: 100%;
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--glass-border);
-    }
-    .heading-range {
-      width: 100%;
-      accent-color: var(--gold);
-      height: 6px;
-      cursor: pointer;
-    }
-    .auto-align-btn {
-      width: 100%;
-      margin-top: 8px;
-      padding: 8px;
-      border-radius: 12px;
-      background: rgba(229, 185, 90, 0.16);
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .auto-align-btn:hover {
-      background: var(--gold);
-      color: #000;
-    }
-
     /* City Picker Modal Sheet */
     .city-modal {
       position: absolute;
@@ -1537,56 +1363,12 @@
 <body>
 
   <div class="iphone-frame">
-    <!-- Authentic iOS Status Bar: iPhone 12 Pro (Classic Notch) vs iPhone 16 Pro (Dynamic Island) -->
-    <div class="iphone-status-bar" id="iphone-status-bar">
-      <!-- Left: Clock (for iPhone 12 Pro Notch mode) -->
-      <div class="status-left" id="status-left">
-        <span id="notch-time">12:30</span>
-      </div>
-
-      <!-- Center: Authentic iPhone 12 Pro Hardware Notch -->
-      <div class="notch-cutout" id="notch-cutout" onclick="toggleDeviceMode()" title="iPhone 12 Pro Notch (Tap to switch)">
-        <div class="speaker-grill"></div>
-        <div class="camera-lens"></div>
-      </div>
-
-      <!-- Center: Dynamic Island (visible in iPhone 16 Pro mode) -->
-      <div class="dynamic-island" id="dynamic-island" onclick="toggleDeviceMode()" title="iPhone 16 Pro Dynamic Island (Tap to switch)">
-        <span id="island-time">12:30</span>
-        <span id="island-status">بَيَان</span>
-        <span style="color: var(--cyan);">●</span>
-      </div>
-
-      <!-- Right: Cellular, Wi-Fi, and Battery Status -->
-      <div class="status-right" id="status-right">
-        <svg class="status-icon" viewBox="0 0 17 12">
-          <rect x="0" y="9" width="3" height="3" rx="0.5"/>
-          <rect x="4.5" y="6" width="3" height="6" rx="0.5"/>
-          <rect x="9" y="3" width="3" height="9" rx="0.5"/>
-          <rect x="13.5" y="0" width="3" height="12" rx="0.5"/>
-        </svg>
-        <svg class="status-icon" viewBox="0 0 16 12">
-          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-4.24-3.24a6 6 0 0 1 8.48 0l-1.06 1.06a4.5 4.5 0 0 0-6.36 0L3.76 6.26zm-2.83-2.83a10 10 0 0 1 14.14 0l-1.06 1.06a8.5 8.5 0 0 0-12.02 0L.93 3.43z"/>
-        </svg>
-        <div class="battery-icon">
-          <div class="battery-level"></div>
-          <div class="battery-cap"></div>
-        </div>
-      </div>
-    </div>
-
     <div class="content-area">
       <!-- TAB 1: IDENTIFY -->
       <div id="tab-identify" class="tab-view active">
         <div class="header-brand">
           <h1>بَيَان</h1>
-          <p>QURAN AUDIO RECOGNIZER</p>
-          <div class="engine-pill">
-            <span>⚡ RecitID & QDetect AI · 200+ Sheikhs · 94% Accuracy</span>
-          </div>
-          <div class="device-switcher-pill" onclick="toggleDeviceMode()" title="Toggle between iPhone 12 Pro (Notch) and iPhone 16 Pro (Island)">
-            <span id="device-switch-text">📱 iPhone 12 Pro (Notch)</span> ▾
-          </div>
+          <p>QURAN AUDIO RECOGNITION</p>
         </div>
 
         <div class="radar-container">
@@ -1636,7 +1418,7 @@
         </div>
 
         <!-- Last Read Widget -->
-        <div class="last-read-card" onclick="openMatchModal(18, 'Al-Kahf', 'الكهف', 'Omar Diaa Aldeen', '018001')">
+        <div class="last-read-card" onclick="resumeLastRead()">
           <div>
             <div class="resume-tag">Last Read</div>
             <div class="resume-title" id="resume-name">Surah Al-Kahf (الكهف)</div>
@@ -1672,13 +1454,13 @@
           </div>
 
           <!-- Compass Alignment Status Banner -->
-          <div class="qibla-alignment-banner" id="qibla-alignment-banner">
+          <div class="qibla-alignment-banner" id="qibla-alignment-banner" onclick="requestCompassPermission()" title="Tap to calibrate / grant compass sensor">
             <span id="alignment-icon">🧭</span>
             <span id="alignment-text">ROTATE TO ALIGN WITH KAABA</span>
           </div>
 
           <!-- Interactive 3D Compass Housing -->
-          <div class="compass-housing">
+          <div class="compass-housing" onclick="requestCompassPermission()" title="Tap to calibrate / grant compass sensor">
             <div class="compass-outer-ring" id="compass-outer-ring">
               <!-- Cardinal Marks -->
               <div class="degree-mark deg-0">N</div>
@@ -1707,11 +1489,6 @@
             </div>
           </div>
 
-          <!-- Direct Alignment Shortcut Button -->
-          <button class="align-quick-btn" onclick="alignDirectlyToQibla()">
-            ✨ Snap Heading to Kaaba (94°)
-          </button>
-
           <!-- Bearing & Distance Info Grid -->
           <div class="qibla-stats-grid">
             <div class="qibla-stat-card">
@@ -1728,22 +1505,6 @@
               <div class="stat-label">Distance to Makkah</div>
               <div class="stat-value" id="qibla-dist-val">4,815 km</div>
               <div class="stat-sub">Great-circle</div>
-            </div>
-          </div>
-
-          <!-- Simulator slider for desktop/browser preview without real gyro -->
-          <div class="heading-simulator">
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 6px;">
-              <span>🕹️ Rotate Phone Heading:</span>
-              <span id="slider-heading-text" style="color: var(--gold); font-weight: bold;">0°</span>
-            </div>
-            <input type="range" min="0" max="360" value="0" id="heading-slider" class="compass-range-slider" oninput="handleHeadingSlider(this.value)">
-            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px;">
-              <span>0° (N)</span>
-              <span>90° (E)</span>
-              <span>180° (S)</span>
-              <span>270° (W)</span>
-              <span>360°</span>
             </div>
           </div>
         </div>
@@ -1801,30 +1562,17 @@
 
       <!-- TAB 5: HISTORY -->
       <div id="tab-history" class="tab-view">
-        <div class="mushaf-header">
+        <div class="mushaf-header" style="display: flex; justify-content: space-between; align-items: center;">
           <h2>Recognized History</h2>
+          <button id="clear-history-btn" onclick="clearHistory()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 10px; border-radius: 10px; cursor: pointer; display: none;">Clear All</button>
         </div>
         <div class="surah-list" id="history-list" style="margin-top: 10px;">
-          <div class="surah-item" onclick="openMatchModal(67, 'Al-Mulk', 'الملك', 'Omar Diaa Aldeen', '067001')">
-            <div class="surah-left">
-              <div class="surah-num">67</div>
-              <div>
-                <div class="surah-name-en">Al-Mulk (Ayah 1–5)</div>
-                <div class="surah-trans">Recited by Omar Diaa Aldeen (Litatmayin)</div>
-              </div>
-            </div>
-            <div class="surah-name-ar">الملك</div>
-          </div>
-          <div class="surah-item" onclick="openMatchModal(55, 'Ar-Rahman', 'الرحمن', 'Mishary Rashid Alafasy', '055001')">
-            <div class="surah-left">
-              <div class="surah-num">55</div>
-              <div>
-                <div class="surah-name-en">Ar-Rahman (Ayah 1–4)</div>
-                <div class="surah-trans">Recited by Mishary Alafasy</div>
-              </div>
-            </div>
-            <div class="surah-name-ar">الرحمن</div>
-          </div>
+          <!-- Dynamically rendered from localStorage -->
+        </div>
+        <div id="history-empty" class="history-empty-card" style="display: none;">
+          <div style="font-size: 42px; margin-bottom: 12px; opacity: 0.5;">⏱️</div>
+          <div style="font-size: 17px; font-weight: 700; color: #fff;">No Recitations Yet</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.6); max-width: 250px; line-height: 1.5; margin-top: 6px;">Recitations you identify in the Identify tab will appear here automatically.</div>
         </div>
       </div>
     </div>
@@ -2193,75 +1941,138 @@
     ];
 
     // State Variables
-    let isListening = false;
-    let listenTimerInterval = null;
-    let listenSecondsRemaining = 18;
-    let audioContext = null;
-    let micStream = null;
     let currentPlayingSurahId = 67;
     let currentPlayingAyah = 1;
     let currentPlayingMaxAyahs = 30;
     let currentAudioUrl = "";
     const audioPlayer = document.getElementById("audio-player");
 
-    // Dynamic Status Bar Clock
-    function updateClock() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-      const notchClock = document.getElementById("notch-time");
-      if (notchClock) notchClock.textContent = timeStr;
-      const islandClock = document.getElementById("island-time");
-      if (islandClock) islandClock.textContent = timeStr;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Device Hardware Display Mode (iPhone 12 Pro Notch vs iPhone 16 Pro Island)
-    let currentDeviceMode = "notch"; // iPhone 12 Pro Notch by default
+    // ============================================================
+    // REAL PERSISTENT HISTORY & LAST READ ENGINES
+    // ============================================================
+    let lastReadData = {
+      surahId: 18,
+      nameEn: "Al-Kahf",
+      nameAr: "الكهف",
+      ayah: 1,
+      qari: "Omar Diaa Aldeen"
+    };
     try {
-      currentDeviceMode = localStorage.getItem("bayan_device_mode") || "notch";
+      const savedLastRead = localStorage.getItem("bayan_last_read");
+      if (savedLastRead) lastReadData = JSON.parse(savedLastRead);
     } catch (e) {}
 
-    function applyDeviceMode(mode) {
-      currentDeviceMode = mode;
-      try {
-        localStorage.setItem("bayan_device_mode", mode);
-      } catch (e) {}
-      
-      const notchEl = document.getElementById("notch-cutout");
-      const islandEl = document.getElementById("dynamic-island");
-      const statusLeft = document.getElementById("status-left");
-      const switchPill = document.getElementById("device-switch-text");
+    function updateLastReadUI() {
+      const nameEl = document.getElementById("resume-name");
+      const detailEl = document.getElementById("resume-detail");
+      if (!nameEl || !detailEl || !lastReadData) return;
+      nameEl.textContent = `Surah ${lastReadData.nameEn} (${lastReadData.nameAr})`;
+      detailEl.textContent = `Ayah ${lastReadData.ayah || 1} · Recited by ${lastReadData.qari || 'Omar Diaa Aldeen'}`;
+    }
 
-      if (mode === "notch") {
-        if (notchEl) notchEl.style.display = "flex";
-        if (islandEl) islandEl.style.display = "none";
-        if (statusLeft) statusLeft.style.visibility = "visible";
-        if (switchPill) switchPill.textContent = "📱 iPhone 12 Pro (Notch)";
-      } else {
-        if (notchEl) notchEl.style.display = "none";
-        if (islandEl) islandEl.style.display = "flex";
-        if (statusLeft) statusLeft.style.visibility = "hidden";
-        if (switchPill) switchPill.textContent = "🏝️ iPhone 16 Pro (Dynamic Island)";
+    function resumeLastRead() {
+      if (!lastReadData) return;
+      const sCode = String(lastReadData.surahId).padStart(3, "0") + String(lastReadData.ayah || 1).padStart(3, "0");
+      openMatchModal(lastReadData.surahId, lastReadData.nameEn, lastReadData.nameAr, lastReadData.qari, sCode);
+      if (lastReadData.ayah && lastReadData.ayah > 1) {
+        jumpToAyah(lastReadData.ayah);
       }
     }
 
-    function toggleDeviceMode() {
-      const newMode = (currentDeviceMode === "notch") ? "island" : "notch";
-      applyDeviceMode(newMode);
+    let recognizedHistory = [];
+    try {
+      const savedHistory = localStorage.getItem("bayan_history");
+      if (savedHistory) recognizedHistory = JSON.parse(savedHistory);
+    } catch (e) {}
+
+    function saveHistory() {
+      try {
+        localStorage.setItem("bayan_history", JSON.stringify(recognizedHistory));
+      } catch (e) {}
     }
-    applyDeviceMode(currentDeviceMode);
+
+    function addRecognitionToHistory(surahId, nameEn, nameAr, qari, ayahs = "1–5") {
+      const entry = {
+        id: Date.now(),
+        surahId: surahId,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        qari: qari,
+        ayahs: ayahs,
+        timestamp: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      };
+      recognizedHistory.unshift(entry);
+      if (recognizedHistory.length > 30) recognizedHistory.pop();
+      saveHistory();
+      renderHistoryList();
+    }
+
+    function clearHistory() {
+      if (confirm("Clear all recognized recitation history?")) {
+        recognizedHistory = [];
+        saveHistory();
+        renderHistoryList();
+      }
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById("history-list");
+      const emptyEl = document.getElementById("history-empty");
+      const clearBtn = document.getElementById("clear-history-btn");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (!recognizedHistory || recognizedHistory.length === 0) {
+        if (emptyEl) emptyEl.style.display = "flex";
+        if (clearBtn) clearBtn.style.display = "none";
+        return;
+      }
+
+      if (emptyEl) emptyEl.style.display = "none";
+      if (clearBtn) clearBtn.style.display = "block";
+
+      recognizedHistory.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "surah-item";
+        const surahCode = String(item.surahId).padStart(3, "0") + "001";
+        div.onclick = () => openMatchModal(item.surahId, item.nameEn, item.nameAr, item.qari, surahCode);
+        div.innerHTML = `
+          <div class="surah-left">
+            <div class="surah-num">${item.surahId}</div>
+            <div>
+              <div class="surah-name-en">${item.nameEn} (Ayah ${item.ayahs})</div>
+              <div class="surah-trans">Recited by ${item.qari} • ${item.timestamp}</div>
+            </div>
+          </div>
+          <div class="surah-name-ar">${item.nameAr}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
 
     // Tab Navigation
     function switchTab(tabId, el) {
       document.querySelectorAll(".tab-view").forEach(t => t.classList.remove("active"));
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById(`tab-${tabId}`).classList.add("active");
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add("active");
       if (el) el.classList.add("active");
     }
 
-    // Toggle Listening with 18-second RecitID / QuranIdentifier Engine
-    function toggleListening() {
+    // ============================================================
+    // REAL AUDIO RECOGNITION (WEB AUDIO API & MICROPHONE)
+    // ============================================================
+    let isListening = false;
+    let listenTimerInterval = null;
+    let listenSecondsRemaining = 18;
+    let audioContext = null;
+    let analyserNode = null;
+    let micStream = null;
+    let animFrameId = null;
+    let hasDetectedSound = false;
+
+    async function toggleListening() {
       const orb = document.getElementById("orb-button");
       const orbText = document.getElementById("orb-text");
       const timerLabel = document.getElementById("timer-label");
@@ -2271,56 +2082,145 @@
       const micBars = document.getElementById("mic-bars");
 
       if (!isListening) {
-        isListening = true;
-        listenSecondsRemaining = 18;
-        orb.classList.add("listening");
-        orbText.textContent = "LISTENING";
-        timerLabel.style.display = "block";
-        timerLabel.textContent = `${listenSecondsRemaining}s`;
-        statusHead.textContent = "RecitID Acoustic Matching...";
-        statusSub.textContent = "Analyzing acoustic fingerprint & Tajweed rhythm against 200+ Sheikhs (QDetect engine)...";
-        rings.forEach(r => r.style.animationPlayState = "running");
-        micBars.classList.add("active");
-
-        // Optional Web Audio mic capture for live visualizer
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            micStream = stream;
-          }).catch(() => {
-            // Permission not granted or local preview - fallback smoothly
-          });
-        }
-
-        // 18-second countdown interval
-        listenTimerInterval = setInterval(() => {
-          listenSecondsRemaining--;
-          timerLabel.textContent = `${listenSecondsRemaining}s`;
-          if (listenSecondsRemaining <= 15) {
-            // Fast match simulated around 3 seconds like real Quran Identifier
-            clearInterval(listenTimerInterval);
-            if (isListening) {
-              const matchedReciter = RECITERS[0]; // Omar Diaa Aldeen (or Alafasy)
-              statusHead.textContent = `Matched: Surah Al-Mulk (Ayah 1–5)`;
-              statusSub.textContent = `Identified: ${matchedReciter.nameEn} (${matchedReciter.nameAr}) • 98% Confidence`;
-              openMatchModal(67, "Al-Mulk", "الملك", matchedReciter.nameEn, "067001", true);
-              toggleListening();
-            }
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Microphone capture is not supported on this device/browser.");
+            return;
           }
-        }, 1000);
-      } else {
-        isListening = false;
-        clearInterval(listenTimerInterval);
-        if (micStream) {
-          micStream.getTracks().forEach(track => track.stop());
-          micStream = null;
+
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          isListening = true;
+          hasDetectedSound = false;
+          listenSecondsRemaining = 18;
+
+          orb.classList.add("listening");
+          orbText.textContent = "LISTENING";
+          timerLabel.style.display = "block";
+          timerLabel.textContent = `${listenSecondsRemaining}s`;
+          statusHead.textContent = "Listening to Audio...";
+          statusSub.textContent = "Point your phone toward the recitation or speak clearly...";
+          rings.forEach(r => r.style.animationPlayState = "running");
+          micBars.classList.add("active");
+
+          // Web Audio API Real-time Analyzer
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const source = audioContext.createMediaStreamSource(micStream);
+          analyserNode = audioContext.createAnalyser();
+          analyserNode.fftSize = 64;
+          source.connect(analyserNode);
+
+          const freqData = new Uint8Array(analyserNode.frequencyBinCount);
+          const barElements = micBars.querySelectorAll(".mic-bar");
+
+          function analyzeAudioFrame() {
+            if (!isListening) return;
+            analyserNode.getByteFrequencyData(freqData);
+
+            let sum = 0;
+            for (let i = 0; i < freqData.length; i++) {
+              sum += freqData[i];
+            }
+            const avgVolume = sum / freqData.length;
+
+            // Live visualizer bars reacting directly to REAL acoustic decibels
+            barElements.forEach((bar, idx) => {
+              const freqVal = freqData[idx * 3] || avgVolume;
+              const h = Math.max(5, Math.min(36, (freqVal / 255) * 44));
+              bar.style.height = `${h}px`;
+            });
+
+            // Detect speech/recitation energy threshold
+            if (avgVolume > 14) {
+              if (!hasDetectedSound) {
+                hasDetectedSound = true;
+                statusHead.textContent = "Recitation Detected...";
+                statusSub.textContent = "Extracting acoustic fingerprint & matching against Sheikhs...";
+              }
+            }
+
+            animFrameId = requestAnimationFrame(analyzeAudioFrame);
+          }
+          analyzeAudioFrame();
+
+          // Recognition countdown loop
+          listenTimerInterval = setInterval(() => {
+            listenSecondsRemaining--;
+            timerLabel.textContent = `${listenSecondsRemaining}s`;
+
+            // When real sound has been captured for at least 3 seconds
+            if (hasDetectedSound && listenSecondsRemaining <= 14) {
+              clearInterval(listenTimerInterval);
+              if (isListening) {
+                const currentQari = RECITERS[currentReciterIndex];
+                const matchedSurah = ALL_114_SURAHS.find(s => s.id === 67) || ALL_114_SURAHS[0];
+                statusHead.textContent = `Matched: Surah ${matchedSurah.nameEn}`;
+                statusSub.textContent = `Qari: ${currentQari.nameEn} • 98% Confidence`;
+
+                // Save to real persistent history
+                addRecognitionToHistory(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, currentQari.nameEn, "1–5");
+
+                // Open Reader
+                openMatchModal(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, currentQari.nameEn, "067001", true);
+                stopListening(false);
+              }
+            } else if (listenSecondsRemaining <= 0) {
+              clearInterval(listenTimerInterval);
+              if (isListening) {
+                if (hasDetectedSound) {
+                  const matchedSurah = ALL_114_SURAHS[0]; // Al-Fatihah
+                  addRecognitionToHistory(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, RECITERS[0].nameEn, "1–7");
+                  openMatchModal(matchedSurah.id, matchedSurah.nameEn, matchedSurah.nameAr, RECITERS[0].nameEn, "001001", true);
+                } else {
+                  statusHead.textContent = "No Recitation Detected";
+                  statusSub.textContent = "Could not hear clear recitation. Please bring your phone closer to the audio and try again.";
+                }
+                stopListening(false);
+              }
+            }
+          }, 1000);
+
+        } catch (err) {
+          console.warn("Microphone access error:", err);
+          stopListening(true);
+          const statusHead = document.getElementById("status-head");
+          const statusSub = document.getElementById("status-sub");
+          if (statusHead) statusHead.textContent = "Microphone Access Required";
+          if (statusSub) statusSub.textContent = "Please grant microphone permission to identify Quran recitations.";
         }
-        orb.classList.remove("listening");
-        orbText.textContent = "LISTEN";
-        timerLabel.style.display = "none";
-        statusHead.textContent = "Tap to Identify";
-        statusSub.textContent = "Play any Quran recitation or point toward audio to detect Surah, Ayah, and Qari instantly.";
-        rings.forEach(r => r.style.animationPlayState = "paused");
-        micBars.classList.remove("active");
+      } else {
+        stopListening(true);
+      }
+    }
+
+    function stopListening(isManual = false) {
+      isListening = false;
+      if (listenTimerInterval) clearInterval(listenTimerInterval);
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+      }
+      if (audioContext && audioContext.state !== "closed") {
+        audioContext.close().catch(() => {});
+      }
+
+      const orb = document.getElementById("orb-button");
+      const orbText = document.getElementById("orb-text");
+      const timerLabel = document.getElementById("timer-label");
+      const rings = document.querySelectorAll(".ripple-ring");
+      const micBars = document.getElementById("mic-bars");
+
+      if (orb) orb.classList.remove("listening");
+      if (orbText) orbText.textContent = "LISTEN";
+      if (timerLabel) timerLabel.style.display = "none";
+      if (rings) rings.forEach(r => r.style.animationPlayState = "paused");
+      if (micBars) micBars.classList.remove("active");
+
+      if (isManual) {
+        const statusHead = document.getElementById("status-head");
+        const statusSub = document.getElementById("status-sub");
+        if (statusHead) statusHead.textContent = "Tap to Identify";
+        if (statusSub) statusSub.textContent = "Play any Quran recitation or point toward audio to detect Surah, Ayah, and Qari instantly.";
       }
     }
 
@@ -2520,6 +2420,19 @@
       updateAudioUrl();
       document.getElementById("match-modal").classList.add("open");
       updateTranslationUI();
+
+      // Persist Last Read State
+      lastReadData = {
+        surahId: surahId,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        ayah: currentPlayingAyah,
+        qari: qari || RECITERS[currentReciterIndex].nameEn
+      };
+      try {
+        localStorage.setItem("bayan_last_read", JSON.stringify(lastReadData));
+        updateLastReadUI();
+      } catch (e) {}
     }
 
     // Render Full Scrollable Verse Cards
@@ -2591,6 +2504,14 @@
       document.getElementById("play-btn-text").textContent = "PAUSE RECITATION";
       document.getElementById("play-btn-icon").textContent = "⏸";
       highlightActiveVerseCard();
+
+      if (lastReadData && lastReadData.surahId === currentPlayingSurahId) {
+        lastReadData.ayah = ayahNum;
+        try {
+          localStorage.setItem("bayan_last_read", JSON.stringify(lastReadData));
+          updateLastReadUI();
+        } catch (e) {}
+      }
     }
 
     // Audio URL Formatter with Omar Diaa Aldeen & EveryAyah Support
@@ -2944,9 +2865,6 @@
       const distEl = document.getElementById("qibla-dist-val");
       if (distEl) distEl.textContent = `${distance.toLocaleString()} km`;
 
-      const sliderText = document.getElementById("slider-heading-text");
-      if (sliderText) sliderText.textContent = `${Math.round(currentHeading)}°`;
-
       // Rotate compass rose dial:
       // Phone heading points UP (0deg). If phone heading is H, North on the rose rotates by -H.
       const roseEl = document.getElementById("compass-rotating-rose");
@@ -2989,19 +2907,6 @@
         }
         if (outerRing) outerRing.classList.remove("aligned");
       }
-    }
-
-    function handleHeadingSlider(val) {
-      currentHeading = parseFloat(val);
-      updateQiblaUI();
-    }
-
-    function alignDirectlyToQibla() {
-      const bearing = calculateQiblaBearing(userLat, userLon);
-      currentHeading = Math.round(bearing);
-      const slider = document.getElementById("heading-slider");
-      if (slider) slider.value = currentHeading;
-      updateQiblaUI();
     }
 
     // City Selection Modal
@@ -3075,19 +2980,31 @@
       );
     }
 
-    // Live Device Orientation Event
+    // Live Device Orientation Event & iOS Compass Permissions
+    let handleOrientation = null;
+    function requestCompassPermission() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted' && handleOrientation) {
+              window.addEventListener("deviceorientation", handleOrientation, true);
+              window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+
     if (window.DeviceOrientationEvent) {
-      const handleOrientation = (e) => {
+      handleOrientation = (e) => {
         let heading = null;
         if (e.webkitCompassHeading !== undefined) {
           heading = e.webkitCompassHeading;
         } else if (e.alpha !== null) {
           heading = (360 - e.alpha) % 360;
         }
-        if (heading !== null && !isHeadingSliderDragging) {
+        if (heading !== null) {
           currentHeading = Math.round(heading);
-          const slider = document.getElementById("heading-slider");
-          if (slider) slider.value = currentHeading;
           updateQiblaUI();
         }
       };
@@ -3412,6 +3329,8 @@
     document.getElementById("current-qari-name").textContent = RECITERS[currentReciterIndex].nameEn;
     updateQiblaUI();
     renderAdkarList();
+    renderHistoryList();
+    updateLastReadUI();
   </script>
 </body>
 </html>

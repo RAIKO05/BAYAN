@@ -6,13 +6,11 @@ public struct QiblaView: View {
     @StateObject private var compassManager = CompassHeadingManager()
     @State private var selectedCity: QiblaCity = .defaultCity
     @State private var showingCitySheet = false
-    @State private var simulatedHeading: Double = 0
-    @State private var isSimulating: Bool = false
-
+ 
     public init() {}
 
     private var activeHeading: Double {
-        isSimulating ? simulatedHeading : compassManager.heading
+        compassManager.heading
     }
 
     private var qiblaBearing: Double {
@@ -267,35 +265,6 @@ public struct QiblaView: View {
                                 isHighlight: false
                             )
                         }
-                        .padding(.horizontal)
-
-                        // Manual Compass Simulation Slider (for simulator / testing without gyroscope)
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("COMPASS HEADING SIMULATION")
-                                    .font(.system(size: 9.5, weight: .bold))
-                                    .foregroundColor(.white.opacity(0.5))
-                                    .tracking(1)
-
-                                Spacer()
-
-                                Button("Snap to Kaaba") {
-                                    isSimulating = true
-                                    simulatedHeading = qiblaBearing
-                                    triggerHaptic()
-                                }
-                                .font(.caption2.weight(.bold))
-                                .foregroundColor(BayanTheme.gold)
-                            }
-
-                            Slider(value: $simulatedHeading, in: 0...359, step: 1) { _ in
-                                isSimulating = true
-                                if isAligned { triggerHaptic() }
-                            }
-                            .tint(BayanTheme.gold)
-                        }
-                        .padding(14)
-                        .liquidGlass(cornerRadius: 18)
                         .padding(.horizontal)
                         .padding(.bottom, 110) // Clearance for floating liquid glass bar
                     }
