@@ -949,19 +949,21 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 600;
       cursor: pointer;
-      padding: 6px 18px;
-      border-radius: 22px;
+      padding: 6px 8px;
+      border-radius: 18px;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      flex: 1;
+      min-width: 0;
     }
     .tab-btn:active {
       transform: scale(0.92);
     }
     .tab-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 19px;
+      height: 19px;
       fill: currentColor;
       transition: transform 0.2s;
     }
@@ -989,6 +991,546 @@
     }
     .tab-btn.active .active-indicator-dot {
       display: block;
+    }
+
+    /* Qibla Compass Tab Styles */
+    .qibla-header {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .qibla-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      font-family: "Amiri Quran", "Scheherazade New", serif;
+      background: linear-gradient(180deg, #fff, var(--gold-soft));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .qibla-header p {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+
+    .qibla-location-pill {
+      margin: 12px 14px 8px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .qibla-location-pill:hover {
+      background: rgba(229, 185, 90, 0.12);
+      border-color: var(--glass-gold-border);
+    }
+    .loc-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .loc-pin {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .loc-city {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .loc-coords {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .loc-change-btn {
+      background: rgba(229, 185, 90, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .compass-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 14px 20px;
+    }
+
+    .qibla-align-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 12px;
+      transition: all 0.3s;
+    }
+    .qibla-align-badge.aligned {
+      background: rgba(229, 185, 90, 0.22);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+      box-shadow: 0 0 16px rgba(229, 185, 90, 0.35);
+      animation: pulseGlow 2s infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 14px rgba(229, 185, 90, 0.3); }
+      50% { box-shadow: 0 0 24px rgba(229, 185, 90, 0.6); }
+    }
+
+    /* Compass Main Dial */
+    .compass-outer-ring {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle, rgba(10, 24, 20, 0.85) 60%, rgba(4, 12, 10, 0.95) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 0, 0, 0.6), 0 0 25px rgba(19, 102, 82, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .compass-outer-ring.aligned {
+      border-color: var(--gold);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(229, 185, 90, 0.2), 0 0 35px rgba(229, 185, 90, 0.4);
+    }
+
+    /* Rotating Compass Dial (spins with heading) */
+    .compass-rotating-rose {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      transition: transform 0.15s ease-out;
+    }
+
+    .cardinal-point {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.6);
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cardinal-point.north { top: 8px; left: calc(50% - 10px); color: var(--gold); }
+    .cardinal-point.south { bottom: 8px; left: calc(50% - 10px); }
+    .cardinal-point.east { right: 8px; top: calc(50% - 10px); }
+    .cardinal-point.west { left: 8px; top: calc(50% - 10px); }
+
+    /* Kaaba Medallion Pin on the Dial */
+    .kaaba-pin-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .kaaba-pin {
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .kaaba-pin-badge {
+      font-size: 20px;
+      filter: drop-shadow(0 0 8px rgba(229, 185, 90, 0.8));
+    }
+    .kaaba-pin-line {
+      width: 2px;
+      height: 14px;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    /* Fixed Center Needle */
+    .compass-needle {
+      position: relative;
+      width: 18px;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .needle-top {
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-bottom: 58px solid var(--gold);
+      filter: drop-shadow(0 -2px 6px rgba(229, 185, 90, 0.6));
+    }
+    .needle-bottom {
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top: 58px solid rgba(255, 255, 255, 0.3);
+    }
+    .needle-center-pivot {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #000;
+      border: 2px solid var(--gold);
+      box-shadow: 0 0 10px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .needle-center-jewel {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    /* Qibla Readout Stats Grid */
+    .qibla-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+    }
+    .qibla-stat-card {
+      padding: 10px 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .qibla-stat-card.highlight {
+      border-color: var(--glass-gold-border);
+      background: rgba(229, 185, 90, 0.1);
+    }
+    .qibla-stat-lbl {
+      font-size: 8.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.5px;
+    }
+    .qibla-stat-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin: 2px 0;
+    }
+    .qibla-stat-num.gold { color: var(--gold-soft); }
+    .qibla-stat-sub {
+      font-size: 9.5px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Heading Simulator Slider */
+    .heading-simulator {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+    }
+    .heading-range {
+      width: 100%;
+      accent-color: var(--gold);
+      height: 6px;
+      cursor: pointer;
+    }
+    .auto-align-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(229, 185, 90, 0.16);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .auto-align-btn:hover {
+      background: var(--gold);
+      color: #000;
+    }
+
+    /* City Picker Modal Sheet */
+    .city-modal {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 78%;
+      background: rgba(10, 15, 20, 0.99);
+      backdrop-filter: blur(35px);
+      border-top: 2px solid var(--gold);
+      border-radius: 36px 36px 0 0;
+      padding: 18px 20px 24px;
+      z-index: 160;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.95);
+      animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .city-modal.open {
+      display: flex !important;
+    }
+    .city-card {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .city-card:hover { background: rgba(255,255,255,0.12); }
+    .city-card.active {
+      border-color: var(--gold);
+      background: rgba(229, 185, 90, 0.15);
+    }
+    .gps-btn-card {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(51, 209, 224, 0.2), rgba(19, 102, 82, 0.3));
+      border: 1px solid var(--cyan);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    /* ============================================================ */
+    /* ADKAR (SUPPLICATIONS & TASBIH) PAGE STYLES                   */
+    /* ============================================================ */
+    .adkar-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+      padding-bottom: 90px;
+    }
+    .adkar-header {
+      padding: 12px 18px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .adkar-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .adkar-cat-scroll {
+      display: flex;
+      gap: 8px;
+      padding: 6px 18px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .adkar-cat-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .adkar-cat-btn {
+      flex: 0 0 auto;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .adkar-cat-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .adkar-cat-btn.active {
+      background: linear-gradient(135deg, rgba(229, 185, 90, 0.3), rgba(19, 102, 82, 0.4));
+      border-color: var(--gold);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(229, 185, 90, 0.25);
+    }
+    .adkar-progress-bar-card {
+      margin: 0 18px 14px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .adkar-progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .adkar-progress-track {
+      height: 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .adkar-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+      border-radius: 6px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .adkar-list {
+      padding: 0 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dikr-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(20px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .dikr-card.completed {
+      border-color: rgba(51, 209, 224, 0.4);
+      background: linear-gradient(135deg, rgba(19, 102, 82, 0.15), rgba(51, 209, 224, 0.06));
+    }
+    .dikr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .dikr-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-soft);
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(229, 185, 90, 0.12);
+      border: 1px solid rgba(229, 185, 90, 0.25);
+    }
+    .dikr-text-ar {
+      font-family: 'Amiri', 'Traditional Arabic', serif;
+      font-size: 19px;
+      line-height: 1.9;
+      color: #fff;
+      direction: rtl;
+      text-align: right;
+      margin-bottom: 12px;
+      user-select: text;
+    }
+    .dikr-virtue {
+      font-size: 12px;
+      color: var(--cyan);
+      background: rgba(51, 209, 224, 0.08);
+      border-left: 3px solid var(--cyan);
+      padding: 6px 10px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .dikr-trans {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .dikr-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+    }
+    .dikr-source {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .dikr-count-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--gold);
+      background: linear-gradient(135deg, rgba(229, 185, 90, 0.2), rgba(19, 102, 82, 0.3));
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dikr-count-btn:active {
+      transform: scale(0.93);
+    }
+    .dikr-count-btn.completed {
+      border-color: var(--cyan);
+      background: linear-gradient(135deg, rgba(51, 209, 224, 0.25), rgba(19, 102, 82, 0.4));
+      color: #bbf7d0;
     }
   </style>
 </head>
@@ -1114,7 +1656,150 @@
         </div>
       </div>
 
-      <!-- TAB 3: HISTORY -->
+      <!-- TAB 3: QIBLA COMPASS -->
+      <div id="tab-qibla" class="tab-view">
+        <div class="qibla-container">
+          <div class="qibla-header">
+            <div>
+              <div class="qibla-title">Qibla Direction</div>
+              <div class="qibla-sub">اتِّجَاهُ الْقِبْلَةِ الشَّرِيفَةِ</div>
+            </div>
+            <button class="qibla-location-pill" onclick="openCityModal()">
+              <span>📍</span>
+              <span id="qibla-city-label">Casablanca, Morocco</span>
+              <span style="font-size: 10px; opacity: 0.6;">▼</span>
+            </button>
+          </div>
+
+          <!-- Compass Alignment Status Banner -->
+          <div class="qibla-alignment-banner" id="qibla-alignment-banner">
+            <span id="alignment-icon">🧭</span>
+            <span id="alignment-text">ROTATE TO ALIGN WITH KAABA</span>
+          </div>
+
+          <!-- Interactive 3D Compass Housing -->
+          <div class="compass-housing">
+            <div class="compass-outer-ring" id="compass-outer-ring">
+              <!-- Cardinal Marks -->
+              <div class="degree-mark deg-0">N</div>
+              <div class="degree-mark deg-90">E</div>
+              <div class="degree-mark deg-180">S</div>
+              <div class="degree-mark deg-270">W</div>
+
+              <!-- Rotating Compass Rose Dial -->
+              <div class="compass-rotating-rose" id="compass-rotating-rose">
+                <!-- Kaaba Pin Pointer positioned along perimeter -->
+                <div class="kaaba-pin" id="kaaba-pin" title="Holy Kaaba (Makkah)">
+                  <div class="kaaba-cube-icon">🕋</div>
+                  <div class="kaaba-label">الْكَعْبَة</div>
+                </div>
+
+                <!-- Dial Central Crosshairs -->
+                <div class="compass-crosshair-v"></div>
+                <div class="compass-crosshair-h"></div>
+                <div class="compass-center-cap"></div>
+              </div>
+
+              <!-- Fixed Device Target Needle (Points UP) -->
+              <div class="device-heading-pointer">
+                <div class="pointer-arrow">▲</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct Alignment Shortcut Button -->
+          <button class="align-quick-btn" onclick="alignDirectlyToQibla()">
+            ✨ Snap Heading to Kaaba (94°)
+          </button>
+
+          <!-- Bearing & Distance Info Grid -->
+          <div class="qibla-stats-grid">
+            <div class="qibla-stat-card">
+              <div class="stat-label">Qibla Bearing</div>
+              <div class="stat-value" id="qibla-bearing-val">94°</div>
+              <div class="stat-sub">From True North</div>
+            </div>
+            <div class="qibla-stat-card">
+              <div class="stat-label">Phone Heading</div>
+              <div class="stat-value" id="qibla-heading-val">0°</div>
+              <div class="stat-sub" id="qibla-relative-val">-94° diff</div>
+            </div>
+            <div class="qibla-stat-card">
+              <div class="stat-label">Distance to Makkah</div>
+              <div class="stat-value" id="qibla-dist-val">4,815 km</div>
+              <div class="stat-sub">Great-circle</div>
+            </div>
+          </div>
+
+          <!-- Simulator slider for desktop/browser preview without real gyro -->
+          <div class="heading-simulator">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 6px;">
+              <span>🕹️ Rotate Phone Heading:</span>
+              <span id="slider-heading-text" style="color: var(--gold); font-weight: bold;">0°</span>
+            </div>
+            <input type="range" min="0" max="360" value="0" id="heading-slider" class="compass-range-slider" oninput="handleHeadingSlider(this.value)">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px;">
+              <span>0° (N)</span>
+              <span>90° (E)</span>
+              <span>180° (S)</span>
+              <span>270° (W)</span>
+              <span>360°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ADKAR (SUPPLICATIONS & TASBIH) -->
+      <div id="tab-adkar" class="tab-view">
+        <div class="adkar-container">
+          <div class="adkar-header">
+            <div>
+              <h2>Daily Adkar & Tasbih</h2>
+              <div style="font-size: 11px; color: var(--gold-soft); font-weight: bold; margin-top: 2px;">أَذْكَارُ الْمُسْلِمِ وَالتَّسَابِيحُ</div>
+            </div>
+            <button class="adkar-cat-btn" onclick="resetAdkarCounts()" style="padding: 5px 10px; font-size: 11px;" title="Reset Counter">
+              ↺ Reset
+            </button>
+          </div>
+
+          <!-- Category Filter Horizontal Scroll -->
+          <div class="adkar-cat-scroll">
+            <button class="adkar-cat-btn active" onclick="filterAdkarCategory('morning', this)">
+              <span>☀️</span> أذكار الصباح
+            </button>
+            <button class="adkar-cat-btn" onclick="filterAdkarCategory('evening', this)">
+              <span>🌙</span> أذكار المساء
+            </button>
+            <button class="adkar-cat-btn" onclick="filterAdkarCategory('after_prayer', this)">
+              <span>🕌</span> بعد الصلاة
+            </button>
+            <button class="adkar-cat-btn" onclick="filterAdkarCategory('sleep', this)">
+              <span>🛌</span> أذكار النوم
+            </button>
+            <button class="adkar-cat-btn" onclick="filterAdkarCategory('tasbih', this)">
+              <span>📿</span> تسابيح واستغفار
+            </button>
+          </div>
+
+          <!-- Overall Completion Progress Card -->
+          <div class="adkar-progress-bar-card">
+            <div class="adkar-progress-top">
+              <span id="adkar-cat-title" style="font-weight: 700; color: #fff;">Morning Supplications (أذكار الصباح)</span>
+              <span id="adkar-progress-fraction" style="color: var(--gold); font-weight: 700;">0 / 6 Done</span>
+            </div>
+            <div class="adkar-progress-track">
+              <div class="adkar-progress-fill" id="adkar-progress-fill"></div>
+            </div>
+          </div>
+
+          <!-- Supplications Dynamic List -->
+          <div class="adkar-list" id="adkar-list-container">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: HISTORY -->
       <div id="tab-history" class="tab-view">
         <div class="mushaf-header">
           <h2>Recognized History</h2>
@@ -1208,6 +1893,28 @@
       </div>
     </div>
 
+    <!-- City Selection Bottom Sheet Modal (Qibla) -->
+    <div class="city-modal" id="city-modal">
+      <div class="modal-close" onclick="closeCityModal()"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h3 style="font-size: 17px; font-weight: bold; color: #fff;">Select City (المدينة)</h3>
+        <button onclick="closeCityModal()" style="background: rgba(229,185,90,0.2); border: 1px solid var(--gold); color: var(--gold); border-radius: 12px; padding: 4px 14px; font-size: 12px; font-weight: bold; cursor: pointer;">Done ✕</button>
+      </div>
+
+      <!-- Live GPS Geolocation Button -->
+      <div class="gps-btn-card" onclick="detectLiveGPSLocation()">
+        <span style="font-size: 18px;">📍</span>
+        <div>
+          <div>Use Current GPS Location</div>
+          <div style="font-size: 10px; opacity: 0.8; font-weight: normal;">Detects real-time latitude & longitude</div>
+        </div>
+      </div>
+
+      <div class="sheet-scroll-list" id="cities-list-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
     <!-- Floating Liquid Glass Mini Player Dock -->
     <div class="liquid-mini-player" id="liquid-mini-player" onclick="handleMiniPlayerClick(event)">
       <div class="mini-left">
@@ -1235,18 +1942,37 @@
       </div>
     </div>
 
-    <!-- Floating Liquid Glass Tab Bar Dock -->
+    <!-- Floating Liquid Glass Tab Bar Dock (5 Tabs) -->
     <div class="tab-bar">
+      <!-- 1. IDENTIFY -->
       <button class="tab-btn active" onclick="switchTab('identify', this)">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
         <span>Identify</span>
         <span class="active-indicator-dot"></span>
       </button>
+
+      <!-- 2. MUSHAF -->
       <button class="tab-btn" onclick="switchTab('mushaf', this)">
         <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
         <span>Mushaf</span>
         <span class="active-indicator-dot"></span>
       </button>
+
+      <!-- 3. QIBLA (COMPASS ICON) -->
+      <button class="tab-btn" onclick="switchTab('qibla', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-5.5l2.67-5.83 5.83-2.67-2.67 5.83-5.83 2.67zm4.25-2.75a1.5 1.5 0 1 0 1.5-1.5 1.5 1.5 0 0 0-1.5 1.5z"/></svg>
+        <span>Qibla</span>
+        <span class="active-indicator-dot"></span>
+      </button>
+
+      <!-- 4. ADKAR (HAND ICON) -->
+      <button class="tab-btn" onclick="switchTab('adkar', this)">
+        <svg viewBox="0 0 24 24"><path d="M18.5 6a1.5 1.5 0 0 0-1.5 1.5V11h-1V3.5a1.5 1.5 0 0 0-3 0V11h-1V2a1.5 1.5 0 0 0-3 0v9h-1V4.5a1.5 1.5 0 0 0-3 0v10.75c0 4.28 3.47 7.75 7.75 7.75h1.5c4.28 0 7.75-3.47 7.75-7.75V7.5a1.5 1.5 0 0 0-1.5-1.5z"/></svg>
+        <span>Adkar</span>
+        <span class="active-indicator-dot"></span>
+      </button>
+
+      <!-- 5. HISTORY -->
       <button class="tab-btn" onclick="switchTab('history', this)">
         <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
         <span>History</span>
@@ -2057,6 +2783,7 @@
     function closeAllModals() {
       closeReciterModal();
       closeLangModal();
+      closeCityModal();
     }
 
     function selectReciter(index) {
@@ -2129,9 +2856,562 @@
       });
     }
 
+    // ============================================================
+    // QIBLA DIRECTION & COMPASS ENGINE
+    // ============================================================
+    const KAABA_COORDS = { lat: 21.422487, lon: 39.826206 };
+
+    const CITIES_DATA = [
+      { name: "Casablanca", nameAr: "الدار البيضاء", country: "Morocco", lat: 33.5731, lon: -7.5898 },
+      { name: "Rabat", nameAr: "الرباط", country: "Morocco", lat: 34.0209, lon: -6.8416 },
+      { name: "Marrakech", nameAr: "مراكش", country: "Morocco", lat: 31.6295, lon: -7.9811 },
+      { name: "Tangier", nameAr: "طنجة", country: "Morocco", lat: 35.7595, lon: -5.8340 },
+      { name: "Fes", nameAr: "فاس", country: "Morocco", lat: 34.0331, lon: -5.0003 },
+      { name: "Cairo", nameAr: "القاهرة", country: "Egypt", lat: 30.0444, lon: 31.2357 },
+      { name: "Riyadh", nameAr: "الرياض", country: "Saudi Arabia", lat: 24.7136, lon: 46.6753 },
+      { name: "Madinah", nameAr: "المدينة المنورة", country: "Saudi Arabia", lat: 24.5247, lon: 39.5692 },
+      { name: "Dubai", nameAr: "دبي", country: "UAE", lat: 25.2048, lon: 55.2708 },
+      { name: "Istanbul", nameAr: "إسطنبول", country: "Turkey", lat: 41.0082, lon: 28.9784 },
+      { name: "London", nameAr: "لندن", country: "UK", lat: 51.5074, lon: -0.1278 },
+      { name: "Paris", nameAr: "باريس", country: "France", lat: 48.8566, lon: 2.3522 },
+      { name: "New York", nameAr: "نيويورك", country: "USA", lat: 40.7128, lon: -74.0060 },
+      { name: "Jakarta", nameAr: "جاكرتا", country: "Indonesia", lat: -6.2088, lon: 106.8456 },
+      { name: "Kuala Lumpur", nameAr: "كوالالمبور", country: "Malaysia", lat: 3.1390, lon: 101.6869 }
+    ];
+
+    let currentCityIndex = 0; // Default: Casablanca
+    let userLat = CITIES_DATA[0].lat;
+    let userLon = CITIES_DATA[0].lon;
+    let currentHeading = 0; // 0..360 degrees
+    let isHeadingSliderDragging = false;
+
+    // Great-Circle initial bearing to Kaaba
+    function calculateQiblaBearing(lat, lon) {
+      const phi1 = (lat * Math.PI) / 180;
+      const phi2 = (KAABA_COORDS.lat * Math.PI) / 180;
+      const deltaLambda = ((KAABA_COORDS.lon - lon) * Math.PI) / 180;
+
+      const y = Math.sin(deltaLambda) * Math.cos(phi2);
+      const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+      let bearing = (Math.atan2(y, x) * 180) / Math.PI;
+      return (bearing + 360) % 360;
+    }
+
+    // Haversine distance to Kaaba in kilometers
+    function calculateDistanceToKaaba(lat, lon) {
+      const R = 6371; // Earth radius in km
+      const dLat = ((KAABA_COORDS.lat - lat) * Math.PI) / 180;
+      const dLon = ((KAABA_COORDS.lon - lon) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat * Math.PI) / 180) *
+          Math.cos((KAABA_COORDS.lat * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(R * c);
+    }
+
+    function updateQiblaUI() {
+      const bearing = calculateQiblaBearing(userLat, userLon);
+      const distance = calculateDistanceToKaaba(userLat, userLon);
+
+      // Relative angle between current phone heading and Kaaba
+      let angleDiff = bearing - currentHeading;
+      while (angleDiff > 180) angleDiff -= 360;
+      while (angleDiff < -180) angleDiff += 360;
+
+      const isAligned = Math.abs(angleDiff) <= 3.0;
+
+      // Update text values
+      const bearingEl = document.getElementById("qibla-bearing-val");
+      if (bearingEl) bearingEl.textContent = `${Math.round(bearing)}°`;
+
+      const headingEl = document.getElementById("qibla-heading-val");
+      if (headingEl) headingEl.textContent = `${Math.round(currentHeading)}°`;
+
+      const relEl = document.getElementById("qibla-relative-val");
+      if (relEl) {
+        if (isAligned) {
+          relEl.textContent = "Aligned (0°)";
+          relEl.style.color = "var(--gold)";
+        } else {
+          relEl.textContent = `${angleDiff > 0 ? "+" : ""}${Math.round(angleDiff)}° diff`;
+          relEl.style.color = "rgba(255, 255, 255, 0.4)";
+        }
+      }
+
+      const distEl = document.getElementById("qibla-dist-val");
+      if (distEl) distEl.textContent = `${distance.toLocaleString()} km`;
+
+      const sliderText = document.getElementById("slider-heading-text");
+      if (sliderText) sliderText.textContent = `${Math.round(currentHeading)}°`;
+
+      // Rotate compass rose dial:
+      // Phone heading points UP (0deg). If phone heading is H, North on the rose rotates by -H.
+      const roseEl = document.getElementById("compass-rotating-rose");
+      if (roseEl) {
+        roseEl.style.transform = `rotate(${-currentHeading}deg)`;
+      }
+
+      // Position Kaaba pin on the rose at the angle of bearing
+      const pinEl = document.getElementById("kaaba-pin");
+      if (pinEl) {
+        // Place pin at radius ~86px along the bearing angle
+        const radius = 86;
+        const rad = (bearing * Math.PI) / 180;
+        const x = Math.sin(rad) * radius;
+        const y = -Math.cos(rad) * radius;
+        pinEl.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+      }
+
+      // Alignment banner & outer ring golden glow
+      const banner = document.getElementById("qibla-alignment-banner");
+      const outerRing = document.getElementById("compass-outer-ring");
+      const icon = document.getElementById("alignment-icon");
+      const text = document.getElementById("alignment-text");
+
+      if (isAligned) {
+        if (banner) {
+          banner.classList.add("aligned");
+          if (icon) icon.textContent = "🕋";
+          if (text) text.textContent = "✓ ALIGNED DIRECTLY TO KAABA (تقبل الله)";
+        }
+        if (outerRing) outerRing.classList.add("aligned");
+        if (navigator.vibrate) {
+          try { navigator.vibrate(40); } catch (e) {}
+        }
+      } else {
+        if (banner) {
+          banner.classList.remove("aligned");
+          if (icon) icon.textContent = "🧭";
+          if (text) text.textContent = `TURN ${angleDiff > 0 ? "RIGHT ❯" : "❮ LEFT"} BY ${Math.abs(Math.round(angleDiff))}°`;
+        }
+        if (outerRing) outerRing.classList.remove("aligned");
+      }
+    }
+
+    function handleHeadingSlider(val) {
+      currentHeading = parseFloat(val);
+      updateQiblaUI();
+    }
+
+    function alignDirectlyToQibla() {
+      const bearing = calculateQiblaBearing(userLat, userLon);
+      currentHeading = Math.round(bearing);
+      const slider = document.getElementById("heading-slider");
+      if (slider) slider.value = currentHeading;
+      updateQiblaUI();
+    }
+
+    // City Selection Modal
+    function openCityModal() {
+      renderCitiesList();
+      document.getElementById("modal-backdrop").classList.add("open");
+      document.getElementById("city-modal").classList.add("open");
+    }
+
+    function closeCityModal() {
+      const modal = document.getElementById("city-modal");
+      if (modal) modal.classList.remove("open");
+      document.getElementById("modal-backdrop").classList.remove("open");
+    }
+
+    function selectCity(idx) {
+      currentCityIndex = idx;
+      const c = CITIES_DATA[idx];
+      userLat = c.lat;
+      userLon = c.lon;
+      const label = document.getElementById("qibla-city-label");
+      if (label) label.textContent = `${c.name}, ${c.country}`;
+      closeCityModal();
+      updateQiblaUI();
+    }
+
+    function renderCitiesList() {
+      const container = document.getElementById("cities-list-container");
+      if (!container) return;
+      container.innerHTML = "";
+      CITIES_DATA.forEach((c, idx) => {
+        const card = document.createElement("div");
+        card.className = "city-card" + (idx === currentCityIndex ? " active" : "");
+        card.onclick = () => selectCity(idx);
+        const b = Math.round(calculateQiblaBearing(c.lat, c.lon));
+        const d = calculateDistanceToKaaba(c.lat, c.lon);
+        card.innerHTML = `
+          <div class="city-left">
+            <div class="city-flag">📍</div>
+            <div>
+              <div class="city-name-en">${c.name}, ${c.country}</div>
+              <div class="city-coord">${c.lat.toFixed(2)}° N, ${c.lon.toFixed(2)}° E • Bearing: ${b}° • ${d.toLocaleString()} km</div>
+            </div>
+          </div>
+          <div class="city-name-ar">${c.nameAr}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function detectLiveGPSLocation() {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userLat = pos.coords.latitude;
+          userLon = pos.coords.longitude;
+          currentCityIndex = -1;
+          const label = document.getElementById("qibla-city-label");
+          if (label) label.textContent = `Live GPS (${userLat.toFixed(2)}°, ${userLon.toFixed(2)}°)`;
+          closeCityModal();
+          updateQiblaUI();
+        },
+        (err) => {
+          console.warn("GPS error:", err);
+          alert("Could not retrieve GPS coordinates. Using selected city.");
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    // Live Device Orientation Event
+    if (window.DeviceOrientationEvent) {
+      const handleOrientation = (e) => {
+        let heading = null;
+        if (e.webkitCompassHeading !== undefined) {
+          heading = e.webkitCompassHeading;
+        } else if (e.alpha !== null) {
+          heading = (360 - e.alpha) % 360;
+        }
+        if (heading !== null && !isHeadingSliderDragging) {
+          currentHeading = Math.round(heading);
+          const slider = document.getElementById("heading-slider");
+          if (slider) slider.value = currentHeading;
+          updateQiblaUI();
+        }
+      };
+      window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+      window.addEventListener("deviceorientation", handleOrientation, true);
+    }
+
+    // ============================================================
+    // ADKAR (SUPPLICATIONS & TASBIH) ENGINE
+    // ============================================================
+    const ADKAR_DATA = [
+      // Morning (أذكار الصباح)
+      {
+        id: "m_ayat_al_kursi",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+        virtue: "من قرأها حين يصبح أُجير من الجن حتى يمسي",
+        trans: "Allah - there is no deity except Him, the Ever-Living, the Sustainer of all existence.",
+        source: "سورة البقرة: 255 • صحيح الترغيب",
+        countTarget: 1
+      },
+      {
+        id: "m_sayyid_istighfar",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+        virtue: "سيد الاستغفار: من قالها موقناً بها حين يصبح فمات من يومه دخل الجنة",
+        trans: "O Allah, You are my Lord, none has the right to be worshiped but You. You created me and I am Your servant.",
+        source: "صحيح البخاري: 6306",
+        countTarget: 1
+      },
+      {
+        id: "m_asbahna",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        virtue: "حفظ العبد في يومه كله وإعلان التوحيد لله",
+        trans: "We have reached the morning and at this very morning unto Allah belongs all sovereignty.",
+        source: "صحيح مسلم: 2723",
+        countTarget: 1
+      },
+      {
+        id: "m_raditu",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا",
+        virtue: "كان حقاً على الله أن يرضيه يوم القيامة",
+        trans: "I am pleased with Allah as my Lord, with Islam as my religion and with Muhammad as my Prophet.",
+        source: "سنن أبي داود • صحيح",
+        countTarget: 3
+      },
+      {
+        id: "m_bismillah_alladhi",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+        virtue: "لم يضره شيء حتى يمسي",
+        trans: "In the name of Allah, with whose name nothing on earth or in the sky can cause harm.",
+        source: "سنن الترمذي: 3388",
+        countTarget: 3
+      },
+      {
+        id: "m_subhan_wa_bihamdihi",
+        category: "morning",
+        categoryAr: "أذكار الصباح",
+        arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ",
+        virtue: "تعدل ساعات طويلة من الذكر والتسبيح",
+        trans: "Glory be to Allah and all praise is for Him, as much as the number of His creation.",
+        source: "صحيح مسلم: 2726",
+        countTarget: 3
+      },
+
+      // Evening (أذكار المساء)
+      {
+        id: "e_sayyid_istighfar",
+        category: "evening",
+        categoryAr: "أذكار المساء",
+        arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+        virtue: "من قالها حين يمسي موقناً بها فمات من ليلته دخل الجنة",
+        trans: "O Allah, You are my Lord, none has the right to be worshiped but You.",
+        source: "صحيح البخاري",
+        countTarget: 1
+      },
+      {
+        id: "e_amsayna",
+        category: "evening",
+        categoryAr: "أذكار المساء",
+        arabic: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        virtue: "حفظ وبركة المساء والاستعاذة من عذاب النار",
+        trans: "We have reached the evening and at this very evening unto Allah belongs all sovereignty.",
+        source: "صحيح مسلم: 2723",
+        countTarget: 1
+      },
+      {
+        id: "e_audhu_bikalimat",
+        category: "evening",
+        categoryAr: "أذكار المساء",
+        arabic: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+        virtue: "لم يضره شيء في تلك الليلة",
+        trans: "I seek refuge in the perfect words of Allah from the evil of what He has created.",
+        source: "صحيح مسلم: 2709",
+        countTarget: 3
+      },
+      {
+        id: "e_bismillah_alladhi",
+        category: "evening",
+        categoryAr: "أذكار المساء",
+        arabic: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+        virtue: "حفظ تام من فجاءة البلاء حتى يصبح",
+        trans: "In the name of Allah, with whose name nothing on earth or in the sky can cause harm.",
+        source: "سنن الترمذي: 3388",
+        countTarget: 3
+      },
+
+      // After Prayer (بعد الصلاة)
+      {
+        id: "p_istighfar",
+        category: "after_prayer",
+        categoryAr: "أذكار بعد الصلاة",
+        arabic: "أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ. اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",
+        virtue: "سنة النبي صلى الله عليه وسلم فور الانتهاء من الفريضة",
+        trans: "I ask Allah for forgiveness (three times). O Allah, You are Peace and from You comes peace.",
+        source: "صحيح مسلم: 591",
+        countTarget: 1
+      },
+      {
+        id: "p_tasbih_33",
+        category: "after_prayer",
+        categoryAr: "أذكار بعد الصلاة",
+        arabic: "سُبْحَانَ اللَّهِ (33) • الْحَمْدُ لِلَّهِ (33) • اللَّهُ أَكْبَرُ (33)",
+        virtue: "غُفِرَت خطاياه وإن كانت مثل زبد البحر",
+        trans: "Glory be to Allah (33), Praise be to Allah (33), Allah is the Greatest (33).",
+        source: "صحيح مسلم: 597",
+        countTarget: 33
+      },
+      {
+        id: "p_tahleel_tamam",
+        category: "after_prayer",
+        categoryAr: "أذكار بعد الصلاة",
+        arabic: "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        virtue: "تمام المائة بعد التسبيح والتحميد والتكبير",
+        trans: "None has the right to be worshiped but Allah alone, who has no partner.",
+        source: "صحيح مسلم: 597",
+        countTarget: 1
+      },
+
+      // Sleep (أذكار النوم)
+      {
+        id: "s_bismika_rabbi",
+        category: "sleep",
+        categoryAr: "أذكار النوم",
+        arabic: "بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي وَبِكَ أَرْفَعُهُ، إِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ",
+        virtue: "حفظ النفس والروح عند النوم",
+        trans: "In Your name, my Lord, I lay on my side, and by You I raise it up.",
+        source: "صحيح البخاري: 6320",
+        countTarget: 1
+      },
+      {
+        id: "s_allahumma_aslamtu",
+        category: "sleep",
+        categoryAr: "أذكار النوم",
+        arabic: "اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لَا مَلْجَأَ وَلَا مَنْجَا مِنْكَ إِلَّا إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ",
+        virtue: "من مات في ليلته مات على الفطرة",
+        trans: "O Allah, I submit myself to You, entrust my affair to You, and turn my face toward You.",
+        source: "صحيح البخاري: 6313",
+        countTarget: 1
+      },
+
+      // Tasbih & Istighfar (تسابيح واستغفار)
+      {
+        id: "t_subhanallah_bihamdihi",
+        category: "tasbih",
+        categoryAr: "تسابيح واستغفار",
+        arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
+        virtue: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن",
+        trans: "Glory be to Allah and His is the praise, Glory be to Allah, the Magnificent.",
+        source: "صحيح البخاري: 6682",
+        countTarget: 100
+      },
+      {
+        id: "t_la_hawla",
+        category: "tasbih",
+        categoryAr: "تسابيح واستغفار",
+        arabic: "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ",
+        virtue: "كنز من كنوز الجنة ودواء لتسعة وتسعين داء",
+        trans: "There is no might nor power except with Allah, the Most High, the Supreme.",
+        source: "صحيح البخاري: 6384",
+        countTarget: 100
+      },
+      {
+        id: "t_astaghfirullah",
+        category: "tasbih",
+        categoryAr: "تسابيح واستغفار",
+        arabic: "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ",
+        virtue: "تفريح الهموم ومغفرة الذنوب وزيادة الرزق",
+        trans: "I ask Allah the Supreme for forgiveness and turn to Him in repentance.",
+        source: "صحيح مسلم: 2702",
+        countTarget: 100
+      },
+      {
+        id: "t_salawat",
+        category: "tasbih",
+        categoryAr: "تسابيح واستغفار",
+        arabic: "اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ عَلَى نَبِيِّنَا مُحَمَّدٍ",
+        virtue: "من صلى عليّ صلاة واحدة صلى الله عليه بها عشراً",
+        trans: "O Allah, send blessings and peace upon our Prophet Muhammad.",
+        source: "صحيح مسلم: 384",
+        countTarget: 10
+      }
+    ];
+
+    let currentAdkarCategory = "morning";
+    let adkarCounts = {}; // Keyed by item id
+
+    // Load persisted adkar counts if any
+    try {
+      const saved = localStorage.getItem("bayan_adkar_counts");
+      if (saved) adkarCounts = JSON.parse(saved);
+    } catch (e) {}
+
+    function saveAdkarCounts() {
+      try {
+        localStorage.setItem("bayan_adkar_counts", JSON.stringify(adkarCounts));
+      } catch (e) {}
+    }
+
+    function filterAdkarCategory(cat, el) {
+      currentAdkarCategory = cat;
+      document.querySelectorAll(".adkar-cat-btn").forEach(b => b.classList.remove("active"));
+      if (el) el.classList.add("active");
+      renderAdkarList();
+    }
+
+    function incrementDikr(id, ev) {
+      if (ev) ev.stopPropagation();
+      const item = ADKAR_DATA.find(d => d.id === id);
+      if (!item) return;
+
+      const current = adkarCounts[id] || 0;
+      if (current < item.countTarget) {
+        adkarCounts[id] = current + 1;
+        saveAdkarCounts();
+        if (navigator.vibrate) {
+          try { navigator.vibrate(30); } catch (e) {}
+        }
+      }
+      renderAdkarList();
+    }
+
+    function resetAdkarCounts() {
+      const itemsInCat = ADKAR_DATA.filter(d => d.category === currentAdkarCategory);
+      itemsInCat.forEach(d => {
+        delete adkarCounts[d.id];
+      });
+      saveAdkarCounts();
+      renderAdkarList();
+    }
+
+    function renderAdkarList() {
+      const container = document.getElementById("adkar-list-container");
+      if (!container) return;
+
+      const items = ADKAR_DATA.filter(d => d.category === currentAdkarCategory);
+
+      // Category title mapping
+      const catNames = {
+        morning: "Morning Supplications (أذكار الصباح)",
+        evening: "Evening Supplications (أذكار المساء)",
+        after_prayer: "After Prayer Supplications (أذكار بعد الصلاة)",
+        sleep: "Sleep Supplications (أذكار النوم)",
+        tasbih: "Tasbih & Istighfar (تسابيح واستغفار)"
+      };
+
+      const catTitleEl = document.getElementById("adkar-cat-title");
+      if (catTitleEl) catTitleEl.textContent = catNames[currentAdkarCategory] || "Supplications";
+
+      let completedCount = 0;
+      container.innerHTML = "";
+
+      items.forEach(d => {
+        const cur = adkarCounts[d.id] || 0;
+        const isDone = cur >= d.countTarget;
+        if (isDone) completedCount++;
+
+        const card = document.createElement("div");
+        card.className = "dikr-card" + (isDone ? " completed" : "");
+        card.innerHTML = `
+          <div class="dikr-header">
+            <span class="dikr-badge">${d.categoryAr}</span>
+            <span style="font-size: 11px; font-weight: bold; color: ${isDone ? 'var(--cyan)' : 'var(--gold)'};">
+              ${isDone ? '✓ Completed' : `${cur} / ${d.countTarget}`}
+            </span>
+          </div>
+          <div class="dikr-text-ar">${d.arabic}</div>
+          <div class="dikr-virtue">✨ ${d.virtue}</div>
+          <div class="dikr-trans">${d.trans}</div>
+          <div class="dikr-footer">
+            <div class="dikr-source">${d.source}</div>
+            <button class="dikr-count-btn ${isDone ? 'completed' : ''}" onclick="incrementDikr('${d.id}', event)">
+              <span>${isDone ? '✓ Done' : 'Tap'}</span>
+              <span>${cur} / ${d.countTarget}</span>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Update progress card
+      const fracEl = document.getElementById("adkar-progress-fraction");
+      if (fracEl) fracEl.textContent = `${completedCount} / ${items.length} Done`;
+
+      const fillEl = document.getElementById("adkar-progress-fill");
+      if (fillEl) {
+        const pct = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+        fillEl.style.width = `${pct}%`;
+      }
+    }
+
     // Initialize View
     renderSurahList(ALL_114_SURAHS);
     document.getElementById("current-qari-name").textContent = RECITERS[currentReciterIndex].nameEn;
+    updateQiblaUI();
+    renderAdkarList();
   </script>
 </body>
 </html>

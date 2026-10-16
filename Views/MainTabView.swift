@@ -7,12 +7,16 @@ public struct MainTabView: View {
     public enum TabItem: Hashable, CaseIterable {
         case identify
         case mushaf
+        case qibla
+        case adkar
         case history
 
         public var title: String {
             switch self {
             case .identify: return "Identify"
             case .mushaf: return "Mushaf"
+            case .qibla: return "Qibla"
+            case .adkar: return "Adkar"
             case .history: return "History"
             }
         }
@@ -21,6 +25,8 @@ public struct MainTabView: View {
             switch self {
             case .identify: return "waveform.circle.fill"
             case .mushaf: return "book.pages.fill"
+            case .qibla: return "safari.fill" // Compass icon
+            case .adkar: return "hand.raised.fill" // Hand icon
             case .history: return "clock.arrow.circlepath"
             }
         }
@@ -37,6 +43,10 @@ public struct MainTabView: View {
                     BayanIdentifyView()
                 case .mushaf:
                     MushafRootView()
+                case .qibla:
+                    QiblaView()
+                case .adkar:
+                    AdkarView()
                 case .history:
                     HistoryView()
                 }
@@ -117,13 +127,13 @@ public struct LiquidGlassTabBar: View {
                         selectedTab = tab
                     }
                 } label: {
-                    HStack(spacing: 6) {
+                    VStack(spacing: 3) {
                         Image(systemName: tab.icon)
-                            .font(.system(size: 16, weight: isSelected ? .bold : .medium))
+                            .font(.system(size: 15, weight: isSelected ? .bold : .medium))
                             .foregroundColor(isSelected ? BayanTheme.goldSoft : .white.opacity(0.45))
 
                         Text(tab.title)
-                            .font(.system(size: 12, weight: isSelected ? .bold : .medium))
+                            .font(.system(size: 9.5, weight: isSelected ? .bold : .medium))
                             .foregroundColor(isSelected ? BayanTheme.goldSoft : .white.opacity(0.45))
                     }
                     .frame(maxWidth: .infinity)
