@@ -42,10 +42,17 @@ public final class AudioPlayerService: NSObject {
         let playerItem = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: playerItem)
 
+        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(playerItemDidFinishPlaying),
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: playerItem
+        )
+
         player?.play()
         self.isPlaying = true
 
-        // Update Last Read sync position
         QuranSyncManager.shared.updateLastRead(
             surahId: surah.id,
             ayahId: ayah,
@@ -53,6 +60,17 @@ public final class AudioPlayerService: NSObject {
             qariId: activeReciter.id,
             audioTime: 0.0
         )
+    }
+
+    @objc private func playerItemDidFinishPlaying() {
+        guard let surah = currentSurah else { return }
+        if currentAyah < surah.totalAyahs {
+            // Auto-advance sequentially to the next Ayah
+            play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
+        } else {
+            // Reached the end of the Surah
+            isPlaying = false
+        }
     }
 
     public func togglePlayPause() {

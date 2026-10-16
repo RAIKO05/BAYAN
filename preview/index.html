@@ -767,25 +767,44 @@
       114: "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ"
     };
 
+    let currentPlayingSurahId = 1;
+    let currentPlayingAyah = 1;
+    let currentPlayingMaxAyahs = 7;
+
     function openMatchModal(surahId, nameEn, nameAr, qari, fileCode) {
+      currentPlayingSurahId = surahId;
+      currentPlayingAyah = 1;
+      const surahObj = ALL_114_SURAHS.find(s => s.id === surahId);
+      currentPlayingMaxAyahs = surahObj ? surahObj.ayahs : 7;
+
       const versesText = SURAH_VERSES[surahId] || `بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ سُورَةُ ${nameAr} كَامِلَةً`;
-      document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah 1–${surahId === 1 ? '7' : '4'}`;
+      document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
       document.getElementById("modal-arabic-name").textContent = nameAr;
       document.getElementById("modal-qari").textContent = `${qari} (Hafs 'an 'Asim)`;
       document.getElementById("modal-snippet").textContent = versesText;
-      currentAudioUrl = `https://everyayah.com/data/${RECITERS[currentReciterIndex].folder}/${fileCode}.mp3`;
+      updateAudioUrl();
       document.getElementById("match-modal").classList.add("open");
+    }
+
+    function updateAudioUrl() {
+      const sCode = String(currentPlayingSurahId).padStart(3, "0");
+      const aCode = String(currentPlayingAyah).padStart(3, "0");
+      currentAudioUrl = `https://everyayah.com/data/${RECITERS[currentReciterIndex].folder}/${sCode}${aCode}.mp3`;
+      audioPlayer.src = currentAudioUrl;
     }
 
     function closeModal() {
       document.getElementById("match-modal").classList.remove("open");
       audioPlayer.pause();
       document.getElementById("play-btn-text").textContent = "PLAY RECITATION";
+      document.getElementById("play-btn-icon").textContent = "▶";
     }
 
     function toggleAudioPlayback() {
       if (audioPlayer.paused) {
-        audioPlayer.src = currentAudioUrl;
+        if (!audioPlayer.src || audioPlayer.src !== currentAudioUrl) {
+          audioPlayer.src = currentAudioUrl;
+        }
         audioPlayer.play();
         document.getElementById("play-btn-text").textContent = "PAUSE RECITATION";
         document.getElementById("play-btn-icon").textContent = "⏸";
@@ -795,6 +814,24 @@
         document.getElementById("play-btn-icon").textContent = "▶";
       }
     }
+
+    // Auto-advance sequentially to the next Ayah when one finishes
+    audioPlayer.addEventListener("ended", () => {
+      if (currentPlayingAyah < currentPlayingMaxAyahs) {
+        currentPlayingAyah++;
+        const surahObj = ALL_114_SURAHS.find(s => s.id === currentPlayingSurahId);
+        const nameEn = surahObj ? surahObj.nameEn : "";
+        document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
+        updateAudioUrl();
+        audioPlayer.play();
+      } else {
+        // Completed entire Surah
+        document.getElementById("play-btn-text").textContent = "REPLAY SURAH";
+        document.getElementById("play-btn-icon").textContent = "↺";
+        currentPlayingAyah = 1;
+        updateAudioUrl();
+      }
+    });
 
     // Reciters List Sheet Modal Controls
     function openReciterModal() {
