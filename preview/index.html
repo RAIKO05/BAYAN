@@ -1501,6 +1501,11 @@
           <p>QURAN AUDIO RECOGNITION</p>
         </div>
 
+        <!-- Local Server Recommendation Banner (shown when opened via file://) -->
+        <div id="local-server-banner" style="display: none; background: rgba(51, 209, 224, 0.12); border: 1px solid var(--cyan); border-radius: 14px; margin: 0 16px 14px; padding: 7px 12px; font-size: 11px; text-align: center; color: #e2e8f0; line-height: 1.4;">
+          ✨ Open via local server for full mic & speech sensitivity: <a href="http://127.0.0.1:8765/" target="_blank" style="color: var(--cyan); font-weight: bold; text-decoration: underline;">http://127.0.0.1:8765/</a>
+        </div>
+
         <div class="radar-container">
           <div class="ripple-ring" id="ring1"></div>
           <div class="ripple-ring" id="ring2"></div>
@@ -2867,8 +2872,13 @@
             listenSecondsRemaining--;
             timerLabel.textContent = `${listenSecondsRemaining}s`;
 
-            // At 13s (after 5s of recording), send audio blob to Shazamio backend
-            if (listenSecondsRemaining === 13 && recordedAudioChunks.length > 0) {
+            // Periodically request data from MediaRecorder so chunks are updated
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+              try { mediaRecorder.requestData(); } catch(e) {}
+            }
+
+            // Staged recognition checks at 15s (after 3s), 12s (after 6s), 8s (after 10s), 4s (after 14s)
+            if ([15, 12, 8, 4].includes(listenSecondsRemaining) && recordedAudioChunks.length > 0) {
               const audioBlob = new Blob(recordedAudioChunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
               const matched = await sendAudioBlobToRecognitionServer(audioBlob);
               if (matched) return;
@@ -2886,7 +2896,7 @@
                 }
 
                 statusHead.textContent = "No Recitation Detected";
-                statusSub.textContent = "Could not identify recitation. Please bring your phone closer to the audio, or use the audio samples / text scanner below.";
+                statusSub.textContent = "Could not identify recitation. Ensure your speakers are loud enough for your microphone, or try one of the audio samples below.";
                 stopListening(false);
               }
             }
@@ -4068,6 +4078,12 @@
     renderAdkarList();
     renderHistoryList();
     updateLastReadUI();
+
+    // Show local server recommendation if opened directly via file://
+    if (window.location.protocol === "file:") {
+      const banner = document.getElementById("local-server-banner");
+      if (banner) banner.style.display = "block";
+    }
   </script>
 </body>
 </html>
