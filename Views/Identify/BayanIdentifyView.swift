@@ -100,7 +100,7 @@ struct BayanIdentifyView: View {
                         }
                     }
                 }
-                .padding(.bottom, 24)
+                .padding(.bottom, 80)
             }
             .onChange(of: recognitionService.state) { _, newState in
                 if case let .matched(result) = newState {

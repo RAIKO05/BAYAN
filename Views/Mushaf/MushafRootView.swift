@@ -123,7 +123,7 @@ struct MushafRootView: View {
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, 32)
+                        .padding(.bottom, 110)
                     }
                     .padding(.top, 12)
                 }

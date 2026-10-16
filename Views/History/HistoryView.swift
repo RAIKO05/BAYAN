@@ -95,6 +95,7 @@ struct HistoryView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
+                    .safeAreaPadding(.bottom, 90)
                 }
             }
             .navigationTitle("Recognized History")

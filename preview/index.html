@@ -73,8 +73,12 @@
     .content-area {
       flex: 1;
       overflow-y: auto;
-      padding-bottom: 90px;
+      padding-bottom: 96px;
       scrollbar-width: none;
+      transition: padding-bottom 0.25s ease;
+    }
+    .content-area.has-mini-player {
+      padding-bottom: 156px;
     }
     .content-area::-webkit-scrollbar { display: none; }
 
@@ -639,37 +643,205 @@
       font-weight: 700;
     }
 
-    /* Liquid Glass Tab Bar */
+    /* Floating Liquid Glass Mini Player Dock */
+    .liquid-mini-player {
+      position: absolute;
+      bottom: 88px;
+      left: 16px;
+      right: 16px;
+      height: 56px;
+      background: rgba(8, 20, 16, 0.85);
+      backdrop-filter: blur(35px) saturate(210%);
+      -webkit-backdrop-filter: blur(35px) saturate(210%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-top: 1px solid rgba(229, 185, 90, 0.48);
+      border-radius: 28px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.72), inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 22px rgba(19, 102, 82, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 12px;
+      z-index: 85;
+      cursor: pointer;
+      animation: slideUpMini 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .liquid-mini-player:hover {
+      background: rgba(12, 28, 22, 0.92);
+    }
+    .liquid-mini-player.visible {
+      display: flex !important;
+    }
+    @keyframes slideUpMini {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .mini-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .mini-disc {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(229, 185, 90, 0.25), rgba(19, 102, 82, 0.4));
+      border: 1px solid var(--glass-gold-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-soft);
+      font-size: 15px;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(229, 185, 90, 0.2);
+    }
+    .mini-disc.playing {
+      animation: spinDisc 6s linear infinite;
+    }
+    @keyframes spinDisc {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .mini-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .mini-surah {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-reciter {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mini-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .mini-play-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #caa142);
+      border: none;
+      color: #040808;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(229, 185, 90, 0.35);
+      transition: transform 0.15s;
+    }
+    .mini-play-btn:active {
+      transform: scale(0.9);
+    }
+    .mini-close-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mini-close-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+
+    /* Floating Liquid Glass Tab Bar Dock */
     .tab-bar {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 72px;
-      background: rgba(10, 13, 18, 0.88);
-      backdrop-filter: blur(25px);
-      border-top: 1px solid var(--glass-border);
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      height: 64px;
+      background: rgba(10, 22, 18, 0.72);
+      backdrop-filter: blur(35px) saturate(210%);
+      -webkit-backdrop-filter: blur(35px) saturate(210%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-top: 1px solid rgba(229, 185, 90, 0.5);
+      border-radius: 32px;
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding-bottom: 10px;
-      z-index: 50;
+      padding: 0 10px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 25px rgba(19, 102, 82, 0.28);
+      z-index: 90;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .tab-btn {
+      position: relative;
       background: transparent;
-      border: none;
-      color: rgba(255, 255, 255, 0.45);
+      border: 1px solid transparent;
+      color: rgba(255, 255, 255, 0.5);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      font-size: 10px;
+      justify-content: center;
+      gap: 3px;
+      font-size: 10.5px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      padding: 6px 18px;
+      border-radius: 22px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .tab-btn svg { width: 22px; height: 22px; fill: currentColor; }
-    .tab-btn.active { color: var(--gold); }
+    .tab-btn:active {
+      transform: scale(0.92);
+    }
+    .tab-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transition: transform 0.2s;
+    }
+    .tab-btn.active {
+      color: var(--gold-soft);
+      background: rgba(229, 185, 90, 0.15);
+      border-color: rgba(229, 185, 90, 0.38);
+      box-shadow: 0 0 14px rgba(229, 185, 90, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      font-weight: 700;
+      transform: translateY(-1px);
+    }
+    .tab-btn.active svg {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 6px rgba(229, 185, 90, 0.45));
+    }
+    .tab-btn .active-indicator-dot {
+      display: none;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+      position: absolute;
+      bottom: 2px;
+    }
+    .tab-btn.active .active-indicator-dot {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -854,19 +1026,49 @@
       </div>
     </div>
 
-    <!-- Liquid Glass Tab Bar -->
+    <!-- Floating Liquid Glass Mini Player Dock -->
+    <div class="liquid-mini-player" id="liquid-mini-player" onclick="handleMiniPlayerClick(event)">
+      <div class="mini-left">
+        <div class="mini-disc" id="mini-player-disc">
+          <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
+        </div>
+        <div class="mini-info">
+          <div class="mini-surah" id="mini-player-title">Surah Al-Mulk • Ayah 1</div>
+          <div class="mini-reciter">
+            <span id="mini-player-reciter">Omar Diaa Aldeen</span>
+            <span>•</span>
+            <span id="mini-player-status" style="color: var(--gold);">Reciting</span>
+          </div>
+        </div>
+      </div>
+      <div class="mini-actions">
+        <button class="mini-play-btn" id="mini-play-btn" onclick="toggleMiniPlayerPlay(event)" title="Play / Pause">
+          ▶
+        </button>
+        <button class="mini-close-btn" onclick="dismissMiniPlayer(event)" title="Close Player">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Liquid Glass Tab Bar Dock -->
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('identify', this)">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
-        Identify
+        <span>Identify</span>
+        <span class="active-indicator-dot"></span>
       </button>
       <button class="tab-btn" onclick="switchTab('mushaf', this)">
         <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        Mushaf
+        <span>Mushaf</span>
+        <span class="active-indicator-dot"></span>
       </button>
       <button class="tab-btn" onclick="switchTab('history', this)">
         <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-        History
+        <span>History</span>
+        <span class="active-indicator-dot"></span>
       </button>
     </div>
   </div>
@@ -886,8 +1088,15 @@
       { code: "de", name: "German", nativeName: "Deutsch (Abu Rida)", flag: "🇩🇪", edition: "de.aburida" }
     ];
 
-    let currentTranslationLang = localStorage.getItem("bayan_preferred_lang") || "en";
-    let isTranslationEnabled = (localStorage.getItem("bayan_trans_enabled") !== "false");
+    let currentTranslationLang = "en";
+    try {
+      currentTranslationLang = localStorage.getItem("bayan_preferred_lang") || "en";
+    } catch (e) {}
+
+    let isTranslationEnabled = true;
+    try {
+      isTranslationEnabled = (localStorage.getItem("bayan_trans_enabled") !== "false");
+    } catch (e) {}
     const TRANSLATIONS_REMOTE_CACHE = {}; // [lang][surahId] = [translations]
 
     // Curated Reciters Catalog - including Omar Diaa Aldeen (Litatmayin)
@@ -1251,7 +1460,9 @@
     // Toggle Translation ON / OFF
     function toggleTranslation() {
       isTranslationEnabled = !isTranslationEnabled;
-      localStorage.setItem("bayan_trans_enabled", isTranslationEnabled);
+      try {
+        localStorage.setItem("bayan_trans_enabled", isTranslationEnabled);
+      } catch (e) {}
       updateTranslationUI();
     }
 
@@ -1283,7 +1494,9 @@
 
     function selectLanguage(langCode) {
       currentTranslationLang = langCode;
-      localStorage.setItem("bayan_preferred_lang", langCode);
+      try {
+        localStorage.setItem("bayan_preferred_lang", langCode);
+      } catch (e) {}
       const langObj = TRANSLATION_LANGUAGES.find(l => l.code === langCode);
       if (langObj) {
         document.getElementById("current-lang-flag").textContent = langObj.flag;
@@ -1319,6 +1532,15 @@
 
     // Open Match & Surah Detail Reader Modal
     function openMatchModal(surahId, nameEn, nameAr, qari, fileCode, isScanMatch = false) {
+      if (qari) {
+        const foundIdx = RECITERS.findIndex(r => r.nameEn.toLowerCase() === qari.toLowerCase() || r.nameAr === qari);
+        if (foundIdx !== -1) {
+          currentReciterIndex = foundIdx;
+          const curQariEl = document.getElementById("current-qari-name");
+          if (curQariEl) curQariEl.textContent = RECITERS[foundIdx].nameEn;
+        }
+      }
+      hideMiniPlayer();
       currentPlayingSurahId = surahId;
       currentPlayingAyah = 1;
       const surahObj = ALL_114_SURAHS.find(s => s.id === surahId);
@@ -1441,7 +1663,78 @@
 
     function closeModal() {
       document.getElementById("match-modal").classList.remove("open");
+      if (!audioPlayer.paused || (audioPlayer.currentTime > 0 && !audioPlayer.ended)) {
+        showMiniPlayer();
+      } else {
+        hideMiniPlayer();
+      }
+    }
+
+    // Floating Liquid Glass Mini Player Controller
+    function updateMiniPlayerUI() {
+      const mini = document.getElementById("liquid-mini-player");
+      const titleEl = document.getElementById("mini-player-title");
+      const reciterEl = document.getElementById("mini-player-reciter");
+      const statusEl = document.getElementById("mini-player-status");
+      const playBtn = document.getElementById("mini-play-btn");
+      const disc = document.getElementById("mini-player-disc");
+      if (!mini) return;
+
+      const surahObj = ALL_114_SURAHS.find(s => s.id === currentPlayingSurahId) || { nameEn: "Al-Mulk" };
+      const reciter = RECITERS[currentReciterIndex] || RECITERS[0];
+
+      titleEl.textContent = `Surah ${surahObj.nameEn} • Ayah ${currentPlayingAyah}`;
+      reciterEl.textContent = reciter.nameEn;
+
+      if (!audioPlayer.paused) {
+        statusEl.textContent = "Reciting";
+        statusEl.style.color = "var(--gold)";
+        playBtn.textContent = "⏸";
+        disc.classList.add("playing");
+      } else {
+        statusEl.textContent = "Paused";
+        statusEl.style.color = "rgba(255,255,255,0.45)";
+        playBtn.textContent = "▶";
+        disc.classList.remove("playing");
+      }
+    }
+
+    function showMiniPlayer() {
+      const modal = document.getElementById("match-modal");
+      if (modal && modal.classList.contains("open")) return;
+      updateMiniPlayerUI();
+      const mini = document.getElementById("liquid-mini-player");
+      if (mini) mini.classList.add("visible");
+      document.querySelector(".content-area")?.classList.add("has-mini-player");
+    }
+
+    function hideMiniPlayer() {
+      const mini = document.getElementById("liquid-mini-player");
+      if (mini) mini.classList.remove("visible");
+      document.querySelector(".content-area")?.classList.remove("has-mini-player");
+    }
+
+    function handleMiniPlayerClick(e) {
+      if (e.target.closest(".mini-actions")) return;
+      const surahObj = ALL_114_SURAHS.find(s => s.id === currentPlayingSurahId) || { id: 67, nameEn: "Al-Mulk", nameAr: "الملك" };
+      const reciter = RECITERS[currentReciterIndex] || RECITERS[0];
+      const sCode = String(surahObj.id).padStart(3, "0");
+      const aCode = String(currentPlayingAyah).padStart(3, "0");
+      hideMiniPlayer();
+      openMatchModal(surahObj.id, surahObj.nameEn, surahObj.nameAr, reciter.nameEn, `${sCode}${aCode}`);
+    }
+
+    function toggleMiniPlayerPlay(e) {
+      e.stopPropagation();
+      toggleAudioPlayback();
+      updateMiniPlayerUI();
+    }
+
+    function dismissMiniPlayer(e) {
+      e.stopPropagation();
       audioPlayer.pause();
+      hideMiniPlayer();
+      highlightActiveVerseCard();
       document.getElementById("play-btn-text").textContent = "PLAY RECITATION";
       document.getElementById("play-btn-icon").textContent = "▶";
     }
@@ -1460,7 +1753,39 @@
         document.getElementById("play-btn-icon").textContent = "▶";
       }
       highlightActiveVerseCard();
+      updateMiniPlayerUI();
     }
+
+    // Audio Player State Listeners
+    audioPlayer.addEventListener("play", () => {
+      document.getElementById("play-btn-text").textContent = "PAUSE RECITATION";
+      document.getElementById("play-btn-icon").textContent = "⏸";
+      highlightActiveVerseCard();
+      updateMiniPlayerUI();
+      const modal = document.getElementById("match-modal");
+      if (!modal || !modal.classList.contains("open")) {
+        showMiniPlayer();
+      }
+    });
+
+    audioPlayer.addEventListener("pause", () => {
+      document.getElementById("play-btn-text").textContent = "PLAY RECITATION";
+      document.getElementById("play-btn-icon").textContent = "▶";
+      highlightActiveVerseCard();
+      updateMiniPlayerUI();
+    });
+
+    audioPlayer.addEventListener("error", (e) => {
+      console.warn("Audio error encountered:", e);
+      const sCode = String(currentPlayingSurahId).padStart(3, "0");
+      const aCode = String(currentPlayingAyah).padStart(3, "0");
+      const fallbackUrl = `https://everyayah.com/data/Alafasy_128kbps/${sCode}${aCode}.mp3`;
+      if (audioPlayer.src !== fallbackUrl) {
+        console.log("Fallback audio stream triggered:", fallbackUrl);
+        audioPlayer.src = fallbackUrl;
+        audioPlayer.play().catch(() => {});
+      }
+    });
 
     // Auto-advance sequentially to the next Ayah when one finishes
     audioPlayer.addEventListener("ended", () => {
@@ -1472,6 +1797,7 @@
         currentPlayingAyah = 1;
         updateAudioUrl();
         highlightActiveVerseCard();
+        updateMiniPlayerUI();
         return;
       }
       if (currentPlayingAyah < currentPlayingMaxAyahs) {
@@ -1481,6 +1807,7 @@
         document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
         updateAudioUrl();
         highlightActiveVerseCard();
+        updateMiniPlayerUI();
         audioPlayer.play().catch(e => console.log("Autoplay error:", e));
       } else {
         document.getElementById("play-btn-text").textContent = "REPLAY SURAH";
@@ -1488,6 +1815,7 @@
         currentPlayingAyah = 1;
         updateAudioUrl();
         highlightActiveVerseCard();
+        updateMiniPlayerUI();
       }
     });
 
