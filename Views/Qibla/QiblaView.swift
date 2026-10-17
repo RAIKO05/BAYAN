@@ -5,6 +5,7 @@ import CoreLocation
 public struct QiblaView: View {
     @StateObject private var compassManager = CompassHeadingManager()
     @State private var selectedCity: QiblaCity = .defaultCity
+    @State private var useLiveGPS = true
     @State private var showingCitySheet = false
  
     public init() {}
@@ -13,12 +14,33 @@ public struct QiblaView: View {
         compassManager.heading
     }
 
+    private var activeLatitude: Double {
+        if useLiveGPS, let coord = compassManager.userCoordinate {
+            return coord.latitude
+        }
+        return selectedCity.latitude
+    }
+
+    private var activeLongitude: Double {
+        if useLiveGPS, let coord = compassManager.userCoordinate {
+            return coord.longitude
+        }
+        return selectedCity.longitude
+    }
+
+    private var displayLocationName: String {
+        if useLiveGPS, compassManager.userCoordinate != nil {
+            return compassManager.userCityName ?? "Current Location (GPS)"
+        }
+        return "\(selectedCity.name), \(selectedCity.country)"
+    }
+
     private var qiblaBearing: Double {
-        calculateQiblaBearing(lat: selectedCity.latitude, lng: selectedCity.longitude)
+        calculateQiblaBearing(lat: activeLatitude, lng: activeLongitude)
     }
 
     private var distanceToKaaba: Int {
-        calculateDistance(lat: selectedCity.latitude, lng: selectedCity.longitude)
+        calculateDistance(lat: activeLatitude, lng: activeLongitude)
     }
 
     private var headingDifference: Double {
@@ -79,11 +101,11 @@ public struct QiblaView: View {
                                     .foregroundColor(BayanTheme.gold)
 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(selectedCity.name)
+                                    Text(displayLocationName)
                                         .font(.subheadline.weight(.bold))
                                         .foregroundColor(.white)
 
-                                    Text("\(String(format: "%.2f", abs(selectedCity.latitude)))°\(selectedCity.latitude >= 0 ? "N" : "S"), \(String(format: "%.2f", abs(selectedCity.longitude)))°\(selectedCity.longitude >= 0 ? "E" : "W") • Qibla: \(Int(qiblaBearing))°")
+                                    Text("\(String(format: "%.2f", abs(activeLatitude)))°\(activeLatitude >= 0 ? "N" : "S"), \(String(format: "%.2f", abs(activeLongitude)))°\(activeLongitude >= 0 ? "E" : "W") • Qibla: \(Int(qiblaBearing))°")
                                         .font(.caption2)
                                         .foregroundColor(.white.opacity(0.65))
                                 }
@@ -274,8 +296,12 @@ public struct QiblaView: View {
             .navigationTitle("Qibla")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingCitySheet) {
-                CityPickerSheet(selectedCity: $selectedCity)
-                    .presentationDetents([.medium, .large])
+                CityPickerSheet(
+                    selectedCity: $selectedCity,
+                    useLiveGPS: $useLiveGPS,
+                    compassManager: compassManager
+                )
+                .presentationDetents([.medium, .large])
             }
         }
     }
@@ -399,6 +425,8 @@ public struct QiblaCity: Identifiable, Hashable {
 // City Picker Sheet
 private struct CityPickerSheet: View {
     @Binding var selectedCity: QiblaCity
+    @Binding var useLiveGPS: Bool
+    @ObservedObject var compassManager: CompassHeadingManager
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -406,35 +434,87 @@ private struct CityPickerSheet: View {
             ZStack {
                 BayanTheme.obsidian.ignoresSafeArea()
 
-                List(QiblaCity.standardCities) { city in
-                    Button {
-                        selectedCity = city
-                        dismiss()
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(city.name)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                Text(city.country)
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.6))
-                            }
-
-                            Spacer()
-
-                            if city == selectedCity {
-                                Image(systemName: "checkmark")
+                List {
+                    // Current GPS Option
+                    Section {
+                        Button {
+                            useLiveGPS = true
+                            dismiss()
+                        } label: {
+                            HStack {
+                                Image(systemName: "location.fill")
                                     .foregroundColor(BayanTheme.gold)
                                     .font(.headline)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(compassManager.userCityName ?? "Current Location (GPS)")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    if let coord = compassManager.userCoordinate {
+                                        Text("\(String(format: "%.2f", abs(coord.latitude)))°\(coord.latitude >= 0 ? "N" : "S"), \(String(format: "%.2f", abs(coord.longitude)))°\(coord.longitude >= 0 ? "E" : "W")")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.6))
+                                    } else {
+                                        Text("Detecting live coordinates via GPS...")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.6))
+                                    }
+                                }
+
+                                Spacer()
+
+                                if useLiveGPS {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(BayanTheme.gold)
+                                        .font(.headline)
+                                }
                             }
                         }
+                        .listRowBackground(Color.white.opacity(0.04))
+                    } header: {
+                        Text("Live Detection")
+                            .foregroundColor(BayanTheme.goldSoft)
+                            .font(.caption.weight(.bold))
                     }
-                    .listRowBackground(Color.white.opacity(0.04))
+
+                    // Standard Preset Cities
+                    Section {
+                        ForEach(QiblaCity.standardCities) { city in
+                            Button {
+                                useLiveGPS = false
+                                selectedCity = city
+                                dismiss()
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(city.name)
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                        Text(city.country)
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.6))
+                                    }
+
+                                    Spacer()
+
+                                    if !useLiveGPS && city == selectedCity {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(BayanTheme.gold)
+                                            .font(.headline)
+                                    }
+                                }
+                            }
+                            .listRowBackground(Color.white.opacity(0.04))
+                        }
+                    } header: {
+                        Text("Preset Cities")
+                            .foregroundColor(BayanTheme.goldSoft)
+                            .font(.caption.weight(.bold))
+                    }
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Select City")
+            .navigationTitle("Select Location")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -446,28 +526,63 @@ private struct CityPickerSheet: View {
     }
 }
 
-// MARK: - CoreLocation Compass Heading Manager
+// MARK: - CoreLocation Compass Heading & Location Manager
 public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published public var heading: Double = 0.0
+    @Published public var userCoordinate: CLLocationCoordinate2D?
+    @Published public var userCityName: String?
     private var locationManager: CLLocationManager?
+    private let geocoder = CLGeocoder()
 
     public override init() {
         super.init()
         #if os(iOS)
-        locationManager = CLLocationManager()
-        locationManager?.delegate = self
-        locationManager?.headingFilter = 1.0
+        let manager = CLLocationManager()
+        self.locationManager = manager
+        manager.delegate = self
+        manager.headingFilter = 1.0
+        manager.desiredAccuracy = kCLLocationAccuracyKilometer
+        manager.requestWhenInUseAuthorization()
         if CLLocationManager.headingAvailable() {
-            locationManager?.startUpdatingHeading()
+            manager.startUpdatingHeading()
         }
+        manager.startUpdatingLocation()
         #endif
     }
 
     #if os(iOS)
+    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+            if CLLocationManager.headingAvailable() {
+                manager.startUpdatingHeading()
+            }
+            manager.startUpdatingLocation()
+        }
+    }
+
     public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         let val = newHeading.trueHeading > 0 ? newHeading.trueHeading : newHeading.magneticHeading
         DispatchQueue.main.async {
             self.heading = val
+        }
+    }
+
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        DispatchQueue.main.async {
+            self.userCoordinate = location.coordinate
+        }
+
+        if userCityName == nil {
+            geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, _ in
+                if let place = placemarks?.first {
+                    let city = place.locality ?? place.administrativeArea ?? place.name ?? "Current Location"
+                    let country = place.country ?? ""
+                    DispatchQueue.main.async {
+                        self?.userCityName = country.isEmpty ? city : "\(city), \(country)"
+                    }
+                }
+            }
         }
     }
     #endif

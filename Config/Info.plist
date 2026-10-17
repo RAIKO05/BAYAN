@@ -25,6 +25,14 @@
     <key>NSMicrophoneUsageDescription</key>
     <string>Bayan requires microphone access to listen to and recognize Quranic recitations.</string>
     
+    <!-- Location Permission for Qibla Compass Direction -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Bayan requires location access to calculate the exact direction to the Holy Kaaba (Qibla) and local prayer times from your current location.</string>
+
+    <!-- Speech Recognition for Recitation Identification -->
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Bayan uses speech recognition to accurately identify recited Quranic verses in real time.</string>
+    
     <!-- Background Audio Recitation Mode -->
     <key>UIBackgroundModes</key>
     <array>

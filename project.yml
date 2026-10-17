@@ -29,6 +29,8 @@ targets:
       - sdk: AVFoundation.framework
       - sdk: MediaPlayer.framework
       - sdk: AppIntents.framework
+      - sdk: CoreLocation.framework
+      - sdk: Accelerate.framework
     settings:
       base:
         PRODUCT_NAME: Bayan
@@ -37,6 +39,9 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Config/Bayan.entitlements
         ENABLE_PREVIEWS: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
 
   BayanWidgets:
     type: app-extension
@@ -57,4 +62,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: tools.rea.Bayan.Widgets
         INFOPLIST_FILE: Config/Widgets-Info.plist
         CODE_SIGN_ENTITLEMENTS: Config/BayanWidgets.entitlements
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
