@@ -73,6 +73,19 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     private func beginAudioEngineRecording() {
+        // CRITICAL FIX: Configure AVAudioSession before touching the inputNode
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("⚠️ AVAudioSession failed to set up: \(error)")
+            DispatchQueue.main.async {
+                self.state = .failed("Audio hardware is busy or unavailable.")
+            }
+            return
+        }
+
         isMatchingActive = true
         state = .listening(decibels: 0.1)
 
@@ -217,6 +230,9 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
             audioEngine.inputNode.removeTap(onBus: 0)
             audioEngine.stop()
         }
+        
+        // Deactivate the session safely when stopping
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     public func reset() {
