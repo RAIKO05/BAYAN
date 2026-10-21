@@ -31,6 +31,7 @@ targets:
       - sdk: AppIntents.framework
       - sdk: CoreLocation.framework
       - sdk: Accelerate.framework
+      - sdk: Speech.framework
     settings:
       base:
         PRODUCT_NAME: Bayan

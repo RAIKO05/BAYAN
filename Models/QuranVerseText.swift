@@ -1,15 +1,76 @@
 import Foundation
 
 public struct QuranVerseText {
+    public static var isWarshActive: Bool = false
+
     // Lazy-loaded offline cache for all 6,236 Ayahs across all 114 Surahs
     private static var arabicCache: [String: [String]] = {
-        guard let url = Bundle.main.url(forResource: "quran_uthmani", withExtension: "json"),
+        let resourceName = isWarshActive ? "quran_warsh" : "quran_uthmani"
+        let fallbackName = "quran_uthmani"
+        let targetUrl = Bundle.main.url(forResource: resourceName, withExtension: "json") ??
+                        Bundle.main.url(forResource: fallbackName, withExtension: "json")
+        guard let url = targetUrl,
               let data = try? Data(contentsOf: url),
               let dict = try? JSONDecoder().decode([String: [String]].self, from: data) else {
             return [:]
         }
         return dict
     }()
+
+    private static var warshCache: [String: [String]] = {
+        guard let url = Bundle.main.url(forResource: "quran_warsh", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let dict = try? JSONDecoder().decode([String: [String]].self, from: data) else {
+            return [:]
+        }
+        return dict
+    }()
+
+    // Method to toggle or reload Qiraah
+    public static func reloadForQiraah(warsh: Bool) {
+        isWarshActive = warsh
+    }
+
+    public static func normalizeArabic(_ text: String) -> String {
+        var str = text
+        let diacritics: [Character] = [
+            "َ", "ً", "ُ", "ٌ", "ِ", "ٍ", "ْ", "ّ", "ٰ", "ٓ", "ۥ", "ۦ", "ۛ", "ۖ", "ۗ", "ۚ", "ۘ", "ۜ", "۟", "۠", "ۢ", "ۣ", "ۤ", "ـ"
+        ]
+        str.removeAll { diacritics.contains($0) }
+        str = str.replacingOccurrences(of: "أ", with: "ا")
+            .replacingOccurrences(of: "إ", with: "ا")
+            .replacingOccurrences(of: "آ", with: "ا")
+            .replacingOccurrences(of: "ٱ", with: "ا")
+            .replacingOccurrences(of: "ة", with: "ه")
+            .replacingOccurrences(of: "ى", with: "ي")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return str
+    }
+
+    public static func searchVerse(query: String) -> (surahId: Int, ayahNumber: Int)? {
+        let normalizedQuery = normalizeArabic(query)
+        guard normalizedQuery.count >= 3 else { return nil }
+
+        let queryTokens = normalizedQuery.components(separatedBy: .whitespaces)
+            .filter { $0.count >= 2 }
+
+        guard !queryTokens.isEmpty else { return nil }
+
+        for (surahKey, ayahs) in arabicCache {
+            guard let sId = Int(surahKey) else { continue }
+            for (idx, ayahText) in ayahs.enumerated() {
+                let normalizedAyah = normalizeArabic(ayahText)
+                if normalizedAyah.contains(normalizedQuery) || normalizedQuery.contains(normalizedAyah) {
+                    return (sId, idx + 1)
+                }
+                // Token subset match if query is multiple words
+                if queryTokens.count >= 2 && queryTokens.allSatisfy({ normalizedAyah.contains($0) }) {
+                    return (sId, idx + 1)
+                }
+            }
+        }
+        return nil
+    }
 
     private static var translationCache: [String: [String]] = {
         guard let url = Bundle.main.url(forResource: "quran_translation_en", withExtension: "json"),
@@ -21,6 +82,12 @@ public struct QuranVerseText {
     }()
 
     public static func arabic(surahId: Int, ayahNumber: Int) -> String {
+        // Check offline Warsh dataset if Warsh is active
+        if isWarshActive, let warshAyahs = warshCache[String(surahId)],
+           ayahNumber >= 1, ayahNumber <= warshAyahs.count {
+            return warshAyahs[ayahNumber - 1]
+        }
+
         // Check offline bundled full Quran dataset first
         if let surahAyahs = arabicCache[String(surahId)],
            ayahNumber >= 1,

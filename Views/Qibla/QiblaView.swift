@@ -7,6 +7,7 @@ public struct QiblaView: View {
     @State private var selectedCity: QiblaCity = .defaultCity
     @State private var useLiveGPS = true
     @State private var showingCitySheet = false
+    @State private var wasAligned = false
  
     public init() {}
 
@@ -51,7 +52,7 @@ public struct QiblaView: View {
     }
 
     private var isAligned: Bool {
-        abs(headingDifference) <= 3.0
+        abs(headingDifference) <= 2.0
     }
 
     public var body: some View {
@@ -221,48 +222,75 @@ public struct QiblaView: View {
                             .rotationEffect(.degrees(-activeHeading))
                             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: activeHeading)
 
-                            // Fixed Center Needle Pointer (pointing top toward target)
-                            ZStack {
-                                // Needle North (Gold)
-                                Path { path in
-                                    path.move(to: CGPoint(x: 0, y: -70))
-                                    path.addLine(to: CGPoint(x: 9, y: 0))
-                                    path.addLine(to: CGPoint(x: -9, y: 0))
-                                    path.closeSubpath()
-                                }
-                                .fill(
-                                    LinearGradient(
-                                        colors: [BayanTheme.gold, BayanTheme.goldSoft],
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                            // Task 3: Directional Pointer Arrows
+                            // North Arrow (Gold) wrapped in VStack with Spacer below it, framed exactly 280x280
+                            VStack(spacing: 0) {
+                                CompassArrowShape()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [BayanTheme.gold, BayanTheme.goldSoft],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
                                     )
-                                )
-                                .offset(y: -35)
-
-                                // Needle South (Silver/Muted)
-                                Path { path in
-                                    path.move(to: CGPoint(x: 0, y: 70))
-                                    path.addLine(to: CGPoint(x: 9, y: 0))
-                                    path.addLine(to: CGPoint(x: -9, y: 0))
-                                    path.closeSubpath()
-                                }
-                                .fill(Color.white.opacity(0.35))
-                                .offset(y: 35)
-
-                                // Center Pivot Jewel
-                                Circle()
-                                    .fill(BayanTheme.obsidian)
-                                    .frame(width: 26, height: 26)
-                                    .overlay(Circle().stroke(BayanTheme.gold, lineWidth: 2))
-                                    .shadow(color: .black, radius: 4)
-
-                                Circle()
-                                    .fill(BayanTheme.gold)
-                                    .frame(width: 10, height: 10)
+                                    .frame(width: 18, height: 55)
+                                    .padding(.top, 28)
+                                Spacer()
                             }
+                            .frame(width: 280, height: 280)
+                            .rotationEffect(.degrees(0))
+
+                            // South Arrow (Silver/Muted) wrapped in VStack with Spacer below it, framed exactly 280x280, rotated 180°
+                            VStack(spacing: 0) {
+                                CompassArrowShape()
+                                    .fill(Color.white.opacity(0.35))
+                                    .frame(width: 18, height: 55)
+                                    .padding(.top, 28)
+                                Spacer()
+                            }
+                            .frame(width: 280, height: 280)
+                            .rotationEffect(.degrees(180))
+
+                            // Center Pivot Jewel
+                            Circle()
+                                .fill(BayanTheme.obsidian)
+                                .frame(width: 26, height: 26)
+                                .overlay(Circle().stroke(BayanTheme.gold, lineWidth: 2))
+                                .shadow(color: .black, radius: 4)
+
+                            Circle()
+                                .fill(BayanTheme.gold)
+                                .frame(width: 10, height: 10)
                         }
                         .frame(width: 280, height: 280)
                         .padding(.vertical, 10)
+
+                        // MARK: - Task 6: Prayer Times Section (Moroccan Ministry of Habous)
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("PRAYER TIMES (أَوْقَاتُ الصَّلَاةِ)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .tracking(1.5)
+                                    .foregroundColor(BayanTheme.gold.opacity(0.85))
+
+                                Spacer()
+
+                                Text("Habous Morocco (أوقاف المغرب)")
+                                    .font(.system(size: 9))
+                                    .foregroundColor(.white.opacity(0.55))
+                            }
+                            .padding(.horizontal)
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(calculatePrayerTimes(lat: activeLatitude, lng: activeLongitude)) { prayer in
+                                        PrayerTimeCard(prayer: prayer)
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        .padding(.vertical, 4)
 
                         // Qibla Info Readout Cards
                         HStack(spacing: 12) {
@@ -292,9 +320,16 @@ public struct QiblaView: View {
                     }
                     .padding(.top, 8)
                 }
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
             }
             .navigationTitle("Qibla")
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: isAligned) { _, newlyAligned in
+                if newlyAligned && !wasAligned {
+                    triggerHaptic()
+                }
+                wasAligned = newlyAligned
+            }
             .sheet(isPresented: $showingCitySheet) {
                 CityPickerSheet(
                     selectedCity: $selectedCity,

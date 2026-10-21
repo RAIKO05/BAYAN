@@ -88,6 +88,50 @@ struct MushafRootView: View {
                             .padding(.horizontal)
                         }
 
+                        // Qira'at Toggle: Hafs (حفص) vs Warsh (ورش)
+                        HStack(spacing: 8) {
+                            Text("QIRA'AT (القراءة):")
+                                .font(.system(size: 10, weight: .bold))
+                                .tracking(1.5)
+                                .foregroundColor(BayanTheme.gold.opacity(0.85))
+
+                            Spacer()
+
+                            HStack(spacing: 4) {
+                                ForEach(QuranDataService.Qiraah.allCases) { qiraah in
+                                    Button {
+                                        dataService.selectedQiraah = qiraah
+                                        if qiraah == .warsh {
+                                            if let kazabri = Reciter.standardCatalog.first(where: { $0.id == "kazabri_warsh" }) {
+                                                playerService.currentReciter = kazabri
+                                            }
+                                        }
+                                    } label: {
+                                        Text(qiraah.shortLabel)
+                                            .font(.system(size: 12, weight: .bold))
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 5)
+                                            .background(
+                                                dataService.selectedQiraah == qiraah ?
+                                                    BayanTheme.gold :
+                                                    Color.white.opacity(0.06)
+                                            )
+                                            .foregroundColor(
+                                                dataService.selectedQiraah == qiraah ?
+                                                    BayanTheme.obsidian :
+                                                    .white.opacity(0.8)
+                                            )
+                                            .clipShape(Capsule())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(3)
+                            .background(Color.white.opacity(0.06))
+                            .clipShape(Capsule())
+                        }
+                        .padding(.horizontal)
+
                         // Filter Chips
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
@@ -127,6 +171,7 @@ struct MushafRootView: View {
                     }
                     .padding(.top, 12)
                 }
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
             }
             .navigationTitle("Holy Qur'an")
             .navigationBarTitleDisplayMode(.inline)

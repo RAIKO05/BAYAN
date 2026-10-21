@@ -67,16 +67,21 @@ struct HistoryView: View {
                                     .frame(maxWidth: .infinity, alignment: .trailing)
 
                                 // Quick Play Action
+                                let isThisItemPlaying = playerService.isPlaying && playerService.currentSurah?.id == item.surah.id
                                 Button {
-                                    playerService.play(
-                                        surah: item.surah,
-                                        ayah: item.startAyah,
-                                        reciter: item.reciter
-                                    )
+                                    if isThisItemPlaying {
+                                        playerService.togglePlayPause()
+                                    } else {
+                                        playerService.play(
+                                            surah: item.surah,
+                                            ayah: item.startAyah,
+                                            reciter: item.reciter
+                                        )
+                                    }
                                 } label: {
                                     HStack {
-                                        Image(systemName: playerService.isPlaying ? "pause.fill" : "play.fill")
-                                        Text(playerService.isPlaying ? "Pause" : "Play Recitation")
+                                        Image(systemName: isThisItemPlaying ? "pause.fill" : "play.fill")
+                                        Text(isThisItemPlaying ? "Pause" : "Play Recitation")
                                     }
                                     .font(.caption.weight(.bold))
                                     .foregroundColor(BayanTheme.obsidian)
@@ -95,7 +100,7 @@ struct HistoryView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .safeAreaPadding(.bottom, 90)
+                    .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
                 }
             }
             .navigationTitle("Recognized History")

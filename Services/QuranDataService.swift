@@ -1,7 +1,35 @@
 import Foundation
 
+@Observable
 public final class QuranDataService {
     public static let shared = QuranDataService()
+
+    public enum Qiraah: String, CaseIterable, Identifiable {
+        case hafs = "Hafs 'an 'Asim"
+        case warsh = "Warsh 'an Nafi'"
+
+        public var id: String { rawValue }
+
+        public var titleArabic: String {
+            switch self {
+            case .hafs: return "حفص عن عاصم"
+            case .warsh: return "ورش عن نافع"
+            }
+        }
+
+        public var shortLabel: String {
+            switch self {
+            case .hafs: return "حفص"
+            case .warsh: return "ورش"
+            }
+        }
+    }
+
+    public var selectedQiraah: Qiraah = .hafs {
+        didSet {
+            QuranVerseText.reloadForQiraah(warsh: selectedQiraah == .warsh)
+        }
+    }
 
     public let allSurahs: [Surah]
 

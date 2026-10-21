@@ -26,6 +26,11 @@ public struct Reciter: Identifiable, Codable, Hashable {
         let ayahStr = String(format: "%03d", ayah)
         let fullAyahCode = "\(surahStr)\(ayahStr)"
 
+        if id == "kazabri_warsh" {
+            // Omar Al-Kazabri Warsh (high-speed Moroccan recitation CDN)
+            return URL(string: "https://server9.mp3quran.net/omr/\(surahStr).mp3")
+        }
+
         if id == "omardiaa" {
             // Verse-level fallback to Alafasy for uninterrupted continuous recitation
             return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
@@ -35,8 +40,25 @@ public struct Reciter: Identifiable, Codable, Hashable {
         return URL(string: urlString)
     }
 
+    public static let unknownReciter = Reciter(
+        id: "unknown",
+        nameArabic: "قارئ غير معروف",
+        nameEnglish: "Unknown Reciter",
+        style: .murattal,
+        riwayah: .hafs,
+        serverSubdomain: "Alafasy_128kbps"
+    )
+
     // Curated standard reciters catalog
     public static let standardCatalog: [Reciter] = [
+        Reciter(
+            id: "kazabri_warsh",
+            nameArabic: "عمر القزابري (ورش)",
+            nameEnglish: "Omar Al-Kazabri (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "Warsh_Omar_AlQazabri"
+        ),
         Reciter(
             id: "alafasy",
             nameArabic: "مشاري راشد العفاسي",

@@ -75,6 +75,7 @@ struct SurahDetailView: View {
                     }
                     .padding(.top, 16)
                 }
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
                 .onAppear {
                     activeAyah = initialAyah
                     proxy.scrollTo(initialAyah, anchor: .center)

@@ -283,6 +283,7 @@ public struct AdkarView: View {
                     }
                     .padding(.top, 8)
                 }
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
             }
             .navigationTitle("Adkar")
             .navigationBarTitleDisplayMode(.inline)
