@@ -5,6 +5,7 @@ struct RecognitionResultSheet: View {
     var onOpenInMushaf: (Surah, Int) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var playerService = AudioPlayerService.shared
+    @State private var showingTafsirSheet = false
 
     var body: some View {
         ZStack {
@@ -178,11 +179,38 @@ struct RecognitionResultSheet: View {
                                     .stroke(Color.white.opacity(0.2), lineWidth: 1)
                             )
                         }
+
+                        // Tafsir & Reflection Button
+                        Button {
+                            showingTafsirSheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "book.pages")
+                                Text("Tafsir & Verse Insights • تفسير الآية")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.white.opacity(0.08))
+                            .foregroundColor(BayanTheme.goldSoft)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .stroke(BayanTheme.gold.opacity(0.35), lineWidth: 1)
+                            )
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 30)
                 }
             }
+        }
+        .sheet(isPresented: $showingTafsirSheet) {
+            AyahTafsirSheet(surah: result.surah, ayahNumber: result.startAyah)
+                .presentationDetents([.medium, .large])
         }
     }
 }

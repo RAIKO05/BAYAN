@@ -8,6 +8,7 @@ struct SurahDetailView: View {
     @State private var syncManager = QuranSyncManager.shared
     @State private var activeAyah: Int = 1
     @State private var showingReciterSheet = false
+    @State private var selectedTafsirAyah: Int? = nil
 
     var body: some View {
         ZStack {
@@ -62,15 +63,22 @@ struct SurahDetailView: View {
                                 AyahRow(
                                     surah: surah,
                                     ayahNumber: ayahNum,
-                                    isActive: activeAyah == ayahNum && playerService.isPlaying
-                                ) {
-                                    if playerService.isPlaying && playerService.currentSurah?.id == surah.id && playerService.currentAyah == ayahNum {
-                                        playerService.togglePlayPause()
-                                    } else {
-                                        activeAyah = ayahNum
-                                        playerService.play(surah: surah, ayah: ayahNum)
+                                    isActive: activeAyah == ayahNum && playerService.isPlaying,
+                                    onPlayTap: {
+                                        if playerService.isPlaying && playerService.currentSurah?.id == surah.id && playerService.currentAyah == ayahNum {
+                                            playerService.togglePlayPause()
+                                        } else {
+                                            activeAyah = ayahNum
+                                            playerService.play(surah: surah, ayah: ayahNum)
+                                        }
+                                    },
+                                    onTafsirTap: {
+                                        selectedTafsirAyah = ayahNum
+                                        #if os(iOS)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        #endif
                                     }
-                                }
+                                )
                                 .id(ayahNum)
                             }
                         }
@@ -96,6 +104,23 @@ struct SurahDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 12) {
+                    // Hifz Repeat Mode Quick Toggle
+                    Button {
+                        playerService.cycleRepeatMode()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 3) {
+                            Image(systemName: playerService.repeatMode.iconName)
+                            if playerService.repeatMode.isRepeating {
+                                Text(playerService.repeatMode.title)
+                                    .font(.system(size: 11, weight: .bold))
+                            }
+                        }
+                        .foregroundColor(playerService.repeatMode.isRepeating ? BayanTheme.gold : .white.opacity(0.7))
+                    }
+
                     Button {
                         showingReciterSheet = true
                     } label: {
@@ -116,6 +141,15 @@ struct SurahDetailView: View {
             ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                 .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: Binding(
+            get: { selectedTafsirAyah != nil },
+            set: { if !$0 { selectedTafsirAyah = nil } }
+        )) {
+            if let ayah = selectedTafsirAyah {
+                AyahTafsirSheet(surah: surah, ayahNumber: ayah)
+                    .presentationDetents([.medium, .large])
+            }
+        }
     }
 }
 
@@ -125,6 +159,7 @@ private struct AyahRow: View {
     let ayahNumber: Int
     let isActive: Bool
     let onPlayTap: () -> Void
+    var onTafsirTap: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 14) {
@@ -155,6 +190,22 @@ private struct AyahRow: View {
                 }
                 .padding(.leading, 6)
 
+                // Tafsir & Reflection Button
+                Button(action: onTafsirTap) {
+                    HStack(spacing: 3) {
+                        Image(systemName: "book.pages")
+                            .font(.system(size: 13))
+                        Text("Tafsir")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundColor(BayanTheme.goldSoft.opacity(0.9))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(Capsule())
+                }
+                .padding(.leading, 6)
+
                 Spacer()
 
                 // Ayah Medallion
@@ -168,18 +219,24 @@ private struct AyahRow: View {
                 }
             }
 
-            // Arabic Verse (Sample representation)
+            // Arabic Verse (Tappable for Tafsir)
             Text(sampleArabicAyah(ayahNumber: ayahNumber))
                 .font(.system(size: 24, weight: .regular, design: .serif))
                 .multilineTextAlignment(.trailing)
                 .lineSpacing(10)
                 .foregroundColor(isActive ? BayanTheme.goldSoft : .white)
+                .onTapGesture {
+                    onTafsirTap()
+                }
 
-            // English Translation
+            // English Translation (Tappable for Tafsir)
             Text(sampleEnglishAyah(ayahNumber: ayahNumber))
                 .font(.callout)
                 .foregroundColor(.white.opacity(0.75))
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .onTapGesture {
+                    onTafsirTap()
+                }
         }
         .padding(18)
         .liquidGlass(cornerRadius: 20, isGoldBorder: isActive)

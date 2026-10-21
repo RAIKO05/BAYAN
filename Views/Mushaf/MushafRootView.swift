@@ -258,6 +258,13 @@ struct MushafRootView: View {
     // MARK: - Resume Reading & Reciter Quick Selector
     @ViewBuilder
     private var resumeAndReciterSection: some View {
+        // Personal Quran Completion / Khatmah Tracker Card
+        KhatmahCardView { surah, ayah in
+            self.navigateToSurah = surah
+            self.navigateToAyah = ayah
+        }
+        .padding(.horizontal, 18)
+
         if let lastSurah = lastReadSurah {
             ResumeReadingCard(
                 surah: lastSurah,

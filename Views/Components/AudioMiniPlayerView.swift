@@ -199,6 +199,30 @@ public struct AudioMiniPlayerView: View {
                     }
                     .buttonStyle(.plain)
 
+                    // Hifz Repeat Mode Button (Memorization Loop)
+                    Button {
+                        playerService.cycleRepeatMode()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 2) {
+                            Image(systemName: playerService.repeatMode.iconName)
+                                .font(.system(size: 12, weight: .semibold))
+                            if playerService.repeatMode.isRepeating {
+                                Text(playerService.repeatMode.title)
+                                    .font(.system(size: 9, weight: .bold))
+                            }
+                        }
+                        .foregroundColor(playerService.repeatMode.isRepeating ? BayanTheme.obsidian : .white.opacity(0.8))
+                        .padding(.horizontal, playerService.repeatMode.isRepeating ? 7 : 0)
+                        .frame(height: 28)
+                        .frame(minWidth: 28)
+                        .background(playerService.repeatMode.isRepeating ? BayanTheme.gold : Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     // Close Button
                     Button {
                         playerService.stop()
