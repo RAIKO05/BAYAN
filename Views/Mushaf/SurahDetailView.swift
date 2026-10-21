@@ -14,6 +14,13 @@ struct SurahDetailView: View {
     @State private var showingHifzCompanion = false
     @State private var selectedTafsirAyah: Int? = nil
 
+    private var effectiveActiveAyah: Int {
+        if playerService.currentSurah?.id == surah.id {
+            return playerService.currentAyah
+        }
+        return activeAyah
+    }
+
     @AppStorage("bayan_tajweed_mode") private var isTajweedEnabled: Bool = false
     @State private var themeManager = AppThemeManager.shared
 
@@ -144,7 +151,7 @@ struct SurahDetailView: View {
                                     ayahNumber: ayahNum,
                                     theme: currentTheme,
                                     isTajweedEnabled: isTajweedEnabled,
-                                    isActive: activeAyah == ayahNum && playerService.isPlaying,
+                                    isActive: effectiveActiveAyah == ayahNum && playerService.isPlaying,
                                     onPlayTap: {
                                         if playerService.isPlaying && playerService.currentSurah?.id == surah.id && playerService.currentAyah == ayahNum {
                                             playerService.togglePlayPause()
@@ -169,12 +176,27 @@ struct SurahDetailView: View {
                     .padding(.top, 16)
                 }
                 .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
+                .onChange(of: playerService.currentAyah) { _, newAyah in
+                    if playerService.currentSurah?.id == surah.id {
+                        activeAyah = newAyah
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+                            proxy.scrollTo(newAyah, anchor: .center)
+                        }
+                        syncManager.updateLastRead(
+                            surahId: surah.id,
+                            ayahId: newAyah,
+                            page: surah.startPage,
+                            qariId: playerService.currentReciter.id
+                        )
+                    }
+                }
                 .onAppear {
-                    activeAyah = initialAyah
-                    proxy.scrollTo(initialAyah, anchor: .center)
+                    let targetAyah = (playerService.currentSurah?.id == surah.id) ? playerService.currentAyah : initialAyah
+                    activeAyah = targetAyah
+                    proxy.scrollTo(targetAyah, anchor: .center)
                     syncManager.updateLastRead(
                         surahId: surah.id,
-                        ayahId: initialAyah,
+                        ayahId: targetAyah,
                         page: surah.startPage,
                         qariId: playerService.currentReciter.id
                     )
@@ -255,7 +277,7 @@ struct SurahDetailView: View {
                 .presentationDetents([.large])
         }
         .sheet(isPresented: $showingHifzCompanion) {
-            HifzCompanionView(surah: surah, initialAyah: activeAyah)
+            HifzCompanionView(surah: surah, initialAyah: effectiveActiveAyah)
         }
         .sheet(isPresented: Binding(
             get: { selectedTafsirAyah != nil },
