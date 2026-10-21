@@ -54,57 +54,49 @@ public struct GetPrayerTimeIntent: AppIntent {
         switch prayer {
         case .next:
             let next = calcResult.nextPrayer
-            let diffMins = max(1, Int(next.time.timeIntervalSince(Date()) / 60))
-            let hours = diffMins / 60
-            let mins = diffMins % 60
-            let timeRemaining: String
-            if hours > 0 {
-                timeRemaining = "in \(hours) hour\(hours > 1 ? "s" : "") and \(mins) minute\(mins > 1 ? "s" : "")"
-            } else {
-                timeRemaining = "in \(mins) minute\(mins > 1 ? "s" : "")"
-            }
-            responseText = "The next prayer is \(next.nameEnglish) at \(next.timeString) in \(city) (\(timeRemaining))."
+            let countdown = calcResult.countdownSubtitle
+            responseText = "The next prayer is \(next.nameEnglish) at \(next.timeString) in \(city) (\(countdown))."
 
         case .fajr:
-            if let p = calcResult.prayers.first(where: { $0.type == .fajr }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "fajr" }) {
                 responseText = "Fajr prayer is at \(p.timeString) in \(city)."
             } else {
-                responseText = "Fajr time is calculated in Bayan."
+                responseText = "Fajr prayer time is calculated in Bayan."
             }
 
         case .sunrise:
-            if let p = calcResult.prayers.first(where: { $0.type == .sunrise }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "sunrise" }) {
                 responseText = "Sunrise is at \(p.timeString) in \(city)."
             } else {
                 responseText = "Sunrise time is calculated in Bayan."
             }
 
         case .dhuhr:
-            if let p = calcResult.prayers.first(where: { $0.type == .dhuhr }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "dhuhr" }) {
                 responseText = "Dhuhr prayer is at \(p.timeString) in \(city)."
             } else {
-                responseText = "Dhuhr time is calculated in Bayan."
+                responseText = "Dhuhr prayer time is calculated in Bayan."
             }
 
         case .asr:
-            if let p = calcResult.prayers.first(where: { $0.type == .asr }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "asr" }) {
                 responseText = "Asr prayer is at \(p.timeString) in \(city)."
             } else {
-                responseText = "Asr time is calculated in Bayan."
+                responseText = "Asr prayer time is calculated in Bayan."
             }
 
         case .maghrib:
-            if let p = calcResult.prayers.first(where: { $0.type == .maghrib }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "maghrib" }) {
                 responseText = "Maghrib prayer is at \(p.timeString) in \(city)."
             } else {
-                responseText = "Maghrib time is calculated in Bayan."
+                responseText = "Maghrib prayer time is calculated in Bayan."
             }
 
         case .isha:
-            if let p = calcResult.prayers.first(where: { $0.type == .isha }) {
+            if let p = calcResult.prayers.first(where: { $0.id.lowercased() == "isha" }) {
                 responseText = "Isha prayer is at \(p.timeString) in \(city)."
             } else {
-                responseText = "Isha time is calculated in Bayan."
+                responseText = "Isha prayer time is calculated in Bayan."
             }
         }
 

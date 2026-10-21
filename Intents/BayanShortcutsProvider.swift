@@ -16,37 +16,16 @@ public struct BayanShortcutsProvider: AppShortcutsProvider {
         )
 
         AppShortcut(
-            intent: GetPrayerTimeIntent(prayer: .next),
+            intent: GetPrayerTimeIntent(),
             phrases: [
+                "When is \(\.$prayer) with \(.applicationName)",
+                "When is \(\.$prayer) in \(.applicationName)",
                 "When is next prayer in \(.applicationName)",
                 "Next prayer with \(.applicationName)",
-                "Prayer times in \(.applicationName)",
-                "When to pray with \(.applicationName)"
+                "Prayer times in \(.applicationName)"
             ],
-            shortTitle: "Next Prayer",
+            shortTitle: "Prayer Time",
             systemImageName: "clock.badge.checkmark.fill"
-        )
-
-        AppShortcut(
-            intent: GetPrayerTimeIntent(prayer: .maghrib),
-            phrases: [
-                "When is Maghrib with \(.applicationName)",
-                "When is Maghrib in \(.applicationName)",
-                "Maghrib time with \(.applicationName)"
-            ],
-            shortTitle: "Maghrib Time",
-            systemImageName: "sunset.fill"
-        )
-
-        AppShortcut(
-            intent: GetPrayerTimeIntent(prayer: .fajr),
-            phrases: [
-                "When is Fajr with \(.applicationName)",
-                "When is Fajr in \(.applicationName)",
-                "Fajr time with \(.applicationName)"
-            ],
-            shortTitle: "Fajr Time",
-            systemImageName: "sun.haze.fill"
         )
 
         AppShortcut(
