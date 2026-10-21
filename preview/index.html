@@ -2676,6 +2676,13 @@
           <!-- Populated dynamically when search mode is Verses -->
         </div>
 
+        <!-- iCloud Sync Status Pill -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+          <div class="cloud-sync-pill" onclick="openCloudSyncModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.35); border-radius: 14px; font-size: 11px; font-weight: 600; color: var(--gold); cursor: pointer;">
+            <span>☁️</span> <span id="preview-cloud-status">iCloud Synced</span>
+          </div>
+        </div>
+
         <!-- Last Read Widget -->
         <div class="last-read-card" onclick="resumeLastRead()">
           <div>
@@ -6055,6 +6062,114 @@
         ${v.trans ? `<div style="font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.4;">${v.trans}</div>` : ''}
       </div>
     `).join('');
+  }
+
+</script>
+
+  <!-- ICLOUD SYNC & BACKUP MODAL -->
+  <div class="theme-card-modal" id="cloud-sync-modal" style="display: none;">
+    <div class="theme-card-container" style="max-height: 85vh; overflow-y: auto;">
+      <div class="theme-card-header">
+        <div>
+          <div class="theme-card-title" style="font-size: 16px;">iCloud Sync & Backup</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Seamless cross-device sync via Apple CloudKit</div>
+        </div>
+        <button class="theme-card-close" onclick="closeCloudSyncModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 14px; text-align: center; padding: 18px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+        <div style="font-size: 38px; margin-bottom: 6px;">☁️</div>
+        <div style="font-size: 16px; font-weight: bold; color: #fff;" id="modal-cloud-title">iCloud Active & Synced</div>
+        <div style="font-size: 11.5px; color: rgba(255,255,255,0.6); margin-top: 2px;" id="modal-cloud-time">Last synced: Just now</div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px;">SYNCED CLOUD DATA</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>📖</span>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: #fff;">Khatmah Reading Progress</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5);">Page 293 of 604 • Juz' 15</div>
+              </div>
+            </div>
+            <span style="font-size: 11px; color: var(--gold); font-weight: bold; background: rgba(212,175,55,0.15); padding: 2px 8px; border-radius: 8px;">48%</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🔖</span>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: #fff;">Ayah Bookmarks</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5);">Personal saved verses library</div>
+              </div>
+            </div>
+            <span style="font-size: 11px; color: var(--gold); font-weight: bold; background: rgba(212,175,55,0.15); padding: 2px 8px; border-radius: 8px;">Synced</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>🕌</span>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: #fff;">Daily Prayer Tracker</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5);">Today's 5 prayers habit completion</div>
+              </div>
+            </div>
+            <span style="font-size: 11px; color: var(--gold); font-weight: bold; background: rgba(212,175,55,0.15); padding: 2px 8px; border-radius: 8px;">Active</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="cloud-sync-btn" onclick="triggerManualCloudSync()" style="width: 100%; margin-top: 16px; padding: 13px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span>🔄</span> <span>Sync Now with iCloud</span>
+      </button>
+
+      <div style="margin-top: 12px; font-size: 10.5px; color: rgba(255,255,255,0.45); text-align: center; line-height: 1.4;">
+        🔒 All data is end-to-end encrypted with your personal Apple ID. Zero third-party servers.
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  // ========================================================
+  // ICLOUD SYNC & CLOUD BACKUP CONTROLLER
+  // ========================================================
+  function openCloudSyncModal() {
+    const modal = document.getElementById('cloud-sync-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeCloudSyncModal() {
+    const modal = document.getElementById('cloud-sync-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function triggerManualCloudSync() {
+    const btn = document.getElementById('cloud-sync-btn');
+    const statusPill = document.getElementById('preview-cloud-status');
+    const timeEl = document.getElementById('modal-cloud-time');
+
+    if (btn) {
+      btn.innerHTML = '<span>⏳</span> <span>Syncing with iCloud...</span>';
+      btn.disabled = true;
+    }
+    if (statusPill) statusPill.textContent = 'Syncing...';
+
+    setTimeout(() => {
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (btn) {
+        btn.innerHTML = '<span>✅</span> <span>Synced Successfully!</span>';
+        btn.disabled = false;
+      }
+      if (statusPill) statusPill.textContent = 'iCloud Synced';
+      if (timeEl) timeEl.textContent = `Last synced: Today at ${nowStr}`;
+
+      setTimeout(() => {
+        if (btn) btn.innerHTML = '<span>🔄</span> <span>Sync Now with iCloud</span>';
+      }, 2000);
+    }, 1200);
   }
 
 </script>

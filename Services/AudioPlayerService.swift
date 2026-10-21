@@ -356,7 +356,7 @@ public final class AudioPlayerService: NSObject {
 
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: "Surah \(surah.nameEnglish) (\(surah.nameArabic))",
-            MPMediaItemPropertyArtist: "Ayah \(currentAyah) • \(currentReciter.name)",
+            MPMediaItemPropertyArtist: "Ayah \(currentAyah) • \(currentReciter.nameEnglish)",
             MPMediaItemPropertyAlbumTitle: "The Holy Qur'an • Bayan",
             MPNowPlayingInfoPropertyElapsedPlaybackTime: currentTime,
             MPMediaItemPropertyPlaybackDuration: duration > 0 ? duration : 1.0,

@@ -4,6 +4,7 @@ public struct Reciter: Identifiable, Codable, Hashable {
     public let id: String
     public let nameArabic: String
     public let nameEnglish: String
+    public var name: String { nameEnglish }
     public let style: RecitationStyle
     public let riwayah: Riwayah
     public let serverSubdomain: String // EveryAyah / MP3Quran directory identifier

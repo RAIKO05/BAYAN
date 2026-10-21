@@ -31,12 +31,15 @@ public final class QuranSyncManager {
         loadHistory()
     }
 
-    public func updateLastRead(surahId: Int, ayahId: Int, page: Int, qariId: String, audioTime: Double = 0.0) {
+    public func updateLastRead(surahId: Int, ayahId: Int, page: Int, qariId: String, audioTime: Double = 0.0, skipCloudSync: Bool = false) {
         self.lastSurahId = surahId
         self.lastAyahId = ayahId
         self.lastPageNumber = page
         self.lastQariId = qariId
         self.lastAudioTimestamp = audioTime
+        if !skipCloudSync {
+            BayanCloudSyncService.shared.pushLocalChanges()
+        }
     }
 
     public func addRecognition(_ result: RecognitionResult) {

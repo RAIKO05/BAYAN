@@ -53,6 +53,7 @@ public final class BookmarkService {
     private func saveBookmarks() {
         if let encoded = try? JSONEncoder().encode(bookmarks) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
+            BayanCloudSyncService.shared.pushLocalChanges()
         }
     }
 

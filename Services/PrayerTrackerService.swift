@@ -39,6 +39,7 @@ public final class PrayerTrackerService {
             set.insert(prayerId)
         }
         UserDefaults.standard.set(Array(set), forKey: key(for: date))
+        BayanCloudSyncService.shared.pushLocalChanges()
         return set
     }
 
@@ -51,6 +52,7 @@ public final class PrayerTrackerService {
             newSet = Set(allIds)
         }
         UserDefaults.standard.set(Array(newSet), forKey: key(for: date))
+        BayanCloudSyncService.shared.pushLocalChanges()
         return newSet
     }
 

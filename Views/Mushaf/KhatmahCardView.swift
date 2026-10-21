@@ -6,6 +6,7 @@ import SwiftUI
 public struct KhatmahCardView: View {
     @State private var khatmahService = KhatmahService.shared
     @State private var showingSetupSheet: Bool = false
+    @State private var showingCloudSyncSheet: Bool = false
     var onResumeReading: (Surah, Int) -> Void
 
     public init(onResumeReading: @escaping (Surah, Int) -> Void = { _, _ in }) {
@@ -27,20 +28,37 @@ public struct KhatmahCardView: View {
 
                 Spacer()
 
-                Button {
-                    showingSetupSheet = true
-                    #if os(iOS)
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    #endif
-                } label: {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(BayanTheme.gold)
-                        .padding(8)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(Circle())
+                HStack(spacing: 8) {
+                    Button {
+                        showingCloudSyncSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        Image(systemName: "icloud.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(BayanTheme.gold)
+                            .padding(8)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        showingSetupSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(BayanTheme.gold)
+                            .padding(8)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
             // Center Row: Progress Gauge + Stats
@@ -159,6 +177,10 @@ public struct KhatmahCardView: View {
         .sheet(isPresented: $showingSetupSheet) {
             KhatmahSetupSheet()
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showingCloudSyncSheet) {
+            CloudSyncSheet()
+                .presentationDetents([.fraction(0.68), .large])
         }
     }
 }

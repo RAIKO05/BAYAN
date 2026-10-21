@@ -23,6 +23,7 @@ public final class KhatmahService {
     public var currentPage: Int {
         didSet {
             userDefaults.set(currentPage, forKey: kCurrentPage)
+            BayanCloudSyncService.shared.pushLocalChanges()
         }
     }
 
