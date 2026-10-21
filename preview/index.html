@@ -9,7 +9,20 @@
   <script src="quran_text.js"></script>
   <script src="quran_translation_en.js"></script>
 
+  <!-- Authentic King Fahd Complex / Amiri Quran Calligraphy Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
+
   <style>
+    @font-face {
+      font-family: 'Amiri Quran';
+      src: url('AmiriQuran-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --obsidian: #0a0d12;
       --deep-emerald: #062820;
@@ -409,12 +422,81 @@
       letter-spacing: 1px;
       text-transform: uppercase;
     }
+    /* Traditional Mushaf Ornamental Surah Header Cartouche */
+    .mushaf-surah-frame {
+      margin: 8px 12px 6px;
+      padding: 10px 14px 12px;
+      border-radius: 16px;
+      border: 1.5px solid var(--glass-gold-border);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 0 0 3px rgba(229, 185, 90, 0.15), 0 4px 14px rgba(0, 0, 0, 0.25);
+      position: relative;
+      text-align: center;
+    }
+    .surah-frame-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-soft);
+      padding: 0 4px;
+      margin-bottom: 2px;
+    }
+    .frame-ornament {
+      color: var(--gold);
+      font-size: 14px;
+    }
+    .frame-crest {
+      color: var(--gold);
+      font-size: 16px;
+      opacity: 0.8;
+    }
+    .surah-frame-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
     .modal-arabic {
       text-align: center;
       font-size: 32px;
-      font-weight: 800;
+      font-weight: normal;
+      font-family: "Amiri Quran", "Scheherazade New", serif;
       color: #fff;
+      line-height: 1.3;
+      margin: 0;
+    }
+    .surah-frame-en {
+      font-size: 12.5px;
+      color: var(--gold-soft);
       margin-top: 4px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .mushaf-bismillah-banner {
+      text-align: center;
+      font-family: "Amiri Quran", "Scheherazade New", serif;
+      font-size: 26px;
+      color: var(--gold-soft);
+      margin: 8px 0 6px;
+      line-height: 1.4;
+      display: block;
+    }
+    .verse-action-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.6;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .verse-action-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
     }
 
     /* Modal Reader Toolbar */
@@ -583,8 +665,26 @@
       border-color: #d8c8a3 !important;
       color: #8c672b !important;
     }
+    #match-modal[data-quran-theme="paper"] .mushaf-surah-frame {
+      background: #faf4e6 !important;
+      border: 1.5px solid #c8a356 !important;
+      box-shadow: inset 0 0 0 3px rgba(200, 163, 86, 0.2), 0 2px 8px rgba(90, 60, 20, 0.08) !important;
+    }
+    #match-modal[data-quran-theme="paper"] .surah-frame-top {
+      color: #7b5921 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .frame-ornament,
+    #match-modal[data-quran-theme="paper"] .frame-crest {
+      color: #a37c35 !important;
+    }
     #match-modal[data-quran-theme="paper"] .modal-arabic {
-      color: #201306 !important;
+      color: #1a1005 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .surah-frame-en {
+      color: #7b5921 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .mushaf-bismillah-banner {
+      color: #4a3411 !important;
     }
     #match-modal[data-quran-theme="paper"] #modal-en-name {
       color: #805c24 !important;
@@ -663,8 +763,26 @@
       border-color: #bae6fd !important;
       color: #0369a1 !important;
     }
+    #match-modal[data-quran-theme="modern"] .mushaf-surah-frame {
+      background: #ffffff !important;
+      border: 1.5px solid #d1d5db !important;
+      box-shadow: inset 0 0 0 3px rgba(16, 185, 129, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    #match-modal[data-quran-theme="modern"] .surah-frame-top {
+      color: #059669 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .frame-ornament,
+    #match-modal[data-quran-theme="modern"] .frame-crest {
+      color: #059669 !important;
+    }
     #match-modal[data-quran-theme="modern"] .modal-arabic {
-      color: #0f172a !important;
+      color: #111827 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .surah-frame-en {
+      color: #4b5563 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .mushaf-bismillah-banner {
+      color: #1f2937 !important;
     }
     #match-modal[data-quran-theme="modern"] #modal-en-name {
       color: #0d9488 !important;
@@ -1071,23 +1189,25 @@
       transition: color 0.2s;
     }
     .verse-text-ar {
-      font-size: 20px;
-      line-height: 1.8;
+      font-size: 24px;
+      line-height: 2.2;
       text-align: right;
       color: var(--gold-soft);
-      font-weight: 500;
+      font-weight: normal;
       font-family: "Amiri Quran", "Scheherazade New", serif;
       direction: rtl;
+      word-spacing: 2px;
     }
     .verse-text-trans {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.72);
-      line-height: 1.5;
-      font-style: italic;
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.78);
+      line-height: 1.6;
+      font-style: normal;
       border-top: 1px dashed rgba(255, 255, 255, 0.1);
-      padding-top: 6px;
-      margin-top: 4px;
+      padding-top: 8px;
+      margin-top: 6px;
       display: block;
+      text-align: left;
     }
     .verse-text-trans.hidden { display: none; }
     .verse-text-trans.rtl {
@@ -2427,8 +2547,25 @@
     <div class="match-modal" id="match-modal">
       <div class="modal-close" onclick="closeModal()"></div>
       <div class="modal-badge" id="modal-badge-status">MATCH IDENTIFIED • 98% CONFIDENCE</div>
-      <div class="modal-arabic" id="modal-arabic-name">الملك</div>
-      <div style="text-align: center; color: var(--gold-soft); font-size: 15px;" id="modal-en-name">Surah Al-Mulk • Ayah 1 of 30</div>
+
+      <!-- Traditional Mushaf Surah Header Cartouche -->
+      <div class="mushaf-surah-frame" id="modal-surah-frame">
+        <div class="surah-frame-top">
+          <span class="frame-ornament">۞</span>
+          <span class="frame-meta" id="modal-surah-meta">مكية • آيَاتُهَا ٣٠</span>
+        </div>
+        <div class="surah-frame-center">
+          <span class="frame-crest">✤</span>
+          <h2 class="modal-arabic" id="modal-arabic-name">سُورَةُ المُلْكِ</h2>
+          <span class="frame-crest">✤</span>
+        </div>
+        <div class="surah-frame-en" id="modal-en-name">Surah Al-Mulk • Ayah 1 of 30</div>
+      </div>
+
+      <!-- Calligraphic Bismillah Banner (Amiri Quran) -->
+      <div class="mushaf-bismillah-banner" id="modal-bismillah-banner">
+        بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+      </div>
       
       <!-- Clickable Reciter Name in Modal -->
       <div style="text-align: center; font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; cursor: pointer;" onclick="openReciterModal()">
@@ -3624,17 +3761,76 @@
       }
     }
 
-    // Full 114 Surahs Real Offline Verse Text Resolver
-    function getAyahText(surahId, ayahNum) {
+    function toArabicIndic(num) {
+      const digits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+      return String(num).split('').map(c => {
+        const d = parseInt(c, 10);
+        return isNaN(d) ? c : digits[d];
+      }).join('');
+    }
+
+    function showAyahToast(msg) {
+      let t = document.getElementById("ayah-toast");
+      if (!t) {
+        t = document.createElement("div");
+        t.id = "ayah-toast";
+        t.style.cssText = "position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--gold); color:#000; padding:8px 18px; border-radius:20px; font-size:12px; font-weight:700; z-index:9999; box-shadow:0 4px 14px rgba(0,0,0,0.35); transition:opacity 0.25s ease;";
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = "1";
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.style.opacity = "0"; }, 1800);
+    }
+
+    function copyAyah(surahId, ayahNum) {
+      const ar = getAyahText(surahId, ayahNum, true);
+      const en = getAyahTranslation(surahId, ayahNum);
+      const textToCopy = `${ar}\n\n${en}\n\n[Bayan: Surah ${surahId}, Ayah ${ayahNum}]`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy);
+      }
+      showAyahToast(`Ayah ${surahId}:${ayahNum} Copied!`);
+    }
+
+    function toggleBookmarkAyah(surahId, ayahNum) {
+      showAyahToast(`Bookmarked Ayah ${surahId}:${ayahNum}`);
+    }
+
+    // Full 114 Surahs Real Offline Verse Text Resolver with Uthmanic End Medallion
+    function getAyahText(surahId, ayahNum, includeMedallion = true) {
+      let raw = "";
       if (window.QURAN_SURAH_VERSES && window.QURAN_SURAH_VERSES[surahId]) {
         const verses = window.QURAN_SURAH_VERSES[surahId];
         if (verses && verses[ayahNum - 1]) {
-          return verses[ayahNum - 1];
+          raw = verses[ayahNum - 1];
         }
       }
-      // If not yet available in window.QURAN_SURAH_VERSES, fetch dynamically
-      fetchSurahVersesOnline(surahId);
-      return `جَارٍ تَحْمِيلُ ٱلْآيَةِ (${ayahNum})...`;
+      if (!raw) {
+        fetchSurahVersesOnline(surahId);
+        return `جَارٍ تَحْمِيلُ ٱلْآيَةِ (${ayahNum})...`;
+      }
+
+      // Strip redundant leading Bismillah from Ayah 1 for Surahs 2..114
+      if (surahId !== 1 && ayahNum === 1) {
+        const prefixes = [
+          "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ",
+          "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+          "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ",
+          "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+        ];
+        for (const p of prefixes) {
+          if (raw.startsWith(p)) {
+            raw = raw.substring(p.length).trim();
+            break;
+          }
+        }
+      }
+
+      if (includeMedallion) {
+        return raw + ` ﴿${toArabicIndic(ayahNum)}﴾`;
+      }
+      return raw;
     }
 
     const fetchedSurahs = {};
@@ -3652,7 +3848,7 @@
               for (let i = 1; i <= currentPlayingMaxAyahs; i++) {
                 const el = document.getElementById(`verse-ar-${surahId}-${i}`);
                 if (el && window.QURAN_SURAH_VERSES[surahId][i - 1]) {
-                  el.textContent = window.QURAN_SURAH_VERSES[surahId][i - 1];
+                  el.textContent = getAyahText(surahId, i, true);
                 }
               }
             }
@@ -3818,7 +4014,16 @@
       }
 
       document.getElementById("modal-en-name").textContent = `Surah ${nameEn} • Ayah ${currentPlayingAyah} of ${currentPlayingMaxAyahs}`;
-      document.getElementById("modal-arabic-name").textContent = nameAr;
+      const formattedArName = (nameAr.startsWith("سُورَة") || nameAr.startsWith("سورة")) ? nameAr : `سُورَةُ ${nameAr}`;
+      document.getElementById("modal-arabic-name").textContent = formattedArName;
+      if (document.getElementById("modal-surah-meta") && surahObj) {
+        const revAr = surahObj.type === "Meccan" ? "مكية" : "مدنية";
+        document.getElementById("modal-surah-meta").textContent = `${revAr} • آيَاتُهَا ${toArabicIndic(currentPlayingMaxAyahs)}`;
+      }
+      const bismillahBanner = document.getElementById("modal-bismillah-banner");
+      if (bismillahBanner) {
+        bismillahBanner.style.display = (surahId === 9 || surahId === 1) ? "none" : "block";
+      }
       document.getElementById("modal-qari").textContent = `${qari} (Hafs 'an 'Asim)`;
       
       const langObj = TRANSLATION_LANGUAGES.find(l => l.code === currentTranslationLang) || TRANSLATION_LANGUAGES[0];
@@ -3858,14 +4063,18 @@
         card.id = `verse-card-${i}`;
         card.onclick = () => jumpToAyah(i);
 
-        const verseText = getAyahText(currentPlayingSurahId, i);
+        const verseText = getAyahText(currentPlayingSurahId, i, true);
         const transText = getAyahTranslation(currentPlayingSurahId, i);
 
         card.innerHTML = `
           <div class="verse-header">
-            <div class="verse-badge">${i}</div>
-            <div class="verse-status-label" id="verse-status-${i}">
-              ${isCurrent ? (audioPlayer.paused ? '● READY' : '● RECITING') : 'Tap to Play'}
+            <div class="verse-badge">${currentPlayingSurahId}:${i}</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="verse-action-btn" title="Copy Ayah" onclick="event.stopPropagation(); copyAyah(${currentPlayingSurahId}, ${i})">📋</button>
+              <button class="verse-action-btn" title="Bookmark Ayah" onclick="event.stopPropagation(); toggleBookmarkAyah(${currentPlayingSurahId}, ${i})">🔖</button>
+              <div class="verse-status-label" id="verse-status-${i}">
+                ${isCurrent ? (audioPlayer.paused ? '● READY' : '● RECITING') : 'Tap to Play'}
+              </div>
             </div>
           </div>
           <div class="verse-text-ar" id="verse-ar-${currentPlayingSurahId}-${i}">${verseText}</div>

@@ -1,0 +1,99 @@
+import SwiftUI
+
+// MARK: - Traditional Mushaf Ornamental Surah Header Frame
+/// An authentic Islamic cartouche frame displaying the Surah title and metadata,
+/// styled after the King Fahd Complex (Medina Mushaf) ornate cartouches.
+public struct SurahOrnamentalFrameView: View {
+    public let surah: Surah
+    public var theme: QuranTheme = .paper
+
+    public init(surah: Surah, theme: QuranTheme = .paper) {
+        self.surah = surah
+        self.theme = theme
+    }
+
+    private var surahTitleArabic: String {
+        let trimmed = surah.nameArabic.trimmingCharacters(in: .whitespaces)
+        if trimmed.hasPrefix("سُورَةُ") || trimmed.hasPrefix("سورة") {
+            return trimmed
+        }
+        return "سُورَةُ \(trimmed)"
+    }
+
+    private var ayahCountArabic: String {
+        "آيَاتُهَا \(QuranVerseText.toArabicIndic(surah.totalAyahs))"
+    }
+
+    public var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                // Cartouche Background
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(theme.cardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(theme.activeCardBorder.opacity(0.85), lineWidth: 1.5)
+                    )
+                    .overlay(
+                        // Inner inset decorative border
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(theme.activeCardBorder.opacity(0.35), lineWidth: 1)
+                            .padding(4)
+                    )
+                    .shadow(color: Color.black.opacity(theme.isDark ? 0.35 : 0.06), radius: 10, y: 4)
+
+                // Ornamental Corner Accents & Header Content
+                VStack(spacing: 6) {
+                    HStack {
+                        // Left Ornamental Finial
+                        Text("۞")
+                            .font(.system(size: 14))
+                            .foregroundColor(theme.activeCardBorder)
+                            .padding(.leading, 14)
+
+                        Spacer()
+
+                        // Surah Revelation & Ayah Count Metadata (Right-aligned in traditional Mushaf)
+                        HStack(spacing: 6) {
+                            Text(surah.revelationType.arabicTitle)
+                                .font(.system(size: 13, weight: .bold))
+                            Text("•")
+                            Text(ayahCountArabic)
+                                .font(.system(size: 13, weight: .bold))
+                        }
+                        .foregroundColor(theme.headerSubtitleColor)
+                        .padding(.trailing, 14)
+                    }
+                    .padding(.top, 10)
+
+                    // Calligraphic Surah Name in Amiri Quran
+                    HStack(spacing: 12) {
+                        Text("✤")
+                            .font(.system(size: 16))
+                            .foregroundColor(theme.activeCardBorder.opacity(0.7))
+
+                        Text(surahTitleArabic)
+                            .font(.quranBold(size: 34))
+                            .foregroundColor(theme.headerTitleColor)
+                            .multilineTextAlignment(.center)
+                            .minimumScaleFactor(0.8)
+                            .lineLimit(1)
+
+                        Text("✤")
+                            .font(.system(size: 16))
+                            .foregroundColor(theme.activeCardBorder.opacity(0.7))
+                    }
+                    .padding(.horizontal, 20)
+
+                    // English Subtitle
+                    Text("\(surah.nameEnglish) • \(surah.nameTranslation)")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(theme.headerSubtitleColor)
+                        .padding(.bottom, 12)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+    }
+}

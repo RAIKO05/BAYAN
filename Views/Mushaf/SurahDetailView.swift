@@ -47,42 +47,15 @@ struct SurahDetailView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Surah Header Banner
-                        VStack(spacing: 12) {
-                            Text(surah.nameArabic)
-                                .font(.system(size: 40, weight: .bold))
-                                .foregroundColor(currentTheme.headerTitleColor)
+                        // Surah Header Banner (Authentic Mushaf Ornamental Cartouche)
+                        SurahOrnamentalFrameView(surah: surah, theme: currentTheme)
 
-                            Text("\(surah.nameEnglish) • \(surah.nameTranslation)")
-                                .font(.subheadline)
-                                .foregroundColor(currentTheme.headerSubtitleColor)
-
-                            HStack(spacing: 12) {
-                                Label("\(surah.totalAyahs) Ayahs", systemImage: "text.alignleft")
-                                Text("•")
-                                Label(surah.revelationType.arabicTitle, systemImage: "building.columns.fill")
-                                Text("•")
-                                Label("Page \(surah.startPage)", systemImage: "book.pages")
-                            }
-                            .font(.caption)
-                            .foregroundColor(currentTheme.headerInfoColor)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 24)
-                        .background(currentTheme.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                .stroke(currentTheme.activeCardBorder, lineWidth: 1)
-                        )
-                        .shadow(color: Color.black.opacity(currentTheme.isDark ? 0.3 : 0.06), radius: 12, y: 6)
-                        .padding(.horizontal)
-
-                        // Bismillah (except Surah At-Tawbah #9)
+                        // Bismillah (except Surah At-Tawbah #9 and Surah Al-Fatihah #1 where it is Ayah 1)
                         if surah.id != 9 && surah.id != 1 {
-                            Text("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ")
-                                .font(.system(size: 26, weight: .medium, design: .serif))
+                            Text("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ")
+                                .font(.quran(size: 28))
                                 .foregroundColor(currentTheme.bismillahColor)
+                                .multilineTextAlignment(.center)
                                 .padding(.vertical, 8)
                         }
 
@@ -220,15 +193,51 @@ private struct AyahRow: View {
     let onPlayTap: () -> Void
     var onTafsirTap: () -> Void = {}
 
+    private var ayahArabic: String {
+        QuranVerseText.formattedAyah(surahId: surah.id, ayahNumber: ayahNumber)
+    }
+
+    private var ayahEnglish: String {
+        QuranVerseText.translation(surahId: surah.id, ayahNumber: ayahNumber)
+    }
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 14) {
-            HStack {
-                Button(action: onPlayTap) {
-                    Image(systemName: isActive ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(isActive ? theme.activeCardBorder : theme.toolbarItemColor.opacity(0.7))
+            // Verse Header Bar (Reference: Surah:Ayah identifier on left, Action buttons on right)
+            HStack(spacing: 8) {
+                // Surah:Ayah Badge (e.g. 12:1)
+                Text("\(surah.id):\(ayahNumber)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(theme.medallionText)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(theme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                    .clipShape(Capsule())
+
+                Spacer()
+
+                // Share Button
+                ShareLink(item: "\(ayahArabic)\n\n\(ayahEnglish)\n\n[Surah \(surah.nameEnglish) \(surah.id):\(ayahNumber) - Bayan]") {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 14))
+                        .foregroundColor(theme.toolbarItemColor.opacity(0.7))
+                        .frame(width: 28, height: 28)
                 }
 
+                // Copy Button
+                Button {
+                    #if os(iOS)
+                    UIPasteboard.general.string = "\(ayahArabic)\n\n\(ayahEnglish)"
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 14))
+                        .foregroundColor(theme.toolbarItemColor.opacity(0.7))
+                        .frame(width: 28, height: 28)
+                }
+
+                // Bookmark Button
                 Button {
                     #if os(iOS)
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -238,22 +247,30 @@ private struct AyahRow: View {
                         ayahNumber: ayahNumber,
                         surahNameArabic: surah.nameArabic,
                         surahNameEnglish: surah.nameEnglish,
-                        arabicText: sampleArabicAyah(ayahNumber: ayahNumber),
-                        translationText: sampleEnglishAyah(ayahNumber: ayahNumber)
+                        arabicText: ayahArabic,
+                        translationText: ayahEnglish
                     )
                 } label: {
                     let isBookmarked = BookmarkService.shared.isBookmarked(surahId: surah.id, ayahNumber: ayahNumber)
                     Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                        .font(.system(size: 16))
-                        .foregroundColor(isBookmarked ? theme.toolbarAccentColor : theme.toolbarItemColor.opacity(0.45))
+                        .font(.system(size: 15))
+                        .foregroundColor(isBookmarked ? theme.toolbarAccentColor : theme.toolbarItemColor.opacity(0.7))
+                        .frame(width: 28, height: 28)
                 }
-                .padding(.leading, 6)
+
+                // Play / Recitation Button
+                Button(action: onPlayTap) {
+                    Image(systemName: isActive ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(isActive ? theme.activeCardBorder : theme.toolbarItemColor.opacity(0.7))
+                        .frame(width: 28, height: 28)
+                }
 
                 // Tafsir & Reflection Button
                 Button(action: onTafsirTap) {
                     HStack(spacing: 3) {
                         Image(systemName: "book.pages")
-                            .font(.system(size: 13))
+                            .font(.system(size: 12))
                         Text("Tafsir")
                             .font(.system(size: 11, weight: .semibold))
                     }
@@ -263,35 +280,24 @@ private struct AyahRow: View {
                     .background(theme.isDark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
                     .clipShape(Capsule())
                 }
-                .padding(.leading, 6)
-
-                Spacer()
-
-                // Ayah Medallion
-                ZStack {
-                    Circle()
-                        .stroke(theme.medallionBorder, lineWidth: 1.2)
-                        .frame(width: 30, height: 30)
-                    Text("\(ayahNumber)")
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(theme.medallionText)
-                }
             }
 
-            // Arabic Verse (Tappable for Tafsir)
-            Text(sampleArabicAyah(ayahNumber: ayahNumber))
-                .font(.system(size: 24, weight: .regular, design: .serif))
+            // Arabic Verse with Authentic Uthmanic Font & Inline End Medallion
+            Text(ayahArabic)
+                .font(.quran(size: 26))
                 .multilineTextAlignment(.trailing)
-                .lineSpacing(10)
+                .lineSpacing(12)
                 .foregroundColor(isActive ? theme.activeArabicTextColor : theme.arabicTextColor)
+                .frame(maxWidth: .infinity, alignment: .trailing)
                 .onTapGesture {
                     onTafsirTap()
                 }
 
             // English Translation (Tappable for Tafsir)
-            Text(sampleEnglishAyah(ayahNumber: ayahNumber))
-                .font(.callout)
+            Text(ayahEnglish)
+                .font(.system(size: 15, weight: .regular))
                 .foregroundColor(theme.translationTextColor)
+                .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .onTapGesture {
                     onTafsirTap()
@@ -305,13 +311,5 @@ private struct AyahRow: View {
                 .stroke(isActive ? theme.activeCardBorder : theme.cardBorder, lineWidth: isActive ? 1.5 : 1)
         )
         .shadow(color: Color.black.opacity(theme.isDark ? 0.25 : 0.05), radius: 10, y: 4)
-    }
-
-    private func sampleArabicAyah(ayahNumber: Int) -> String {
-        QuranVerseText.arabic(surahId: surah.id, ayahNumber: ayahNumber)
-    }
-
-    private func sampleEnglishAyah(ayahNumber: Int) -> String {
-        QuranVerseText.translation(surahId: surah.id, ayahNumber: ayahNumber)
     }
 }

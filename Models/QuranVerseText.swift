@@ -230,4 +230,41 @@ public struct QuranVerseText {
             return "Verse \(ayahNumber) of the Holy Qur'an."
         }
     }
+
+    // MARK: - Arabic-Indic Numerals and Authentic End-of-Ayah Medallion
+    public static func toArabicIndic(_ number: Int) -> String {
+        let arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"]
+        return String(number).compactMap { char -> String? in
+            guard let d = char.wholeNumberValue, d >= 0, d <= 9 else { return String(char) }
+            return arabicDigits[d]
+        }.joined()
+    }
+
+    public static func ayahEndMedallion(_ number: Int) -> String {
+        " ﴿\(toArabicIndic(number))﴾"
+    }
+
+    /// Formats the ayah for display: strips redundant leading Bismillah for Surah 2..114 on Ayah 1,
+    /// and appends the authentic calligraphic floral medallion (e.g. ﴿١﴾)
+    public static func formattedAyah(surahId: Int, ayahNumber: Int, includeMedallion: Bool = true) -> String {
+        var raw = arabic(surahId: surahId, ayahNumber: ayahNumber)
+        if surahId != 1 && ayahNumber == 1 {
+            let prefixes = [
+                "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ",
+                "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+                "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ",
+                "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+            ]
+            for p in prefixes {
+                if raw.hasPrefix(p) {
+                    raw = String(raw.dropFirst(p.count)).trimmingCharacters(in: .whitespaces)
+                    break
+                }
+            }
+        }
+        if includeMedallion {
+            return raw + ayahEndMedallion(ayahNumber)
+        }
+        return raw
+    }
 }

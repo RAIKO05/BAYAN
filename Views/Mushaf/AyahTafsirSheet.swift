@@ -25,7 +25,7 @@ public struct AyahTafsirSheet: View {
     }
 
     private var arabicText: String {
-        QuranVerseText.arabic(surahId: surah.id, ayahNumber: ayahNumber)
+        QuranVerseText.formattedAyah(surahId: surah.id, ayahNumber: ayahNumber)
     }
 
     private var englishText: String {
@@ -161,7 +161,7 @@ public struct AyahTafsirSheet: View {
             }
 
             Text(arabicText)
-                .font(.system(size: 26, weight: .regular, design: .serif))
+                .font(.quran(size: 28))
                 .multilineTextAlignment(.trailing)
                 .lineSpacing(12)
                 .foregroundColor(BayanTheme.goldSoft)

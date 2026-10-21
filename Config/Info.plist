@@ -54,6 +54,12 @@
         </dict>
     </array>
     
+    <!-- Bundled Authentic Quran Calligraphy Font -->
+    <key>UIAppFonts</key>
+    <array>
+        <string>AmiriQuran-Regular.ttf</string>
+    </array>
+    
     <!-- Launch Screen & Orientation -->
     <key>UILaunchScreen</key>
     <dict>
