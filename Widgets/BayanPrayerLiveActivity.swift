@@ -1,3 +1,4 @@
+#if canImport(ActivityKit)
 import ActivityKit
 import WidgetKit
 import SwiftUI
@@ -54,18 +55,8 @@ public struct BayanPrayerLiveActivity: Widget {
                                 .font(.caption.weight(.bold))
                                 .foregroundColor(Color(red: 0.85, green: 0.70, blue: 0.40))
                         }
-                        // Progress bar
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(Color.white.opacity(0.12))
-                                    .frame(height: 5)
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(Color(red: 0.85, green: 0.70, blue: 0.40))
-                                    .frame(width: geo.size.width * CGFloat(context.state.progress), height: 5)
-                            }
-                        }
-                        .frame(height: 5)
+                        ProgressView(value: max(0.0, min(1.0, context.state.progress)))
+                            .tint(Color(red: 0.85, green: 0.70, blue: 0.40))
                     }
                     .padding(.horizontal, 10)
                     .padding(.bottom, 6)
@@ -155,3 +146,4 @@ private struct LockScreenPrayerLiveActivityView: View {
         )
     }
 }
+#endif

@@ -13,14 +13,14 @@ public final class TajweedEngine {
         let maddPattern = "[\\u0627\\u0648\\u064A\\u0670\\u06E5\\u06E6][\\u0653]"
         applyColor(to: &attributed, text: arabicText, regexPattern: maddPattern, color: TajweedRule.madd.color)
 
-        // Also standalone maddah
+        // Standalone maddah mark
         applyColor(to: &attributed, text: arabicText, regexPattern: "[\\u0653]", color: TajweedRule.madd.color)
 
         // 2. Ghunnah (نّ / مّ - Noon/Meem with Shaddah) -> Amber
         let ghunnahPattern = "[\\u0646\\u0645][\\u0651][\\u064E\\u064F\\u0650]?"
         applyColor(to: &attributed, text: arabicText, regexPattern: ghunnahPattern, color: TajweedRule.ghunnah.color)
 
-        // 3. Qalqalah (ق، ط، ب، ج، د with Sukun or terminal) -> Emerald Teal
+        // 3. Qalqalah (ق، ط، ب، ج، د with Sukun) -> Emerald Teal
         let qalqalahPattern = "[\\u0642\\u0637\\u0628\\u062C\\u062F][\\u0652]"
         applyColor(to: &attributed, text: arabicText, regexPattern: qalqalahPattern, color: TajweedRule.qalqalah.color)
 
@@ -47,8 +47,9 @@ public final class TajweedEngine {
 
         for match in matches {
             if let range = Range(match.range, in: text),
-               let attrRange = Range(range, in: attributed) {
-                attributed[attrRange].foregroundColor = color
+               let lower = AttributedString.Index(range.lowerBound, within: attributed),
+               let upper = AttributedString.Index(range.upperBound, within: attributed) {
+                attributed[lower..<upper].foregroundColor = color
             }
         }
     }

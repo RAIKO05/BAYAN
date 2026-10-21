@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct HisnAlMuslimView: View {
+struct HisnAlMuslimView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedCategory: DhikrCategory = .morning
     @State private var currentIndex: Int = 0

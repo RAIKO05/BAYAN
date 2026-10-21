@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct TajweedLegendSheet: View {
+struct TajweedLegendSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     public var body: some View {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct HifzCompanionView: View {
+struct HifzCompanionView: View {
     @Environment(\.dismiss) private var dismiss
     public let initialSurah: Surah
     public let initialAyah: Int
