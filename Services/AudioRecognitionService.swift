@@ -116,7 +116,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         // 2. CRITICAL CRASH FIX: Configure and activate AVAudioSession BEFORE accessing inputNode!
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker, .allowBluetooth])
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker, .allowBluetoothHFP])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("⚠️ AVAudioSession setup warning: \(error)")

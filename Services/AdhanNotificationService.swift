@@ -32,9 +32,6 @@ public final class AdhanNotificationService {
         let identifiers = ["fajr", "dhuhr", "asr", "maghrib", "isha"].map { "bayan_adhan_\($0)" }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
 
-        let calendar = Calendar.current
-        let now = Date()
-
         for prayer in prayerTimes {
             var dateComponents = DateComponents()
             dateComponents.hour = prayer.hour
