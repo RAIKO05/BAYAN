@@ -13,6 +13,7 @@ public enum QuranTheme: String, CaseIterable, Identifiable, Codable {
 
     public var id: String { rawValue }
     public var title: String { rawValue }
+    public var name: String { rawValue }
 
     // MARK: - Preview Box Appearance
     public var previewBackground: Color {

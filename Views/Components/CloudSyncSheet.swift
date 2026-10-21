@@ -122,7 +122,7 @@ public struct CloudSyncSheet: View {
                 syncRow(
                     icon: "paintpalette.fill",
                     title: "Theme & Preferences",
-                    subtitle: "\(currentTheme.name) • Calculation conventions",
+                    subtitle: "\(currentTheme.title) • Calculation conventions",
                     badge: "Synced"
                 )
             }
