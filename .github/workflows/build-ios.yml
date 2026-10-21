@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build iOS IPA on Cloud Mac
     runs-on: macos-15 # macOS 15 Sequoia with Xcode 16
+    permissions:
+      contents: write
 
     steps:
       - name: 📥 Checkout Repository
@@ -61,3 +63,17 @@ jobs:
           name: Bayan-iOS-App
           path: build/Bayan.ipa
           retention-days: 14
+
+      - name: 🏷️ Publish Direct IPA to GitHub Releases
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "Bayan iOS Build #${{ github.run_number }}"
+          body: |
+            ### 📱 Direct IPA Download
+            Download `Bayan.ipa` directly without unzipping.
+          files: build/Bayan.ipa
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
