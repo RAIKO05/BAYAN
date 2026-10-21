@@ -82,7 +82,7 @@ jobs:
             - **Bedtime Sleep Timer with Gentle Auto-Fade**: Fall asleep peacefully listening to the Quran with configurable 15m, 30m, 45m, 60m, End of Current Ayah, or End of Current Surah timers featuring a gentle 2-second volume fade-out.
             - **Dual Audio Mode (Arabic Recitation + English Voiceover)**: Seamlessly listen to the Arabic verse recitation followed immediately by dignified English translation audio (AVSpeechSynthesizer) before advancing to the next Ayah.
             - **Ayah of the Day Widgets**: Daily inspirational Quran verses in Arabic and English across Small, Medium, Large Home Screen and Lock Screen Rectangular widgets, with 1-tap deep link to jump into the Mushaf.
-            - **Quick Quran Identify Widgets**: 1-tap audio recognition launcher widget on Home Screen and Lock Screen (ccessoryCircular and ccessoryInline) to instantly identify any recitation.
+            - **Quick Quran Identify Widgets**: 1-tap audio recognition launcher widget on Home Screen and Lock Screen (accessoryCircular and accessoryInline) to instantly identify any recitation.
             - **Spotify-Style Full-Screen Player with Synchronized Quran Lyrics**: Real-time synchronized verse scrolling, highlighted active Ayah, tap-to-recite jump navigation, full cover art flip, and smooth scrubber.
             - **WhatsApp Floating Capsule Navigation Bar**: Frosted glass floating capsule with sliding selection pill and badge indicators.
             - **Hisn al-Muslim (حصن المسلم - Fortress of the Muslim)**: Complete authentic daily Adhkar & Duas (Morning, Evening, Sleep, Waking, After Prayer, Quranic Duas, Protection) with interactive circular counter dial, haptics, and Hadith virtues.
