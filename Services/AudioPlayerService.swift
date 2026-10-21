@@ -283,13 +283,18 @@ public final class AudioPlayerService: NSObject {
 
     public func togglePlayPause() {
         if isPlaying {
-            player?.pause()
-            isPlaying = false
+            pause()
         } else {
             configureAudioSessionForPlayback()
             player?.play()
             isPlaying = true
+            updateNowPlayingInfo()
         }
+    }
+
+    public func pause() {
+        player?.pause()
+        isPlaying = false
         updateNowPlayingInfo()
     }
 
