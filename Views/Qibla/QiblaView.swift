@@ -165,7 +165,8 @@ public struct QiblaView: View {
     // MARK: - Compass Content View
     private var compassScrollView: some View {
         ScrollView {
-                        // Header Title
+            VStack(spacing: 20) {
+                // Header Title
                         VStack(spacing: 4) {
                             Text("اتِّجَاهُ الْقِبْلَةِ")
                                 .font(.system(size: 28, weight: .bold, design: .serif))
@@ -444,8 +445,6 @@ public struct QiblaView: View {
                     .padding(.top, 8)
                 }
                 .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
-            }
-        }
     }
 
     private var alignmentInstruction: String {
