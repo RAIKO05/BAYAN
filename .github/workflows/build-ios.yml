@@ -39,7 +39,7 @@ jobs:
 
       - name: 🏗 Build iOS App
         run: |
-          xcodebuild -project Bayan.xcodeproj \
+          if ! xcodebuild -project Bayan.xcodeproj \
             -scheme Bayan \
             -configuration Release \
             -destination 'generic/platform=iOS' \
@@ -47,7 +47,13 @@ jobs:
             build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_IDENTITY="" > xcodebuild.log 2>&1; then
+              echo "=== BUILD FAILED: PRINTING ERRORS ==="
+              grep -E "(error:|fatal error:)" xcodebuild.log | head -n 30 | while IFS= read -r line; do
+                echo "::error::$line"
+              done
+              exit 1
+          fi
 
       - name: 📦 Package into IPA
         run: |
