@@ -78,6 +78,10 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **iPad & iPadOS Universal Compatibility**: Full native iPad tablet layout with support for iPadOS Split View, Slide Over, and all 4 orientations (Portrait, Upside Down, Landscape Left/Right).
+            - **Adaptive Multi-Column Grid System**: Responsive layout intelligently shifts from single-column on iPhone to balanced 2-3 column grid layouts on iPad for Surah catalog, verse search results, and Hisn al-Muslim Adhkar cards.
+            - **Native Apple Silicon Mac Support**: Run Bayan on macOS Sonoma & Sequoia via Designed for iPad with desktop keyboard navigation, audio recitation, and large-display clarity.
+            - **Optimized Wide-Display Proportions**: Thoughtfully constrained reading widths and centered floating controls (WhatsApp floating dock, Spotify player sheet, 3D Digital Tasbih) preventing awkward edge-to-edge stretching on 11" and 13" iPad Pro screens.
             - **Interactive 3D Digital Tasbih (المسبحة الإلكترونية)**: Physics-simulated 3D rosary bead loop with rotation gestures, realistic bead click haptics (UIImpactFeedbackGenerator), 8 authentic Sunnah dhikr presets (Subhanallah, Alhamdulillah, Allahu Akbar, Astaghfirullah, etc.), custom bead materials (Obsidian Gold, Imperial Emerald, Sandalwood, Opalescent Pearl), milestone vibration celebrations, and full-screen OLED Blind Counting Mode for night and mosque meditation.
             - **Khatmah Reading Planner & Streak Engine**: Per-prayer reading quota breakdown (e.g. 4 pages after each of the 5 daily prayers to finish in 30 days), interactive prayer checkmarks, dynamic estimated completion date, and reading streak flame counter.
             - **Recitation Speed with Natural Pitch Preservation**: Fine-tune recitation tempo across 0.75x, 1.0x, 1.25x, and 1.5x with .timeDomain pitch algorithm preserving the authentic voice tone of world-renowned Qura'a without distortion.

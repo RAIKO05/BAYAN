@@ -239,6 +239,7 @@ struct BayanIdentifyView: View {
                         }
                     }
                 }
+                .frame(maxWidth: 640)
                 .padding(.bottom, 100)
             }
             .onChange(of: recognitionService.state) { _, newState in

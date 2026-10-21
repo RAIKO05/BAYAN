@@ -60,6 +60,7 @@ public struct PrayersDashboardView: View {
                     .padding(.top, 4)
                     .padding(.bottom, 120) // Clearance for floating tab bar
             }
+            .frame(maxWidth: 780)
             .padding(.horizontal, 18)
         }
         .sheet(isPresented: $showingSettingsSheet) {

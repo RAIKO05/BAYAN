@@ -401,6 +401,7 @@ public struct DigitalTasbihView: View {
                 }
                 .padding(.bottom, 24)
             }
+            .frame(maxWidth: 580)
         }
     }
 

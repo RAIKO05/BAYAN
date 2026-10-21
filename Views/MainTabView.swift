@@ -78,6 +78,7 @@ public struct MainTabView: View {
                 // Image 1: WhatsApp Floating Capsule Tab Bar
                 WhatsAppFloatingTabBar(selectedTab: $selectedTab)
             }
+            .frame(maxWidth: 580)
             .padding(.horizontal, 14)
             .padding(.bottom, 10)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedTab)

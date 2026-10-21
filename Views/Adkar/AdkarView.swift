@@ -345,7 +345,7 @@ public struct AdkarView: View {
                         .padding(.horizontal)
 
                         // Adkar List
-                        LazyVStack(spacing: 12) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 330), spacing: 12)], spacing: 12) {
                             ForEach(filteredItems) { item in
                                 let count = currentCounts[item.id] ?? 0
                                 let isDone = count >= item.targetCount

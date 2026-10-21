@@ -495,7 +495,7 @@ struct MushafRootView: View {
 
     // MARK: - Surah List
     private var surahListLazyVStack: some View {
-        LazyVStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 330), spacing: 12)], spacing: 12) {
             ForEach(filteredSurahs) { surah in
                 NavigationLink {
                     SurahDetailView(surah: surah, initialAyah: 1)
@@ -510,7 +510,7 @@ struct MushafRootView: View {
 
     // MARK: - Full-Text Verse Search Results List
     private var verseListLazyVStack: some View {
-        LazyVStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 330), spacing: 12)], spacing: 12) {
             ForEach(searchedVerses) { result in
                 Button {
                     if let surah = dataService.surah(for: result.surahId) {

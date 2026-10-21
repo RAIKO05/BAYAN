@@ -268,6 +268,7 @@ struct HistoryView: View {
                         }
                     }
                 }
+                .frame(maxWidth: 780)
             }
             .navigationTitle(selectedTab == 0 ? "tab_history".localized : "Bookmarks")
             .navigationBarTitleDisplayMode(.inline)

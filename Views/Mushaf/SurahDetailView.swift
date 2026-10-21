@@ -173,6 +173,7 @@ struct SurahDetailView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 120)
                     }
+                    .frame(maxWidth: 820)
                     .padding(.top, 16)
                 }
                 .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }

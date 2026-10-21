@@ -482,6 +482,7 @@ public struct BayanNowPlayingSheet: View {
                 .padding(.horizontal, 22)
                 .padding(.bottom, 16)
             }
+            .frame(maxWidth: 720)
         }
         .sheet(isPresented: $showingReciterSheet) {
             ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
