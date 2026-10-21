@@ -729,6 +729,289 @@
       box-shadow: 0 4px 18px rgba(15, 118, 110, 0.3) !important;
     }
 
+    /* ========================================================
+       PRAYERS DASHBOARD (EXACT MATCH WITH REFERENCE UI)
+       ======================================================== */
+    .prayers-tab-mode-pill {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 4px 16px 12px;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .prayers-mode-btn {
+      flex: 1;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.7);
+      background: transparent;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .prayers-mode-btn.active {
+      background: var(--gold);
+      color: var(--obsidian);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .prayers-dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 0 16px;
+    }
+
+    .prayers-date-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 4px;
+    }
+    .prayers-date-gregorian {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+    }
+    .prayers-date-hijri {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #9fe2c7;
+      margin-top: 2px;
+    }
+    .prayers-date-nav {
+      display: flex;
+      gap: 10px;
+    }
+    .date-nav-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .date-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .prayers-hero-grid {
+      display: flex;
+      gap: 12px;
+    }
+    .prayer-hero-card {
+      flex: 1;
+      height: 142px;
+      background: #08241d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .prayer-now-card {
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .hero-now-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border-radius: 12px;
+    }
+    .hero-prayer-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .hero-prayer-time {
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.5px;
+    }
+    .hero-prayer-countdown {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 500;
+    }
+
+    .prayer-gauge-card {
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-container {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.08);
+      stroke-width: 8;
+    }
+    .gauge-progress {
+      fill: none;
+      stroke: #1ec87c;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.4s ease;
+    }
+    .gauge-center-text {
+      position: absolute;
+      text-align: center;
+    }
+    .gauge-count {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .gauge-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: -2px;
+    }
+
+    .prayers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .prayer-row-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 15px;
+      background: #08241d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      transition: all 0.2s;
+    }
+    .prayer-row-item.prayed {
+      background: #0c3227;
+      border-color: rgba(30, 200, 124, 0.35);
+      box-shadow: 0 4px 14px rgba(30, 200, 124, 0.15);
+    }
+    .prayer-row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prayer-check-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.8px solid rgba(255, 255, 255, 0.35);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: transparent;
+      transition: all 0.2s;
+    }
+    .prayer-row-item.prayed .prayer-check-btn {
+      background: #1ec87c;
+      border-color: #1ec87c;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .prayer-row-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .prayer-badge-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #ffffff;
+    }
+    .prayer-row-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prayer-time-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.3px;
+    }
+    .prayer-speaker-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: none;
+      color: #9fe2c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .prayer-speaker-btn.muted {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .mark-prayed-btn {
+      width: 100%;
+      max-width: 280px;
+      height: 48px;
+      border-radius: 24px;
+      background: #1ec87c;
+      color: #041813;
+      font-size: 14.5px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(30, 200, 124, 0.35);
+      transition: all 0.2s;
+    }
+    .mark-prayed-btn:active {
+      transform: scale(0.97);
+    }
+
     /* Scrollable verses inside the modal */
     .modal-verses-scroll {
       flex: 1;
@@ -1934,9 +2217,76 @@
         </div>
       </div>
 
-      <!-- TAB 3: QIBLA COMPASS -->
+      <!-- TAB 3: PRAYERS & QIBLA -->
       <div id="tab-qibla" class="tab-view">
-        <div class="qibla-container">
+        <!-- Top Mode Switcher: Prayers vs Qibla Compass -->
+        <div class="prayers-tab-mode-pill">
+          <button class="prayers-mode-btn active" id="mode-btn-prayers" onclick="switchQiblaTabMode('prayers')">
+            <span>🕌</span> Prayers
+          </button>
+          <button class="prayers-mode-btn" id="mode-btn-compass" onclick="switchQiblaTabMode('compass')">
+            <span>🧭</span> Qibla Compass
+          </button>
+        </div>
+
+        <!-- 1. PRAYERS DASHBOARD (Exact Match with Reference UI) -->
+        <div class="prayers-dashboard" id="prayers-dashboard">
+          <!-- Date Navigation Header -->
+          <div class="prayers-date-header">
+            <div>
+              <div class="prayers-date-gregorian" id="prayer-date-gregorian">Today, 25 August</div>
+              <div class="prayers-date-hijri" id="prayer-date-hijri">1 Rabi' I 1447 AH</div>
+            </div>
+            <div class="prayers-date-nav">
+              <button class="date-nav-btn" onclick="changePrayerDay(-1)" title="Previous Day">‹</button>
+              <button class="date-nav-btn" onclick="changePrayerDay(1)" title="Next Day">›</button>
+            </div>
+          </div>
+
+          <!-- Dual Hero Cards -->
+          <div class="prayers-hero-grid">
+            <!-- Left Hero Card (Current / Upcoming Prayer) -->
+            <div class="prayer-hero-card prayer-now-card">
+              <div class="hero-now-badge">Now</div>
+              <div class="hero-prayer-title">
+                <span id="hero-prayer-name">Ashar</span> <span id="hero-prayer-emoji">⛅</span>
+              </div>
+              <div class="hero-prayer-time" id="hero-prayer-time">15.17</div>
+              <div class="hero-prayer-countdown" id="hero-prayer-countdown">Maghrib in 2h 26m</div>
+            </div>
+
+            <!-- Right Hero Card (Progress Ring Gauge) -->
+            <div class="prayer-hero-card prayer-gauge-card">
+              <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 100 100">
+                  <!-- Background circle track -->
+                  <circle class="gauge-bg" cx="50" cy="50" r="38" />
+                  <!-- Animated progress arc -->
+                  <circle class="gauge-progress" id="prayer-gauge-circle" cx="50" cy="50" r="38" stroke-dasharray="238.76" stroke-dashoffset="143.25" />
+                </svg>
+                <div class="gauge-center-text">
+                  <div class="gauge-count" id="gauge-fraction">2/5</div>
+                  <div class="gauge-label">prayed</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- List of 5 Prayers -->
+          <div class="prayers-list" id="prayers-list-container">
+            <!-- Dynamically populated by JS -->
+          </div>
+
+          <!-- "Mark all as prayed" Action Button -->
+          <div style="text-align: center; margin: 14px 0 24px;">
+            <button class="mark-prayed-btn" id="mark-all-btn" onclick="toggleMarkAllPrayed()">
+              Mark all as prayed
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. QIBLA COMPASS VIEW (Hidden by default when in prayers mode) -->
+        <div class="qibla-container" id="qibla-compass-view" style="display: none;">
           <div class="qibla-header">
             <div>
               <div class="qibla-title">Qibla Direction</div>
@@ -2252,10 +2602,10 @@
         <span class="active-indicator-dot"></span>
       </button>
 
-      <!-- 3. QIBLA (COMPASS ICON) -->
+      <!-- 3. PRAYERS (CLOCK / PRAYER ICON) -->
       <button class="tab-btn" onclick="switchTab('qibla', this)">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-5.5l2.67-5.83 5.83-2.67-2.67 5.83-5.83 2.67zm4.25-2.75a1.5 1.5 0 1 0 1.5-1.5 1.5 1.5 0 0 0-1.5 1.5z"/></svg>
-        <span>Qibla</span>
+        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+        <span>Prayers</span>
         <span class="active-indicator-dot"></span>
       </button>
 
@@ -4451,10 +4801,209 @@
       }
     }
 
+    // ========================================================
+    // PRAYERS CONTROLLER & TRACKER (MATCHING REFERENCE UI)
+    // ========================================================
+    let prayerDateOffset = 0;
+
+    const DAILY_PRAYERS_DEF = [
+      { id: "subuh", name: "Subuh", nameAr: "الفجر", emoji: "✨", hour: 4, minute: 40 },
+      { id: "dzuhur", name: "Dzuhur", nameAr: "الظهر", emoji: "☀️", hour: 11, minute: 58 },
+      { id: "ashar", name: "Ashar", nameAr: "العصر", emoji: "⛅", hour: 15, minute: 17 },
+      { id: "maghrib", name: "Maghrib", nameAr: "المغرب", emoji: "🌅", hour: 17, minute: 56 },
+      { id: "isya", name: "Isya", nameAr: "العشاء", emoji: "🌙", hour: 19, minute: 5 }
+    ];
+
+    function getPrayerDateStorageKey(d) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `bayan_prayed_${yyyy}_${mm}_${dd}`;
+    }
+
+    function getCompletedPrayersForDate(d) {
+      try {
+        const raw = localStorage.getItem(getPrayerDateStorageKey(d));
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      // Pre-fill Subuh and Dzuhur as seen in user reference screenshot
+      return ["subuh", "dzuhur"];
+    }
+
+    function saveCompletedPrayersForDate(d, list) {
+      try {
+        localStorage.setItem(getPrayerDateStorageKey(d), JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function renderPrayersDashboard() {
+      const d = new Date();
+      d.setDate(d.getDate() + prayerDateOffset);
+
+      // 1. Gregorian Date String
+      const dayMonth = d.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+      let dateLabel = `Today, ${dayMonth}`;
+      if (prayerDateOffset === 1) dateLabel = `Tomorrow, ${dayMonth}`;
+      else if (prayerDateOffset === -1) dateLabel = `Yesterday, ${dayMonth}`;
+      else if (prayerDateOffset !== 0) {
+        dateLabel = d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+      }
+      const dateEl = document.getElementById("prayer-date-gregorian");
+      if (dateEl) dateEl.textContent = dateLabel;
+
+      // 2. Hijri Date String
+      const hijriEl = document.getElementById("prayer-date-hijri");
+      if (hijriEl) {
+        try {
+          const hijriFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' });
+          hijriEl.textContent = hijriFormatter.format(d) + " AH";
+        } catch (e) {
+          hijriEl.textContent = "1 Rabi' I 1447 AH";
+        }
+      }
+
+      // 3. Find Current Prayer and Next Prayer
+      const now = new Date();
+      const currentDecHour = now.getHours() + now.getMinutes() / 60.0;
+      
+      let currentIndex = 2; // Ashar
+      let nextIndex = 3;    // Maghrib
+      
+      for (let i = 0; i < DAILY_PRAYERS_DEF.length; i++) {
+        const pDec = DAILY_PRAYERS_DEF[i].hour + DAILY_PRAYERS_DEF[i].minute / 60.0;
+        if (currentDecHour >= pDec) {
+          currentIndex = i;
+          nextIndex = (i + 1) % DAILY_PRAYERS_DEF.length;
+        }
+      }
+
+      const curP = DAILY_PRAYERS_DEF[currentIndex];
+      const nextP = DAILY_PRAYERS_DEF[nextIndex];
+
+      const nameEl = document.getElementById("hero-prayer-name");
+      if (nameEl) nameEl.textContent = curP.name;
+      const emojiEl = document.getElementById("hero-prayer-emoji");
+      if (emojiEl) emojiEl.textContent = curP.emoji;
+      const timeEl = document.getElementById("hero-prayer-time");
+      if (timeEl) timeEl.textContent = `${String(curP.hour).padStart(2,'0')}.${String(curP.minute).padStart(2,'0')}`;
+      
+      let deltaHours = (nextP.hour + nextP.minute / 60.0) - currentDecHour;
+      if (deltaHours < 0) deltaHours += 24.0;
+      const remH = Math.floor(deltaHours);
+      const remM = Math.floor((deltaHours - remH) * 60);
+      const countdownStr = remH > 0 ? `${nextP.name} in ${remH}h ${remM}m` : `${nextP.name} in ${remM}m`;
+      const inBadgeStr = remH > 0 ? `in ${remH}h ${remM}m` : `in ${remM}m`;
+      
+      const cdEl = document.getElementById("hero-prayer-countdown");
+      if (cdEl) cdEl.textContent = countdownStr;
+
+      // 4. Completed prayers tracking
+      const completedList = getCompletedPrayersForDate(d);
+      const completedCount = completedList.length;
+
+      const fracEl = document.getElementById("gauge-fraction");
+      if (fracEl) fracEl.textContent = `${completedCount}/5`;
+      const circleCircumference = 2 * Math.PI * 38; // 238.76
+      const offset = circleCircumference - (completedCount / 5.0) * circleCircumference;
+      const gaugeCircle = document.getElementById("prayer-gauge-circle");
+      if (gaugeCircle) gaugeCircle.style.strokeDashoffset = offset;
+
+      const btn = document.getElementById("mark-all-btn");
+      if (btn) {
+        btn.textContent = completedCount === 5 ? "Reset for today" : "Mark all as prayed";
+      }
+
+      // 5. Render list of 5 prayers
+      const listContainer = document.getElementById("prayers-list-container");
+      if (listContainer) {
+        listContainer.innerHTML = "";
+        DAILY_PRAYERS_DEF.forEach((p, idx) => {
+          const isDone = completedList.includes(p.id);
+          const isCur = (idx === currentIndex);
+          const isNxt = (idx === nextIndex);
+          const timeFormatted = `${String(p.hour).padStart(2, '0')}.${String(p.minute).padStart(2, '0')}`;
+
+          const row = document.createElement("div");
+          row.className = `prayer-row-item ${isDone ? 'prayed' : ''}`;
+          row.innerHTML = `
+            <div class="prayer-row-left">
+              <button class="prayer-check-btn" onclick="togglePrayerPrayed('${p.id}')">✓</button>
+              <div class="prayer-row-title">
+                <span>${p.name}</span>
+                <span>${p.emoji}</span>
+              </div>
+              ${isCur ? '<span class="prayer-badge-pill">Now</span>' : ''}
+              ${(!isCur && isNxt) ? `<span class="prayer-badge-pill">${inBadgeStr}</span>` : ''}
+            </div>
+            <div class="prayer-row-right">
+              <span class="prayer-time-val">${timeFormatted}</span>
+              <button class="prayer-speaker-btn" id="speaker-btn-${p.id}" onclick="togglePrayerSpeaker(this)" title="Toggle Adhan Alert">🔊</button>
+            </div>
+          `;
+          listContainer.appendChild(row);
+        });
+      }
+    }
+
+    function changePrayerDay(delta) {
+      prayerDateOffset += delta;
+      renderPrayersDashboard();
+    }
+
+    function togglePrayerPrayed(id) {
+      const d = new Date();
+      d.setDate(d.getDate() + prayerDateOffset);
+      let list = getCompletedPrayersForDate(d);
+      if (list.includes(id)) {
+        list = list.filter(item => item !== id);
+      } else {
+        list.push(id);
+      }
+      saveCompletedPrayersForDate(d, list);
+      renderPrayersDashboard();
+    }
+
+    function toggleMarkAllPrayed() {
+      const d = new Date();
+      d.setDate(d.getDate() + prayerDateOffset);
+      const list = getCompletedPrayersForDate(d);
+      if (list.length === DAILY_PRAYERS_DEF.length) {
+        saveCompletedPrayersForDate(d, []);
+      } else {
+        saveCompletedPrayersForDate(d, DAILY_PRAYERS_DEF.map(p => p.id));
+      }
+      renderPrayersDashboard();
+    }
+
+    function togglePrayerSpeaker(btn) {
+      btn.classList.toggle("muted");
+      btn.textContent = btn.classList.contains("muted") ? "🔇" : "🔊";
+    }
+
+    function switchQiblaTabMode(mode) {
+      const pDashboard = document.getElementById("prayers-dashboard");
+      const cView = document.getElementById("qibla-compass-view");
+      const pBtn = document.getElementById("mode-btn-prayers");
+      const cBtn = document.getElementById("mode-btn-compass");
+
+      if (mode === "prayers") {
+        if (pDashboard) pDashboard.style.display = "flex";
+        if (cView) cView.style.display = "none";
+        if (pBtn) pBtn.classList.add("active");
+        if (cBtn) cBtn.classList.remove("active");
+      } else {
+        if (pDashboard) pDashboard.style.display = "none";
+        if (cView) cView.style.display = "flex";
+        if (pBtn) pBtn.classList.remove("active");
+        if (cBtn) cBtn.classList.add("active");
+      }
+    }
+
     // Initialize View
     renderSurahList(ALL_114_SURAHS);
     document.getElementById("current-qari-name").textContent = RECITERS[currentReciterIndex].nameEn;
     updateQiblaUI();
+    renderPrayersDashboard();
     renderAdkarList();
     renderHistoryList();
     updateLastReadUI();

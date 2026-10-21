@@ -8,6 +8,12 @@ public struct QiblaView: View {
     @State private var useLiveGPS = true
     @State private var showingCitySheet = false
     @State private var wasAligned = false
+    @State private var selectedMode: QiblaTabMode = .prayers
+
+    public enum QiblaTabMode: String, CaseIterable {
+        case prayers = "Prayers"
+        case compass = "Compass"
+    }
  
     public init() {}
 
@@ -72,8 +78,93 @@ public struct QiblaView: View {
                 .ignoresSafeArea()
                 .animation(.easeInOut(duration: 0.4), value: isAligned)
 
-                ScrollView {
-                    VStack(spacing: 20) {
+                VStack(spacing: 0) {
+                    modeSwitcherPill
+                        .padding(.top, 4)
+                        .padding(.bottom, 6)
+
+                    if selectedMode == .prayers {
+                        PrayersDashboardView(latitude: activeLatitude, longitude: activeLongitude)
+                    } else {
+                        compassScrollView
+                    }
+                }
+            }
+            .navigationTitle(selectedMode == .prayers ? "Prayers" : "Qibla")
+            .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: isAligned) { _, newlyAligned in
+                if newlyAligned && !wasAligned {
+                    triggerHaptic()
+                }
+                wasAligned = newlyAligned
+            }
+            .sheet(isPresented: $showingCitySheet) {
+                CityPickerSheet(
+                    selectedCity: $selectedCity,
+                    useLiveGPS: $useLiveGPS,
+                    compassManager: compassManager
+                )
+                .presentationDetents([.medium, .large])
+            }
+        }
+    }
+
+    // MARK: - Mode Switcher Pill
+    private var modeSwitcherPill: some View {
+        HStack(spacing: 4) {
+            Button {
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                #endif
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    selectedMode = .prayers
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.badge.checkmark.fill")
+                        .font(.system(size: 13))
+                    Text("Prayers")
+                        .font(.system(size: 13, weight: .bold))
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 7)
+                .background(selectedMode == .prayers ? BayanTheme.gold : Color.clear)
+                .foregroundColor(selectedMode == .prayers ? BayanTheme.obsidian : .white.opacity(0.7))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                #endif
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    selectedMode = .compass
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "safari.fill")
+                        .font(.system(size: 13))
+                    Text("Compass")
+                        .font(.system(size: 13, weight: .bold))
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 7)
+                .background(selectedMode == .compass ? BayanTheme.gold : Color.clear)
+                .foregroundColor(selectedMode == .compass ? BayanTheme.obsidian : .white.opacity(0.7))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(4)
+        .background(Color.white.opacity(0.08))
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
+    }
+
+    // MARK: - Compass Content View
+    private var compassScrollView: some View {
+        ScrollView {
                         // Header Title
                         VStack(spacing: 4) {
                             Text("اتِّجَاهُ الْقِبْلَةِ")
@@ -353,22 +444,6 @@ public struct QiblaView: View {
                     .padding(.top, 8)
                 }
                 .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
-            }
-            .navigationTitle("Qibla")
-            .navigationBarTitleDisplayMode(.inline)
-            .onChange(of: isAligned) { _, newlyAligned in
-                if newlyAligned && !wasAligned {
-                    triggerHaptic()
-                }
-                wasAligned = newlyAligned
-            }
-            .sheet(isPresented: $showingCitySheet) {
-                CityPickerSheet(
-                    selectedCity: $selectedCity,
-                    useLiveGPS: $useLiveGPS,
-                    compassManager: compassManager
-                )
-                .presentationDetents([.medium, .large])
             }
         }
     }

@@ -15,7 +15,7 @@ public struct MainTabView: View {
             switch self {
             case .identify: return "Identify"
             case .mushaf: return "Mushaf"
-            case .qibla: return "Qibla"
+            case .qibla: return "Prayers"
             case .adkar: return "Adkar"
             case .history: return "History"
             }
@@ -25,8 +25,8 @@ public struct MainTabView: View {
             switch self {
             case .identify: return "waveform.circle.fill"
             case .mushaf: return "book.pages.fill"
-            case .qibla: return "safari.fill" // Compass icon
-            case .adkar: return "hand.raised.fill" // Hand icon
+            case .qibla: return "clock.badge.checkmark.fill"
+            case .adkar: return "hand.raised.fill"
             case .history: return "clock.arrow.circlepath"
             }
         }
