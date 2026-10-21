@@ -12,6 +12,7 @@ struct HistoryView: View {
     @State private var showingLanguageSheet = false
     @State private var showingThemeSheet = false
     @State private var showingCloudSyncSheet = false
+    @State private var showingSupportSheet = false
 
     var body: some View {
         NavigationStack {
@@ -290,6 +291,13 @@ struct HistoryView: View {
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
+                        showingSupportSheet = true
+                    } label: {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(BayanTheme.goldSoft)
+                    }
+
+                    Button {
                         showingCloudSyncSheet = true
                     } label: {
                         Image(systemName: "icloud.and.arrow.up")
@@ -318,6 +326,10 @@ struct HistoryView: View {
             }
             .sheet(isPresented: $showingCloudSyncSheet) {
                 CloudSyncSheet()
+                    .presentationDetents([.large])
+            }
+            .sheet(isPresented: $showingSupportSheet) {
+                SupportBayanSheet()
                     .presentationDetents([.large])
             }
         }

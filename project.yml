@@ -33,6 +33,7 @@ targets:
       - sdk: Accelerate.framework
       - sdk: Speech.framework
       - sdk: UserNotifications.framework
+      - sdk: StoreKit.framework
     settings:
       base:
         PRODUCT_NAME: Bayan

@@ -9,6 +9,7 @@ struct BayanIdentifyView: View {
     @State private var showingSearchSheet = false
     @State private var showingLanguageSheet = false
     @State private var showingThemeSheet = false
+    @State private var showingSupportSheet = false
     @State private var languageManager = AppLanguageManager.shared
 
     private var isListening: Bool {
@@ -69,21 +70,39 @@ struct BayanIdentifyView: View {
 
                         Spacer()
 
-                        Button {
-                            showingThemeSheet = true
-                            #if os(iOS)
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            #endif
-                        } label: {
-                            Image(systemName: "paintpalette.fill")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(BayanTheme.goldSoft)
-                                .padding(8)
-                                .background(Color.white.opacity(0.08))
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(BayanTheme.gold.opacity(0.3), lineWidth: 1))
+                        HStack(spacing: 8) {
+                            Button {
+                                showingSupportSheet = true
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                            } label: {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(BayanTheme.goldSoft)
+                                    .padding(8)
+                                    .background(Color.white.opacity(0.08))
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(BayanTheme.gold.opacity(0.3), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                showingThemeSheet = true
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                            } label: {
+                                Image(systemName: "paintpalette.fill")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(BayanTheme.goldSoft)
+                                    .padding(8)
+                                    .background(Color.white.opacity(0.08))
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(BayanTheme.gold.opacity(0.3), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
@@ -250,6 +269,10 @@ struct BayanIdentifyView: View {
             .sheet(isPresented: $showingThemeSheet) {
                 ThemePickerSheet()
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingSupportSheet) {
+                SupportBayanSheet()
+                    .presentationDetents([.large])
             }
         }
     }
