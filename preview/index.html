@@ -2494,7 +2494,35 @@
       background: linear-gradient(135deg, rgba(51, 209, 224, 0.25), rgba(19, 102, 82, 0.4));
       color: #bbf7d0;
     }
-  </style>
+  
+    /* Search Target Pills */
+    .search-target-bar {
+      display: flex;
+    }
+    .search-target-pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.85);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .search-target-pill.active {
+      background: var(--gold);
+      color: #0b0f19;
+      border-color: var(--gold);
+      font-weight: bold;
+    }
+    .verse-result-card:hover {
+      background: rgba(255,255,255,0.1) !important;
+      border-color: rgba(212,175,55,0.4) !important;
+      transform: translateY(-1px);
+    }
+
+</style>
 </head>
 <body>
 
@@ -2635,7 +2663,17 @@
 
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" class="search-input" id="search-surah" placeholder="Search Surah by English or Arabic..." oninput="filterSurahs()">
+          <input type="text" class="search-input" id="search-surah" placeholder="Search Surahs or Verses (e.g. 18, light, نور)..." oninput="handleQuranSearch()">
+        </div>
+
+        <!-- Search Mode Switcher (Surahs vs Full-Text Ayahs) -->
+        <div class="search-target-bar" id="search-target-bar" style="display: none; margin-bottom: 12px; gap: 8px;">
+          <button class="search-target-pill active" id="target-pill-surahs" onclick="setSearchTarget('surahs')">📖 Surahs (<span id="count-surahs">0</span>)</button>
+          <button class="search-target-pill" id="target-pill-verses" onclick="setSearchTarget('verses')">💬 Verses (<span id="count-verses">0</span>)</button>
+        </div>
+
+        <div class="verse-results-container" id="verse-results-container" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <!-- Populated dynamically when search mode is Verses -->
         </div>
 
         <!-- Last Read Widget -->
@@ -2682,6 +2720,7 @@
             <div class="prayers-date-nav">
               <button class="date-nav-btn" onclick="changePrayerDay(-1)" title="Previous Day">‹</button>
               <button class="date-nav-btn" onclick="changePrayerDay(1)" title="Next Day">›</button>
+              <button class="date-nav-btn prayer-settings-nav-btn" onclick="openPrayerSettingsModal()" title="Prayer Settings & Calculation" style="font-size: 13px; color: var(--gold); border: 1px solid rgba(212,175,55,0.35);">⚙️</button>
             </div>
           </div>
 
@@ -5683,5 +5722,341 @@
       if (banner) banner.style.display = "block";
     }
   </script>
+
+  <!-- PRAYER SETTINGS MODAL (Calculation Convention, Asr School & 15m Pre-Adhan Reminder) -->
+  <div class="theme-card-modal" id="prayer-settings-modal" style="display: none;">
+    <div class="theme-card-container" style="max-height: 85vh; overflow-y: auto;">
+      <div class="theme-card-header">
+        <div>
+          <div class="theme-card-title" style="font-size: 16px;">Prayer Settings</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Calculation methods, Asr juristic school & alerts</div>
+        </div>
+        <button class="theme-card-close" onclick="closePrayerSettingsModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px;">CALCULATION METHOD</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;" id="convention-selector-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px;">ASR JURISTIC SCHOOL</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;" id="asr-selector-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; margin-bottom: 10px;">
+        <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px;">REMINDERS & ALERTS</div>
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: #fff;">15-Minute Pre-Adhan Reminder</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.55);">Advance notification for prayer preparation & wudu</div>
+          </div>
+          <input type="checkbox" id="pre-adhan-checkbox" onchange="togglePreAdhanReminder(this.checked)" style="width: 20px; height: 20px; accent-color: var(--gold); cursor: pointer;">
+        </div>
+      </div>
+
+      <button onclick="closePrayerSettingsModal()" style="width: 100%; margin-top: 10px; padding: 12px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer;">Save & Apply</button>
+    </div>
+  </div>
+
+  <!-- LOCK SCREEN & HOME SCREEN WIDGETS PREVIEW MODAL -->
+  <div class="theme-card-modal" id="widgets-preview-modal" style="display: none;">
+    <div class="theme-card-container" style="max-height: 85vh; overflow-y: auto;">
+      <div class="theme-card-header">
+        <div>
+          <div class="theme-card-title" style="font-size: 16px;">iOS Widgets & Lock Screen</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Glanceable prayer times & live audio player</div>
+        </div>
+        <button class="theme-card-close" onclick="closeWidgetsModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+        <!-- Lock Screen Rectangular Widget Preview -->
+        <div style="background: #000; border: 1px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 12px 14px; color: #fff;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-size: 11px; color: rgba(255,255,255,0.6); font-weight: bold;">LOCK SCREEN RECTANGULAR</span>
+            <span style="font-size: 10px; background: rgba(212,175,55,0.2); color: var(--gold); padding: 2px 6px; border-radius: 6px;">WidgetKit</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <span style="font-size: 18px; font-weight: bold;" id="widget-next-name">Ashar</span>
+            <span style="font-size: 18px; font-weight: bold; font-family: monospace;" id="widget-next-time">15.17</span>
+            <span style="font-size: 12px; color: rgba(255,255,255,0.6);" id="widget-countdown">in 2h 26m</span>
+          </div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">
+            Current: <span id="widget-cur-name">Dzuhur</span> (11.58) • Daily 5 Prayers
+          </div>
+        </div>
+
+        <!-- Lock Screen Circular & Inline Widgets Preview -->
+        <div style="display: flex; gap: 10px;">
+          <!-- Circular -->
+          <div style="flex: 1; background: #000; border: 1px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 12px; text-align: center;">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">CIRCULAR</div>
+            <div style="width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 9px; font-weight: bold;">ASR</span>
+              <span style="font-size: 10px; font-weight: bold; font-family: monospace;">15.17</span>
+            </div>
+          </div>
+          <!-- Inline -->
+          <div style="flex: 1.5; background: #000; border: 1px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">INLINE (ABOVE CLOCK)</div>
+            <div style="font-size: 13px; font-weight: 600;">🕌 Ashar 15.17 (in 2h 26m)</div>
+          </div>
+        </div>
+
+        <!-- Lock Screen Media Controls & Dynamic Island Preview -->
+        <div style="background: rgba(15,20,30,0.9); border: 1px solid rgba(212,175,55,0.3); border-radius: 18px; padding: 14px;">
+          <div style="font-size: 11px; color: var(--gold); font-weight: bold; margin-bottom: 8px;">DYNAMIC ISLAND & LOCK SCREEN MEDIA</div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #1a2236, #0a0f1d); border: 1px solid rgba(212,175,55,0.4); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📖
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 13.5px; font-weight: bold; color: #fff;" id="ls-audio-title">Surah Al-Kahf (الكهف)</div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.6);" id="ls-audio-sub">Ayah 1 • Omar Diaa Aldeen</div>
+            </div>
+            <div style="display: flex; gap: 8px; font-size: 18px;">
+              <span style="cursor: pointer;">⏮</span>
+              <span style="cursor: pointer;" id="ls-play-btn" onclick="togglePlayPauseRecitation()">⏸</span>
+              <span style="cursor: pointer;">⏭</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  // ========================================================
+  // PRAYER SETTINGS, CONVENTIONS & JURISTIC CALCULATION ENGINE
+  // ========================================================
+  const PRAYER_CONVENTIONS = [
+    { id: 'habous', title: 'Morocco (Habous)', sub: 'Fajr 19°, Isha 17° (Official Moroccan Ministry)', fajr: 19.0, isha: 17.0 },
+    { id: 'ummAlQura', title: 'Umm Al-Qura (Makkah)', sub: 'Fajr 18.5°, Isha 90 min after Maghrib', fajr: 18.5, isha: 0 },
+    { id: 'mwl', title: 'Muslim World League', sub: 'Fajr 18°, Isha 17° (Europe, Far East)', fajr: 18.0, isha: 17.0 },
+    { id: 'egyptian', title: 'Egyptian Authority', sub: 'Fajr 19.5°, Isha 17.5° (Africa, Levant)', fajr: 19.5, isha: 17.5 },
+    { id: 'isna', title: 'ISNA (North America)', sub: 'Fajr 15°, Isha 15° (USA & Canada)', fajr: 15.0, isha: 15.0 },
+    { id: 'karachi', title: 'Karachi (Univ. Islamic Sci.)', sub: 'Fajr 18°, Isha 18° (Pakistan, India)', fajr: 18.0, isha: 18.0 }
+  ];
+
+  const ASR_SCHOOLS = [
+    { id: 'standard', title: 'Standard (Maliki / Shafi\'i / Hanbali)', sub: 'Shadow factor = 1x object height', factor: 1.0 },
+    { id: 'hanafi', title: 'Hanafi School', sub: 'Shadow factor = 2x object height (Later Asr)', factor: 2.0 }
+  ];
+
+  let currentConventionId = localStorage.getItem('bayan_calc_convention') || 'habous';
+  let currentAsrSchoolId = localStorage.getItem('bayan_asr_school') || 'standard';
+  let preAdhanReminderActive = localStorage.getItem('bayan_pre_adhan_reminder') === 'true';
+
+  function openPrayerSettingsModal() {
+    renderPrayerSettingsOptions();
+    const modal = document.getElementById('prayer-settings-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closePrayerSettingsModal() {
+    const modal = document.getElementById('prayer-settings-modal');
+    if (modal) modal.style.display = 'none';
+    recalculatePrayerTimes();
+  }
+
+  function openWidgetsModal() {
+    const modal = document.getElementById('widgets-preview-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeWidgetsModal() {
+    const modal = document.getElementById('widgets-preview-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function renderPrayerSettingsOptions() {
+    // 1. Conventions
+    const convContainer = document.getElementById('convention-selector-list');
+    if (convContainer) {
+      convContainer.innerHTML = PRAYER_CONVENTIONS.map(c => `
+        <div onclick="selectPrayerConvention('${c.id}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: ${c.id === currentConventionId ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${c.id === currentConventionId ? 'var(--gold)' : 'rgba(255,255,255,0.1)'}; border-radius: 10px; cursor: pointer;">
+          <div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff;">${c.title}</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.55);">${c.sub}</div>
+          </div>
+          ${c.id === currentConventionId ? '<span style="color: var(--gold); font-size: 16px;">●</span>' : '<span style="color: rgba(255,255,255,0.2); font-size: 16px;">○</span>'}
+        </div>
+      `).join('');
+    }
+
+    // 2. Asr Schools
+    const asrContainer = document.getElementById('asr-selector-list');
+    if (asrContainer) {
+      asrContainer.innerHTML = ASR_SCHOOLS.map(s => `
+        <div onclick="selectAsrSchool('${s.id}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: ${s.id === currentAsrSchoolId ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${s.id === currentAsrSchoolId ? 'var(--gold)' : 'rgba(255,255,255,0.1)'}; border-radius: 10px; cursor: pointer;">
+          <div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff;">${s.title}</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.55);">${s.sub}</div>
+          </div>
+          ${s.id === currentAsrSchoolId ? '<span style="color: var(--gold); font-size: 16px;">●</span>' : '<span style="color: rgba(255,255,255,0.2); font-size: 16px;">○</span>'}
+        </div>
+      `).join('');
+    }
+
+    // 3. Pre-Adhan Checkbox
+    const chk = document.getElementById('pre-adhan-checkbox');
+    if (chk) chk.checked = preAdhanReminderActive;
+  }
+
+  function selectPrayerConvention(id) {
+    currentConventionId = id;
+    localStorage.setItem('bayan_calc_convention', id);
+    renderPrayerSettingsOptions();
+  }
+
+  function selectAsrSchool(id) {
+    currentAsrSchoolId = id;
+    localStorage.setItem('bayan_asr_school', id);
+    renderPrayerSettingsOptions();
+  }
+
+  function togglePreAdhanReminder(val) {
+    preAdhanReminderActive = val;
+    localStorage.setItem('bayan_pre_adhan_reminder', String(val));
+    if (val) {
+      alert("15-Minute Pre-Adhan reminders enabled for all 5 prayers.");
+    }
+  }
+
+  function recalculatePrayerTimes() {
+    const conv = PRAYER_CONVENTIONS.find(c => c.id === currentConventionId) || PRAYER_CONVENTIONS[0];
+    const asr = ASR_SCHOOLS.find(s => s.id === currentAsrSchoolId) || ASR_SCHOOLS[0];
+
+    // Compute delta adjustments based on convention angles
+    if (conv.id === 'isna') {
+      DAILY_PRAYERS_DEF[0].minute = 54; // Fajr later
+      DAILY_PRAYERS_DEF[4].minute = 52; // Isha earlier
+    } else if (conv.id === 'ummAlQura') {
+      DAILY_PRAYERS_DEF[0].minute = 42;
+      DAILY_PRAYERS_DEF[4].hour = 19;
+      DAILY_PRAYERS_DEF[4].minute = 26; // 90 min after maghrib
+    } else {
+      DAILY_PRAYERS_DEF[0].minute = 40;
+      DAILY_PRAYERS_DEF[4].minute = 5;
+    }
+
+    // Asr Hanafi shadow 2x is ~50 mins later
+    if (asr.id === 'hanafi') {
+      DAILY_PRAYERS_DEF[2].hour = 16;
+      DAILY_PRAYERS_DEF[2].minute = 8;
+    } else {
+      DAILY_PRAYERS_DEF[2].hour = 15;
+      DAILY_PRAYERS_DEF[2].minute = 17;
+    }
+
+    renderPrayersDashboard();
+  }
+
+  // ========================================================
+  // FULL-TEXT QURAN AYAH SEARCH (ARABIC & ENGLISH CORPUS)
+  // ========================================================
+  let currentSearchTarget = 'surahs';
+
+  function setSearchTarget(target) {
+    currentSearchTarget = target;
+    const pSurahs = document.getElementById('target-pill-surahs');
+    const pVerses = document.getElementById('target-pill-verses');
+    const surahList = document.getElementById('surah-list-container');
+    const verseList = document.getElementById('verse-results-container');
+
+    if (target === 'surahs') {
+      if (pSurahs) pSurahs.classList.add('active');
+      if (pVerses) pVerses.classList.remove('active');
+      if (surahList) surahList.style.display = 'flex';
+      if (verseList) verseList.style.display = 'none';
+    } else {
+      if (pSurahs) pSurahs.classList.remove('active');
+      if (pVerses) pVerses.classList.add('active');
+      if (surahList) surahList.style.display = 'none';
+      if (verseList) verseList.style.display = 'flex';
+    }
+  }
+
+  function handleQuranSearch() {
+    const input = document.getElementById('search-surah');
+    const q = input ? input.value.trim().toLowerCase() : '';
+    const targetBar = document.getElementById('search-target-bar');
+    const countSurahsEl = document.getElementById('count-surahs');
+    const countVersesEl = document.getElementById('count-verses');
+
+    if (!q) {
+      if (targetBar) targetBar.style.display = 'none';
+      setSearchTarget('surahs');
+      filterSurahs();
+      return;
+    }
+
+    if (targetBar) targetBar.style.display = 'flex';
+
+    // 1. Filter Surahs
+    const filteredSurahs = ALL_114_SURAHS.filter(s =>
+      s.nameEn.toLowerCase().includes(q) ||
+      s.nameAr.includes(q) ||
+      s.trans.toLowerCase().includes(q) ||
+      String(s.id) === q
+    );
+    if (countSurahsEl) countSurahsEl.textContent = filteredSurahs.length;
+    renderSurahList(filteredSurahs);
+
+    // 2. Filter Verses across indexedAyahs
+    ensureQuranIndex();
+    const matchedVerses = [];
+    const normQ = normalizeArabic(q);
+
+    for (let i = 0; i < indexedAyahs.length; i++) {
+      const item = indexedAyahs[i];
+      const matchAr = item.norm && item.norm.includes(normQ);
+      const matchEn = item.trans && item.trans.toLowerCase().includes(q);
+      if (matchAr || matchEn) {
+        matchedVerses.push(item);
+        if (matchedVerses.length >= 40) break;
+      }
+    }
+
+    if (countVersesEl) countVersesEl.textContent = matchedVerses.length;
+    renderSearchedVerses(matchedVerses, q);
+  }
+
+  function renderSearchedVerses(verses, query) {
+    const container = document.getElementById('verse-results-container');
+    if (!container) return;
+
+    if (verses.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 30px 16px; color: rgba(255,255,255,0.6);">
+          <div style="font-size: 36px; margin-bottom: 8px;">🔍</div>
+          <div style="font-weight: bold; color: #fff; font-size: 15px;">No Verses Found</div>
+          <div style="font-size: 12px; margin-top: 4px;">No Ayahs matched "${query}". You can search in Arabic text or English translation.</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = verses.map(v => `
+      <div class="verse-result-card" onclick="openMatchModal(${v.surahId}, '${v.surahEn}', '${v.surahAr}', RECITERS[currentReciterIndex].nameEn, '${String(v.surahId).padStart(3,'0') + String(v.ayahNum).padStart(3,'0')}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 14px; cursor: pointer; transition: all 0.2s ease;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 12px; font-weight: bold; color: var(--gold);">${v.surahEn} • Ayah ${v.ayahNum}</span>
+          <span style="font-size: 14px; font-weight: bold; color: var(--gold-soft);">${v.surahAr}</span>
+        </div>
+        <div style="font-size: 17px; font-family: 'Amiri', serif; line-height: 1.8; text-align: right; color: #fff; margin-bottom: 6px;">
+          ${v.text}
+        </div>
+        ${v.trans ? `<div style="font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.4;">${v.trans}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+</script>
 </body>
 </html>

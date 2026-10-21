@@ -13,8 +13,20 @@ struct MushafRootView: View {
     @State private var navigateToAyah: Int = 1
     @State private var themeManager = AppThemeManager.shared
 
+    enum SearchTarget: String, CaseIterable {
+        case surahs = "Surahs"
+        case verses = "Verses"
+    }
+
+    @State private var searchTarget: SearchTarget = .surahs
+
     private var currentTheme: QuranTheme {
         themeManager.currentTheme
+    }
+
+    private var searchedVerses: [VerseSearchResult] {
+        guard !searchQuery.isEmpty else { return [] }
+        return QuranVerseText.searchAllVerses(query: searchQuery)
     }
 
     enum FilterCategory: String, CaseIterable {
@@ -95,7 +107,11 @@ struct MushafRootView: View {
         VStack(spacing: 12) {
             titleAndQiraahRow
             searchBarField
-            filterChipsRow
+            if !searchQuery.isEmpty {
+                searchTargetSelectorRow
+            } else {
+                filterChipsRow
+            }
         }
         .padding(.bottom, 10)
         .background(
@@ -221,6 +237,40 @@ struct MushafRootView: View {
         .padding(.horizontal, 18)
     }
 
+    // MARK: - Search Target Segmented Control (Surahs vs Full-Text Verses)
+    private var searchTargetSelectorRow: some View {
+        HStack(spacing: 8) {
+            ForEach(SearchTarget.allCases, id: \.self) { target in
+                let isSelected = searchTarget == target
+                let count = target == .surahs ? filteredSurahs.count : searchedVerses.count
+                Button {
+                    searchTarget = target
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: target == .surahs ? "book.closed.fill" : "text.quote")
+                            .font(.system(size: 11))
+                        Text("\(target.rawValue) (\(count))")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(isSelected ? BayanTheme.gold : Color.white.opacity(0.08))
+                    .foregroundColor(isSelected ? BayanTheme.obsidian : .white)
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule().stroke(isSelected ? Color.clear : Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 18)
+    }
+
     // MARK: - Filter Chips Row
     private var filterChipsRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -257,13 +307,14 @@ struct MushafRootView: View {
         }
     }
 
-    // MARK: - Scrollable Surahs Content
+    // MARK: - Scrollable Surahs & Verses Content
     private var scrollableContent: some View {
         ScrollView {
             VStack(spacing: 16) {
                 if searchQuery.isEmpty {
                     resumeAndReciterSection
-                } else {
+                    surahListLazyVStack
+                } else if searchTarget == .surahs {
                     HStack {
                         Text("FOUND \(filteredSurahs.count) SURAHS")
                             .font(.system(size: 10, weight: .bold))
@@ -273,12 +324,28 @@ struct MushafRootView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
-                }
 
-                if filteredSurahs.isEmpty {
-                    emptySearchResultsView
+                    if filteredSurahs.isEmpty {
+                        emptySearchResultsView
+                    } else {
+                        surahListLazyVStack
+                    }
                 } else {
-                    surahListLazyVStack
+                    HStack {
+                        Text("FOUND \(searchedVerses.count) VERSES")
+                            .font(.system(size: 10, weight: .bold))
+                            .tracking(1.5)
+                            .foregroundColor(BayanTheme.goldSoft)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+
+                    if searchedVerses.isEmpty {
+                        emptyVerseResultsView
+                    } else {
+                        verseListLazyVStack
+                    }
                 }
             }
             .padding(.top, 12)
@@ -364,6 +431,37 @@ struct MushafRootView: View {
         }
     }
 
+    // MARK: - Empty Verse Search State
+    private var emptyVerseResultsView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "text.magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundColor(BayanTheme.gold.opacity(0.4))
+                .padding(.top, 40)
+
+            Text("No Verses Found")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            Text("No Ayahs matched \"\(searchQuery)\". You can search in Arabic text or English translation.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 30)
+
+            Button("Clear Search") {
+                searchQuery = ""
+            }
+            .font(.caption.weight(.bold))
+            .foregroundColor(BayanTheme.obsidian)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 8)
+            .background(BayanTheme.gold)
+            .clipShape(Capsule())
+            .padding(.top, 8)
+        }
+    }
+
     // MARK: - Surah List
     private var surahListLazyVStack: some View {
         LazyVStack(spacing: 12) {
@@ -377,6 +475,64 @@ struct MushafRootView: View {
             }
         }
         .padding(.horizontal, 18)
+    }
+
+    // MARK: - Full-Text Verse Search Results List
+    private var verseListLazyVStack: some View {
+        LazyVStack(spacing: 12) {
+            ForEach(searchedVerses) { result in
+                Button {
+                    if let surah = dataService.surah(for: result.surahId) {
+                        navigateToAyah = result.ayahNumber
+                        navigateToSurah = surah
+                    }
+                } label: {
+                    VerseSearchRow(result: result, surah: dataService.surah(for: result.surahId))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 18)
+    }
+}
+
+// MARK: - Full-Text Verse Search Row Card
+private struct VerseSearchRow: View {
+    let result: VerseSearchResult
+    let surah: Surah?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("\(surah?.nameEnglish ?? "Surah \(result.surahId)") • Ayah \(result.ayahNumber)")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(BayanTheme.gold)
+
+                Spacer()
+
+                if let ar = surah?.nameArabic {
+                    Text(ar)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(BayanTheme.goldSoft)
+                }
+            }
+
+            Text(result.arabicText)
+                .font(.system(size: 18, weight: .medium, design: .serif))
+                .multilineTextAlignment(.trailing)
+                .lineSpacing(6)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .foregroundColor(.white)
+
+            if !result.translationText.isEmpty {
+                Text(result.translationText)
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.8))
+                    .lineLimit(3)
+            }
+        }
+        .padding(16)
+        .liquidGlass(cornerRadius: 18)
     }
 }
 

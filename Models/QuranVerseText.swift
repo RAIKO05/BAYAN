@@ -1,5 +1,21 @@
 import Foundation
 
+// MARK: - Verse Search Result Model
+public struct VerseSearchResult: Identifiable, Hashable, Sendable {
+    public var id: String { "\(surahId):\(ayahNumber)" }
+    public let surahId: Int
+    public let ayahNumber: Int
+    public let arabicText: String
+    public let translationText: String
+
+    public init(surahId: Int, ayahNumber: Int, arabicText: String, translationText: String) {
+        self.surahId = surahId
+        self.ayahNumber = ayahNumber
+        self.arabicText = arabicText
+        self.translationText = translationText
+    }
+}
+
 public struct QuranVerseText {
     public static var isWarshActive: Bool = false
 
@@ -48,28 +64,70 @@ public struct QuranVerseText {
     }
 
     public static func searchVerse(query: String) -> (surahId: Int, ayahNumber: Int)? {
-        let normalizedQuery = normalizeArabic(query)
-        guard normalizedQuery.count >= 3 else { return nil }
+        let results = searchAllVerses(query: query, limit: 1)
+        if let first = results.first {
+            return (first.surahId, first.ayahNumber)
+        }
+        return nil
+    }
 
-        let queryTokens = normalizedQuery.components(separatedBy: .whitespaces)
-            .filter { $0.count >= 2 }
+    public static func searchAllVerses(query: String, limit: Int = 60) -> [VerseSearchResult] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return [] }
 
-        guard !queryTokens.isEmpty else { return nil }
+        var results: [VerseSearchResult] = []
 
-        for (surahKey, ayahs) in arabicCache {
-            guard let sId = Int(surahKey) else { continue }
-            for (idx, ayahText) in ayahs.enumerated() {
-                let normalizedAyah = normalizeArabic(ayahText)
-                if normalizedAyah.contains(normalizedQuery) || normalizedQuery.contains(normalizedAyah) {
-                    return (sId, idx + 1)
+        let isArabic = trimmed.unicodeScalars.contains { scalar in
+            (0x0600...0x06FF).contains(scalar.value) ||
+            (0x0750...0x077F).contains(scalar.value) ||
+            (0xFB50...0xFDFF).contains(scalar.value) ||
+            (0xFE70...0xFEFF).contains(scalar.value)
+        }
+
+        if isArabic {
+            let normalizedQuery = normalizeArabic(trimmed)
+            let queryTokens = normalizedQuery.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
+
+            for sId in 1...114 {
+                guard let ayahs = arabicCache[String(sId)] else { continue }
+                for (idx, ayahText) in ayahs.enumerated() {
+                    let normAyah = normalizeArabic(ayahText)
+                    let matches = normAyah.contains(normalizedQuery) ||
+                        (!queryTokens.isEmpty && queryTokens.count >= 2 && queryTokens.allSatisfy { normAyah.contains($0) })
+                    if matches {
+                        let ayahNum = idx + 1
+                        let trans = translation(surahId: sId, ayahNumber: ayahNum)
+                        results.append(VerseSearchResult(
+                            surahId: sId,
+                            ayahNumber: ayahNum,
+                            arabicText: ayahText,
+                            translationText: trans
+                        ))
+                        if results.count >= limit { return results }
+                    }
                 }
-                // Token subset match if query is multiple words
-                if queryTokens.count >= 2 && queryTokens.allSatisfy({ normalizedAyah.contains($0) }) {
-                    return (sId, idx + 1)
+            }
+        } else {
+            let lowerQuery = trimmed.lowercased()
+            for sId in 1...114 {
+                guard let transList = translationCache[String(sId)] else { continue }
+                for (idx, transText) in transList.enumerated() {
+                    if transText.localizedCaseInsensitiveContains(lowerQuery) {
+                        let ayahNum = idx + 1
+                        let ar = arabic(surahId: sId, ayahNumber: ayahNum)
+                        results.append(VerseSearchResult(
+                            surahId: sId,
+                            ayahNumber: ayahNum,
+                            arabicText: ar,
+                            translationText: transText
+                        ))
+                        if results.count >= limit { return results }
+                    }
                 }
             }
         }
-        return nil
+
+        return results
     }
 
     private static var translationCache: [String: [String]] = {

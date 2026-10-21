@@ -1,5 +1,124 @@
 import Foundation
 
+// MARK: - Prayer Calculation Conventions
+public enum CalculationConvention: String, CaseIterable, Identifiable, Sendable {
+    case habous = "habous"
+    case ummAlQura = "ummAlQura"
+    case mwl = "mwl"
+    case egyptian = "egyptian"
+    case isna = "isna"
+    case karachi = "karachi"
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .habous: return "Morocco (Habous)"
+        case .ummAlQura: return "Umm Al-Qura (Makkah)"
+        case .mwl: return "Muslim World League"
+        case .egyptian: return "Egyptian Authority"
+        case .isna: return "ISNA (North America)"
+        case .karachi: return "Karachi (Univ. Islamic Sci.)"
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .habous: return "Fajr 19°, Isha 17° (Official Moroccan Standard)"
+        case .ummAlQura: return "Fajr 18.5°, Isha 90 min after Maghrib"
+        case .mwl: return "Fajr 18°, Isha 17° (Europe, Far East, parts of US)"
+        case .egyptian: return "Fajr 19.5°, Isha 17.5° (Egypt, Africa, Levant)"
+        case .isna: return "Fajr 15°, Isha 15° (North America)"
+        case .karachi: return "Fajr 18°, Isha 18° (Pakistan, India, Bangladesh)"
+        }
+    }
+
+    public var fajrAngle: Double {
+        switch self {
+        case .habous: return 19.0
+        case .ummAlQura: return 18.5
+        case .mwl: return 18.0
+        case .egyptian: return 19.5
+        case .isna: return 15.0
+        case .karachi: return 18.0
+        }
+    }
+
+    public var ishaAngle: Double {
+        switch self {
+        case .habous: return 17.0
+        case .ummAlQura: return 0.0 // 90 min fixed offset after Maghrib
+        case .mwl: return 17.0
+        case .egyptian: return 17.5
+        case .isna: return 15.0
+        case .karachi: return 18.0
+        }
+    }
+}
+
+// MARK: - Asr Juristic School
+public enum AsrJuristicSchool: String, CaseIterable, Identifiable, Sendable {
+    case standard = "standard" // Maliki, Shafi'i, Hanbali
+    case hanafi = "hanafi"     // Hanafi
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .standard: return "Standard (Maliki / Shafi'i / Hanbali)"
+        case .hanafi: return "Hanafi School"
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .standard: return "Shadow equals object length (1x)"
+        case .hanafi: return "Shadow equals twice object length (2x)"
+        }
+    }
+
+    public var shadowFactor: Double {
+        self == .hanafi ? 2.0 : 1.0
+    }
+}
+
+// MARK: - Global Prayer Settings Manager
+@Observable
+public final class PrayerSettingsManager {
+    public static let shared = PrayerSettingsManager()
+
+    public var convention: CalculationConvention {
+        get {
+            let raw = UserDefaults.standard.string(forKey: "prayer_calculation_convention") ?? "habous"
+            return CalculationConvention(rawValue: raw) ?? .habous
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "prayer_calculation_convention")
+        }
+    }
+
+    public var asrSchool: AsrJuristicSchool {
+        get {
+            let raw = UserDefaults.standard.string(forKey: "prayer_asr_school") ?? "standard"
+            return AsrJuristicSchool(rawValue: raw) ?? .standard
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "prayer_asr_school")
+        }
+    }
+
+    public var isPreAdhanReminderEnabled: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: "prayer_pre_adhan_reminder")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "prayer_pre_adhan_reminder")
+        }
+    }
+
+    private init() {}
+}
+
 // MARK: - Calculation Results
 public struct PrayerTimesDayResult: Sendable {
     public let date: Date
@@ -18,7 +137,13 @@ public final class PrayerCalculationService: Sendable {
     public init() {}
 
     /// Calculates accurate prayer times, dates, and active countdowns
-    public func calculate(for date: Date, lat: Double, lng: Double) -> PrayerTimesDayResult {
+    public func calculate(
+        for date: Date,
+        lat: Double,
+        lng: Double,
+        convention: CalculationConvention = PrayerSettingsManager.shared.convention,
+        asrSchool: AsrJuristicSchool = PrayerSettingsManager.shared.asrSchool
+    ) -> PrayerTimesDayResult {
         let calendar = Calendar.current
         let dayOfYear = Double(calendar.ordinality(of: .day, in: .year, for: date) ?? 1)
         let tzOffset = Double(TimeZone.current.secondsFromGMT(for: date)) / 3600.0
@@ -37,23 +162,28 @@ public final class PrayerCalculationService: Sendable {
             return acos(clamped) * 180.0 / .pi
         }
 
-        // Moroccan Habous conventions: Fajr 19.0°, Isha 17.0°
-        let haFajr = hourAngle(alphaDeg: -19.0)
+        let haFajr = hourAngle(alphaDeg: -convention.fajrAngle)
         let haSunset = hourAngle(alphaDeg: -0.833)
 
-        // Asr: Maliki shadow = 1
+        // Asr: Juristic shadow multiplier
         let latRad = lat * .pi / 180.0
-        let asrAltRad = atan(1.0 / (1.0 + tan(abs(latRad - decl))))
+        let asrAltRad = atan(1.0 / (asrSchool.shadowFactor + tan(abs(latRad - decl))))
         let cosAsr = (sin(asrAltRad) - sin(latRad) * sin(decl)) / (cos(latRad) * cos(decl))
         let haAsr = acos(max(-1.0, min(1.0, cosAsr))) * 180.0 / .pi
-
-        let haIsha = hourAngle(alphaDeg: -17.0)
 
         let fajrHour = (solarNoon - haFajr / 15.0).truncatingRemainder(dividingBy: 24.0)
         let dhuhrHour = (solarNoon + 5.0 / 60.0).truncatingRemainder(dividingBy: 24.0)
         let asrHour = (solarNoon + haAsr / 15.0).truncatingRemainder(dividingBy: 24.0)
         let maghribHour = (solarNoon + haSunset / 15.0 + 2.0 / 60.0).truncatingRemainder(dividingBy: 24.0)
-        let ishaHour = (solarNoon + haIsha / 15.0).truncatingRemainder(dividingBy: 24.0)
+
+        let ishaHour: Double
+        if convention == .ummAlQura {
+            // Umm Al-Qura uses a fixed 90-minute offset after Maghrib
+            ishaHour = (maghribHour + 1.5).truncatingRemainder(dividingBy: 24.0)
+        } else {
+            let haIsha = hourAngle(alphaDeg: -convention.ishaAngle)
+            ishaHour = (solarNoon + haIsha / 15.0).truncatingRemainder(dividingBy: 24.0)
+        }
 
         func prayerComponents(hourVal: Double) -> (String, Int, Int, Double) {
             let positive = (hourVal + 24.0).truncatingRemainder(dividingBy: 24.0)

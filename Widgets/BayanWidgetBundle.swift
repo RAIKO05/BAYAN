@@ -11,5 +11,6 @@ struct BayanWidgetBundle: WidgetBundle {
 
         // Home Screen & Lock Screen Interactive Widgets
         BayanLastReadWidget()
+        BayanPrayerTimesWidget()
     }
 }

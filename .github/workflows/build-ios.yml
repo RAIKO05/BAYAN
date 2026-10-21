@@ -72,11 +72,12 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
-            - **Authentic Uthmanic Quran Calligraphy**: Bundled `Amiri Quran` / King Fahd Complex font with complete diacritics (waslah, madda, dagger alif, and sequential tanween).
-            - **Floral End-of-Ayah Medallions**: Authentic ornate medallions (` ﴿١﴾`, ` ﴿٢﴾`) with Arabic-Indic numerals inline with verse text.
-            - **Ornate Mushaf Surah Cartouches**: Traditional ornamental Islamic frames with metadata and calligraphic Bismillah banners.
-            - **Prayer Times & Alerts**: 2/5 prayer circular progress ring, live next-prayer countdown, hero prayer card, and daily tracking cards.
-            - **Three Mushaf Themes**: Paper parchment, Modern slate, and Dark obsidian with live visual theme switcher.
+            - **Lock Screen & Home Screen Prayer Widgets**: Live next-prayer countdown and daily timeline widgets across Lock Screen (`accessoryRectangular`, `accessoryCircular`, `accessoryInline`) and Home Screen (`systemSmall`, `systemMedium`).
+            - **Lock Screen Media Controls & Dynamic Island**: Background audio recitation with dynamic golden artwork, Surah title, Ayah number, reciter, scrubbing timeline, next/prev Ayah skipping, and play/pause from Lock Screen and Control Center.
+            - **Full-Text Quran Verse Search (Ayah Search)**: Instant full-text search across all 6,236 Ayahs in Arabic (with/without tashkeel) and English translation with direct jump-to-verse navigation.
+            - **Global Prayer Calculation Conventions & 15m Pre-Adhan Reminder**: Configurable calculation methods (Morocco Habous, Umm Al-Qura, MWL, Egyptian Authority, ISNA, Karachi), Asr juristic school (Standard vs Hanafi), and optional 15-minute advance prayer preparation alert.
+            - **Unified Theme Engine**: Obsidian, Midnight Velvet, Emerald Sanctuary, Royal Indigo, Desert Dunes, and Rose Garden synchronized across Mushaf, Prayers Dashboard, and Qibla.
+            - **Authentic Uthmanic Quran Calligraphy**: Bundled `Amiri Quran` / King Fahd Complex font with complete diacritics, ornate cartouche frames, and authentic floral end-of-ayah medallions.
 
             ### 📱 Direct IPA Download
             Download `Bayan.ipa` directly below to install via TrollStore, AltStore, or Sideloadly.

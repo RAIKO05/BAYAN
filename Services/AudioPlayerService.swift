@@ -1,6 +1,9 @@
 import Foundation
 import AVFoundation
 import MediaPlayer
+#if canImport(UIKit)
+import UIKit
+#endif
 
 @Observable
 public final class AudioPlayerService: NSObject {
@@ -52,6 +55,7 @@ public final class AudioPlayerService: NSObject {
     public override init() {
         super.init()
         configureAudioSessionForPlayback()
+        setupRemoteCommandCenter()
     }
 
     public func configureAudioSessionForPlayback() {
@@ -129,6 +133,8 @@ public final class AudioPlayerService: NSObject {
             qariId: activeReciter.id,
             audioTime: 0.0
         )
+
+        updateNowPlayingInfo()
     }
 
     private func setupTimeObserver() {
@@ -157,6 +163,7 @@ public final class AudioPlayerService: NSObject {
         let targetTime = CMTime(seconds: clampedSeconds, preferredTimescale: 600)
         player?.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero)
         self.currentTime = clampedSeconds
+        updateNowPlayingInfo()
     }
 
     public func skipForward(by seconds: Double = 15) {
@@ -271,6 +278,7 @@ public final class AudioPlayerService: NSObject {
             player?.play()
             isPlaying = true
         }
+        updateNowPlayingInfo()
     }
 
     public func stop() {
@@ -280,5 +288,132 @@ public final class AudioPlayerService: NSObject {
         player?.pause()
         isPlaying = false
         currentTime = 0.0
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+    }
+
+    // MARK: - Lock Screen & Control Center Remote Command Center
+    private func setupRemoteCommandCenter() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+
+        commandCenter.playCommand.isEnabled = true
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            if !self.isPlaying {
+                self.togglePlayPause()
+                return .success
+            }
+            return .commandFailed
+        }
+
+        commandCenter.pauseCommand.isEnabled = true
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            if self.isPlaying {
+                self.togglePlayPause()
+                return .success
+            }
+            return .commandFailed
+        }
+
+        commandCenter.togglePlayPauseCommand.isEnabled = true
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            self.togglePlayPause()
+            return .success
+        }
+
+        commandCenter.nextTrackCommand.isEnabled = true
+        commandCenter.nextTrackCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            self.nextAyah()
+            return .success
+        }
+
+        commandCenter.previousTrackCommand.isEnabled = true
+        commandCenter.previousTrackCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            self.previousAyah()
+            return .success
+        }
+
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let self = self,
+                  let positionEvent = event as? MPChangePlaybackPositionCommandEvent else {
+                return .commandFailed
+            }
+            self.seek(to: positionEvent.positionTime)
+            return .success
+        }
+    }
+
+    // MARK: - Now Playing Info & Lock Screen Dynamic Artwork
+    public func updateNowPlayingInfo() {
+        guard let surah = currentSurah else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: "Surah \(surah.nameEnglish) (\(surah.nameArabic))",
+            MPMediaItemPropertyArtist: "Ayah \(currentAyah) • \(currentReciter.name)",
+            MPMediaItemPropertyAlbumTitle: "The Holy Qur'an • Bayan",
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: currentTime,
+            MPMediaItemPropertyPlaybackDuration: duration > 0 ? duration : 1.0,
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0
+        ]
+
+        #if canImport(UIKit)
+        let artwork = MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { size in
+            UIGraphicsImageRenderer(size: size).image { ctx in
+                let rect = CGRect(origin: .zero, size: size)
+                let colors = [
+                    UIColor(red: 0.05, green: 0.08, blue: 0.16, alpha: 1.0).cgColor,
+                    UIColor(red: 0.02, green: 0.03, blue: 0.08, alpha: 1.0).cgColor
+                ]
+                if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0]) {
+                    ctx.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: 0, y: size.height), options: [])
+                }
+
+                let borderPath = UIBezierPath(roundedRect: rect.insetBy(dx: 20, dy: 20), cornerRadius: 32)
+                UIColor(red: 0.95, green: 0.78, blue: 0.35, alpha: 0.35).setStroke()
+                borderPath.lineWidth = 3
+                borderPath.stroke()
+
+                let innerBorder = UIBezierPath(roundedRect: rect.insetBy(dx: 28, dy: 28), cornerRadius: 26)
+                UIColor(red: 0.95, green: 0.78, blue: 0.35, alpha: 0.15).setStroke()
+                innerBorder.lineWidth = 1
+                innerBorder.stroke()
+
+                let titleAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 42, weight: .bold),
+                    .foregroundColor: UIColor(red: 0.95, green: 0.78, blue: 0.35, alpha: 1.0)
+                ]
+                let title = "BAYAN"
+                let titleSize = title.size(withAttributes: titleAttrs)
+                title.draw(at: CGPoint(x: (size.width - titleSize.width) / 2, y: size.height / 2 - 50), withAttributes: titleAttrs)
+
+                let subAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 22, weight: .medium),
+                    .foregroundColor: UIColor.white.withAlphaComponent(0.85)
+                ]
+                let sub = "The Holy Qur'an"
+                let subSize = sub.size(withAttributes: subAttrs)
+                sub.draw(at: CGPoint(x: (size.width - subSize.width) / 2, y: size.height / 2 + 10), withAttributes: subAttrs)
+
+                let surahAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 18, weight: .regular),
+                    .foregroundColor: UIColor(red: 0.95, green: 0.78, blue: 0.35, alpha: 0.75)
+                ]
+                let surahLabel = surah.nameArabic
+                let surahSize = surahLabel.size(withAttributes: surahAttrs)
+                surahLabel.draw(at: CGPoint(x: (size.width - surahSize.width) / 2, y: size.height / 2 + 45), withAttributes: surahAttrs)
+            }
+        }
+        info[MPMediaItemPropertyArtwork] = artwork
+        #endif
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 }

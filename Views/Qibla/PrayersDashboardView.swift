@@ -9,6 +9,8 @@ public struct PrayersDashboardView: View {
     @State private var calculationService = PrayerCalculationService.shared
     @State private var adhanService = AdhanAudioService.shared
     @State private var themeManager = AppThemeManager.shared
+    @State private var prayerSettings = PrayerSettingsManager.shared
+    @State private var showingSettingsSheet = false
     @State private var lastTriggeredPrayerKey: String = ""
 
     // Location coordinates (defaults to Casablanca, Morocco, or passed from location manager)
@@ -21,7 +23,13 @@ public struct PrayersDashboardView: View {
     }
 
     private var result: PrayerTimesDayResult {
-        calculationService.calculate(for: selectedDate, lat: latitude, lng: longitude)
+        calculationService.calculate(
+            for: selectedDate,
+            lat: latitude,
+            lng: longitude,
+            convention: prayerSettings.convention,
+            asrSchool: prayerSettings.asrSchool
+        )
     }
 
     private var completedCount: Int {
@@ -54,6 +62,14 @@ public struct PrayersDashboardView: View {
             }
             .padding(.horizontal, 18)
         }
+        .sheet(isPresented: $showingSettingsSheet) {
+            PrayerSettingsSheet(
+                prayerSettings: prayerSettings,
+                currentTheme: themeManager.currentTheme,
+                prayerTimes: result.prayers
+            )
+            .presentationDetents([.fraction(0.72), .large])
+        }
         .onAppear {
             refreshCompletedState()
         }
@@ -77,7 +93,7 @@ public struct PrayersDashboardView: View {
 
             Spacer()
 
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Button {
                     navigateDate(by: -1)
                 } label: {
@@ -99,6 +115,22 @@ public struct PrayersDashboardView: View {
                         .frame(width: 34, height: 34)
                         .background(themeManager.currentTheme.cardBorder.opacity(0.4))
                         .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showingSettingsSheet = true
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(themeManager.currentTheme.prayerActiveAccent)
+                        .frame(width: 34, height: 34)
+                        .background(themeManager.currentTheme.prayerActiveAccent.opacity(0.15))
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(themeManager.currentTheme.prayerActiveAccent.opacity(0.3), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
@@ -484,5 +516,172 @@ private struct PrayerCardRow: View {
             radius: 8,
             y: 3
         )
+    }
+}
+
+// MARK: - Prayer Settings Sheet (Calculation Method, Asr Juristic School & 15m Pre-Adhan Reminder)
+private struct PrayerSettingsSheet: View {
+    @Bindable var prayerSettings: PrayerSettingsManager
+    let currentTheme: QuranTheme
+    let prayerTimes: [PrayerTimeItem]
+    @Environment(\.dismiss) private var dismiss
+    @State private var adhanNotificationService = AdhanNotificationService.shared
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 22) {
+                    // 1. Calculation Convention Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("CALCULATION METHOD")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundColor(currentTheme.prayerActiveAccent)
+
+                        VStack(spacing: 8) {
+                            ForEach(CalculationConvention.allCases) { convention in
+                                let isSelected = prayerSettings.convention == convention
+                                Button {
+                                    prayerSettings.convention = convention
+                                    adhanNotificationService.scheduleAdhanNotifications(prayerTimes: prayerTimes)
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(convention.title)
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(currentTheme.prayerTextColor)
+                                            Text(convention.subtitle)
+                                                .font(.system(size: 11))
+                                                .foregroundColor(currentTheme.prayerSecondaryTextColor)
+                                        }
+
+                                        Spacer()
+
+                                        if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 18))
+                                                .foregroundColor(currentTheme.prayerActiveAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 12)
+                                    .background(isSelected ? currentTheme.prayerActiveAccent.opacity(0.12) : currentTheme.prayerCardBackground)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .stroke(isSelected ? currentTheme.prayerActiveAccent.opacity(0.4) : currentTheme.prayerCardBorder, lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // 2. Asr Juristic School Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("ASR JURISTIC SCHOOL")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundColor(currentTheme.prayerActiveAccent)
+
+                        VStack(spacing: 8) {
+                            ForEach(AsrJuristicSchool.allCases) { school in
+                                let isSelected = prayerSettings.asrSchool == school
+                                Button {
+                                    prayerSettings.asrSchool = school
+                                    adhanNotificationService.scheduleAdhanNotifications(prayerTimes: prayerTimes)
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(school.title)
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundColor(currentTheme.prayerTextColor)
+                                            Text(school.subtitle)
+                                                .font(.system(size: 11))
+                                                .foregroundColor(currentTheme.prayerSecondaryTextColor)
+                                        }
+
+                                        Spacer()
+
+                                        if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 18))
+                                                .foregroundColor(currentTheme.prayerActiveAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 12)
+                                    .background(isSelected ? currentTheme.prayerActiveAccent.opacity(0.12) : currentTheme.prayerCardBackground)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .stroke(isSelected ? currentTheme.prayerActiveAccent.opacity(0.4) : currentTheme.prayerCardBorder, lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // 3. Reminders & Alerts Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("REMINDERS & NOTIFICATIONS")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundColor(currentTheme.prayerActiveAccent)
+
+                        VStack(spacing: 12) {
+                            Toggle(isOn: Binding(
+                                get: { prayerSettings.isPreAdhanReminderEnabled },
+                                set: { newValue in
+                                    prayerSettings.isPreAdhanReminderEnabled = newValue
+                                    adhanNotificationService.scheduleAdhanNotifications(prayerTimes: prayerTimes)
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
+                                }
+                            )) {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("15-Minute Pre-Adhan Reminder")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(currentTheme.prayerTextColor)
+                                    Text("Alert 15 minutes before prayer time for preparation & wudu")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(currentTheme.prayerSecondaryTextColor)
+                                }
+                            }
+                            .tint(currentTheme.prayerActiveAccent)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(currentTheme.prayerCardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(currentTheme.prayerCardBorder, lineWidth: 1)
+                            )
+                        }
+                    }
+                }
+                .padding(18)
+            }
+            .background(currentTheme.backgroundColor.ignoresSafeArea())
+            .navigationTitle("Prayer Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(currentTheme.prayerActiveAccent)
+                }
+            }
+        }
     }
 }

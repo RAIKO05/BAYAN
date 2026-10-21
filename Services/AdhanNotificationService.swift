@@ -29,10 +29,15 @@ public final class AdhanNotificationService {
         guard isNotificationsEnabled else { return }
 
         let center = UNUserNotificationCenter.current()
-        let identifiers = ["fajr", "dhuhr", "asr", "maghrib", "isha"].map { "bayan_adhan_\($0)" }
+        let prayerIds = ["subuh", "dzuhur", "ashar", "maghrib", "isya", "fajr", "dhuhr", "asr", "isha"]
+        var identifiers = prayerIds.map { "bayan_adhan_\($0)" }
+        identifiers.append(contentsOf: prayerIds.map { "bayan_pre_adhan_\($0)" })
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
 
+        let isPreReminderEnabled = PrayerSettingsManager.shared.isPreAdhanReminderEnabled
+
         for prayer in prayerTimes {
+            // 1. Main Adhan Notification at Prayer Time
             var dateComponents = DateComponents()
             dateComponents.hour = prayer.hour
             dateComponents.minute = prayer.minute
@@ -44,7 +49,6 @@ public final class AdhanNotificationService {
             content.body = "حي على الصلاة، حي على الفلاح • تقبل الله طاعتكم"
             content.sound = UNNotificationSound(named: UNNotificationSoundName("adhan.caf"))
 
-            // Repeat daily at the specific hour and minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
             let request = UNNotificationRequest(
                 identifier: "bayan_adhan_\(prayer.id)",
@@ -57,13 +61,50 @@ public final class AdhanNotificationService {
                     print("⚠️ Failed to schedule Adhan for \(prayer.nameEnglish): \(error)")
                 }
             }
+
+            // 2. 15-Minute Advance Pre-Adhan Reminder (Optional)
+            if isPreReminderEnabled {
+                var preHour = prayer.hour
+                var preMinute = prayer.minute - 15
+                if preMinute < 0 {
+                    preMinute += 60
+                    preHour -= 1
+                    if preHour < 0 { preHour += 24 }
+                }
+
+                var preDateComponents = DateComponents()
+                preDateComponents.hour = preHour
+                preDateComponents.minute = preMinute
+                preDateComponents.second = 0
+
+                let preContent = UNMutableNotificationContent()
+                preContent.title = "اقترب موعد أذان \(prayer.nameArabic)"
+                preContent.subtitle = "\(prayer.nameEnglish) in 15 minutes (\(prayer.timeString))"
+                preContent.body = "استعد للصلاة والوضوء • الصلاة عماد الدين"
+                preContent.sound = .default
+
+                let preTrigger = UNCalendarNotificationTrigger(dateMatching: preDateComponents, repeats: true)
+                let preRequest = UNNotificationRequest(
+                    identifier: "bayan_pre_adhan_\(prayer.id)",
+                    content: preContent,
+                    trigger: preTrigger
+                )
+
+                center.add(preRequest) { error in
+                    if let error = error {
+                        print("⚠️ Failed to schedule 15m pre-Adhan for \(prayer.nameEnglish): \(error)")
+                    }
+                }
+            }
         }
-        print("🔔 Successfully scheduled daily Adhan notifications for 5 prayers.")
+        print("🔔 Successfully scheduled daily Adhan & Pre-Adhan notifications.")
     }
 
     /// Cancels all scheduled Adhan notifications
     public func cancelAll() {
-        let identifiers = ["fajr", "dhuhr", "asr", "maghrib", "isha"].map { "bayan_adhan_\($0)" }
+        let prayerIds = ["subuh", "dzuhur", "ashar", "maghrib", "isya", "fajr", "dhuhr", "asr", "isha"]
+        var identifiers = prayerIds.map { "bayan_adhan_\($0)" }
+        identifiers.append(contentsOf: prayerIds.map { "bayan_pre_adhan_\($0)" })
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
         isNotificationsEnabled = false
         print("🔕 All Adhan notifications cancelled.")
