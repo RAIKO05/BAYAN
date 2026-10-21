@@ -64,14 +64,18 @@ struct SurahDetailView: View {
                                     ayahNumber: ayahNum,
                                     isActive: activeAyah == ayahNum && playerService.isPlaying
                                 ) {
-                                    activeAyah = ayahNum
-                                    playerService.play(surah: surah, ayah: ayahNum)
+                                    if playerService.isPlaying && playerService.currentSurah?.id == surah.id && playerService.currentAyah == ayahNum {
+                                        playerService.togglePlayPause()
+                                    } else {
+                                        activeAyah = ayahNum
+                                        playerService.play(surah: surah, ayah: ayahNum)
+                                    }
                                 }
                                 .id(ayahNum)
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, 120) // Space for floating audio player
+                        .padding(.bottom, 120)
                     }
                     .padding(.top, 16)
                 }
@@ -87,27 +91,24 @@ struct SurahDetailView: View {
                     )
                 }
             }
-
-            // Bottom Floating Liquid Glass Audio Player
-            VStack {
-                Spacer()
-                FloatingPlayerBar(
-                    surah: surah,
-                    activeAyah: activeAyah,
-                    onOpenReciterPicker: { showingReciterSheet = true }
-                )
-                .padding(.horizontal)
-                .padding(.bottom, 16)
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    syncManager.toggleFavorite(surahId: surah.id)
-                } label: {
-                    Image(systemName: syncManager.favoriteSurahIds.contains(surah.id) ? "heart.fill" : "heart")
-                        .foregroundColor(BayanTheme.gold)
+                HStack(spacing: 12) {
+                    Button {
+                        showingReciterSheet = true
+                    } label: {
+                        Image(systemName: "person.wave.2.fill")
+                            .foregroundColor(BayanTheme.gold)
+                    }
+
+                    Button {
+                        syncManager.toggleFavorite(surahId: surah.id)
+                    } label: {
+                        Image(systemName: syncManager.favoriteSurahIds.contains(surah.id) ? "heart.fill" : "heart")
+                            .foregroundColor(BayanTheme.gold)
+                    }
                 }
             }
         }

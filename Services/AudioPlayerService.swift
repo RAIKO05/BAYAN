@@ -15,18 +15,20 @@ public final class AudioPlayerService: NSObject {
 
     private var player: AVPlayer?
     private var timeObserverToken: Any?
+    private var statusObservation: NSKeyValueObservation?
 
     public override init() {
         super.init()
-        setupAudioSession()
+        configureAudioSessionForPlayback()
     }
 
-    private func setupAudioSession() {
+    public func configureAudioSessionForPlayback() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
-            try AVAudioSession.sharedInstance().setActive(true)
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
         } catch {
-            print("Failed to configure audio session: \(error)")
+            print("⚠️ Playback audio session configuration failed: \(error)")
         }
     }
 
@@ -36,13 +38,40 @@ public final class AudioPlayerService: NSObject {
         self.currentAyah = ayah
         self.currentReciter = activeReciter
 
-        guard let url = activeReciter.audioUrl(surah: surah.id, ayah: ayah) else { return }
+        guard let url = activeReciter.audioUrl(surah: surah.id, ayah: ayah) else {
+            print("❌ Invalid audio URL for Surah \(surah.id), Ayah \(ayah)")
+            return
+        }
 
+        print("▶️ Loading Quran recitation: \(url)")
+
+        configureAudioSessionForPlayback()
         cleanupTimeObserver()
+        statusObservation?.invalidate()
+        statusObservation = nil
+
         player?.pause()
 
         let playerItem = AVPlayerItem(url: url)
-        player = AVPlayer(playerItem: playerItem)
+        let newPlayer = AVPlayer(playerItem: playerItem)
+        newPlayer.automaticallyWaitsToMinimizeStalling = true
+        newPlayer.volume = 1.0
+        self.player = newPlayer
+
+        // Observe player item status to catch duration and errors
+        statusObservation = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
+            guard let self = self else { return }
+            if item.status == .readyToPlay {
+                let itemDuration = item.duration.seconds
+                if itemDuration.isFinite && !itemDuration.isNaN && itemDuration > 0 {
+                    DispatchQueue.main.async {
+                        self.duration = itemDuration
+                    }
+                }
+            } else if item.status == .failed {
+                print("❌ AVPlayerItem failed: \(String(describing: item.error))")
+            }
+        }
 
         setupTimeObserver()
 
@@ -54,7 +83,7 @@ public final class AudioPlayerService: NSObject {
             object: playerItem
         )
 
-        player?.play()
+        newPlayer.play()
         self.isPlaying = true
 
         QuranSyncManager.shared.updateLastRead(
@@ -134,6 +163,7 @@ public final class AudioPlayerService: NSObject {
             player?.pause()
             isPlaying = false
         } else {
+            configureAudioSessionForPlayback()
             player?.play()
             isPlaying = true
         }
@@ -141,6 +171,8 @@ public final class AudioPlayerService: NSObject {
 
     public func stop() {
         cleanupTimeObserver()
+        statusObservation?.invalidate()
+        statusObservation = nil
         player?.pause()
         isPlaying = false
         currentTime = 0.0

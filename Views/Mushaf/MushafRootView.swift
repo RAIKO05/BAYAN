@@ -73,8 +73,12 @@ struct MushafRootView: View {
                                     Button {
                                         dataService.selectedQiraah = qiraah
                                         if qiraah == .warsh {
-                                            if let kazabri = Reciter.standardCatalog.first(where: { $0.id == "kazabri_warsh" }) {
-                                                playerService.currentReciter = kazabri
+                                            if let warshReciter = Reciter.standardCatalog.first(where: { $0.id == "yassin_warsh" }) ?? Reciter.standardCatalog.first(where: { $0.id == "kazabri_warsh" }) {
+                                                playerService.currentReciter = warshReciter
+                                            }
+                                        } else {
+                                            if let hafsReciter = Reciter.standardCatalog.first(where: { $0.id == "alafasy" }) {
+                                                playerService.currentReciter = hafsReciter
                                             }
                                         }
                                         #if os(iOS)

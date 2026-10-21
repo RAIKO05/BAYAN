@@ -27,12 +27,21 @@ public struct Reciter: Identifiable, Codable, Hashable {
         let fullAyahCode = "\(surahStr)\(ayahStr)"
 
         if id == "kazabri_warsh" {
-            // Omar Al-Kazabri Warsh (high-speed Moroccan recitation CDN)
-            return URL(string: "https://server9.mp3quran.net/omr/\(surahStr).mp3")
+            // Omar Al-Kazabri Warsh - Verified Cloudflare High-Speed CDN
+            return URL(string: "https://cdn.mp3quran.net/audio/omar-kazabri/r1/\(surahStr).mp3")
+        }
+
+        if id == "yassin_warsh" {
+            // Yassin Al-Jazaery (Warsh verse-by-verse EveryAyah)
+            return URL(string: "https://everyayah.com/data/warsh/warsh_yassin_al_jazaery_64kbps/\(fullAyahCode).mp3")
+        }
+
+        if id == "abdulbasit_warsh" {
+            // Abdul Basit (Warsh verse-by-verse EveryAyah)
+            return URL(string: "https://everyayah.com/data/warsh/warsh_Abdul_Basit_128kbps/\(fullAyahCode).mp3")
         }
 
         if id == "omardiaa" {
-            // Verse-level fallback to Alafasy for uninterrupted continuous recitation
             return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
         }
 
@@ -52,6 +61,22 @@ public struct Reciter: Identifiable, Codable, Hashable {
     // Curated standard reciters catalog
     public static let standardCatalog: [Reciter] = [
         Reciter(
+            id: "alafasy",
+            nameArabic: "مشاري راشد العفاسي",
+            nameEnglish: "Mishary Rashid Alafasy",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Alafasy_128kbps"
+        ),
+        Reciter(
+            id: "yassin_warsh",
+            nameArabic: "ياسين الجزائري (ورش)",
+            nameEnglish: "Yassin Al-Jazaery (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "warsh_yassin"
+        ),
+        Reciter(
             id: "kazabri_warsh",
             nameArabic: "عمر القزابري (ورش)",
             nameEnglish: "Omar Al-Kazabri (Warsh)",
@@ -60,12 +85,12 @@ public struct Reciter: Identifiable, Codable, Hashable {
             serverSubdomain: "Warsh_Omar_AlQazabri"
         ),
         Reciter(
-            id: "alafasy",
-            nameArabic: "مشاري راشد العفاسي",
-            nameEnglish: "Mishary Rashid Alafasy",
+            id: "abdulbasit_warsh",
+            nameArabic: "عبد الباسط عبد الصمد (ورش)",
+            nameEnglish: "Abdul Basit (Warsh)",
             style: .murattal,
-            riwayah: .hafs,
-            serverSubdomain: "Alafasy_128kbps"
+            riwayah: .warsh,
+            serverSubdomain: "warsh_abdulbasit"
         ),
         Reciter(
             id: "abdulbasit_mujawwad",
@@ -81,7 +106,7 @@ public struct Reciter: Identifiable, Codable, Hashable {
             nameEnglish: "Abdul Basit (Murattal)",
             style: .murattal,
             riwayah: .hafs,
-            serverSubdomain: "AbdulBasit_Murattal_192kbps"
+            serverSubdomain: "Abdul_Basit_Murattal_192kbps"
         ),
         Reciter(
             id: "minshawi_mujawwad",
@@ -106,14 +131,6 @@ public struct Reciter: Identifiable, Codable, Hashable {
             style: .murattal,
             riwayah: .hafs,
             serverSubdomain: "Husary_128kbps"
-        ),
-        Reciter(
-            id: "husary_warsh",
-            nameArabic: "محمود خليل الحصري (ورش)",
-            nameEnglish: "Mahmoud Khalil Al-Husary (Warsh)",
-            style: .murattal,
-            riwayah: .warsh,
-            serverSubdomain: "Warsh_Husary_128kbps"
         ),
         Reciter(
             id: "sudais",
@@ -154,14 +171,6 @@ public struct Reciter: Identifiable, Codable, Hashable {
             style: .murattal,
             riwayah: .hafs,
             serverSubdomain: "Maher_AlMuaiqly_64kbps"
-        ),
-        Reciter(
-            id: "omardiaa",
-            nameArabic: "عمر ضياء الدين",
-            nameEnglish: "Omar Diaa Aldeen",
-            style: .murattal,
-            riwayah: .hafs,
-            serverSubdomain: "Omar_Diaa_Aldeen"
         )
     ]
 }
