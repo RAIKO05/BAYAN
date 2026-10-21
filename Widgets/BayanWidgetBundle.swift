@@ -12,5 +12,8 @@ struct BayanWidgetBundle: WidgetBundle {
         // Home Screen & Lock Screen Interactive Widgets
         BayanLastReadWidget()
         BayanPrayerTimesWidget()
+
+        // Dynamic Island & Lock Screen Live Activity
+        BayanPrayerLiveActivity()
     }
 }

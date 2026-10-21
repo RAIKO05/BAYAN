@@ -72,6 +72,11 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Hisn al-Muslim (حصن المسلم - Fortress of the Muslim)**: Complete authentic daily Adhkar & Duas (Morning, Evening, Sleep, Waking, After Prayer, Quranic Duas, Protection) with interactive circular counter dial, haptics, and Hadith virtues.
+            - **Offline Quran Audio Downloader**: Download full Surahs or Ayahs for 100% offline recitation without cellular or Wi-Fi data usage, complete with storage manager.
+            - **Color-Coded Tajweed Rules Mushaf**: Authentic Tajweed coloring (Ghunnah, Qalqalah, Idgham, Ikhfa, Iqlab, Madd) with interactive Tajweed rules guide sheet.
+            - **Live Activities & Dynamic Island**: Real-time next prayer countdown and city/Qibla status on iPhone Dynamic Island and Lock Screen.
+            - **Quran Memorization (Hifz) Companion**: Interactive memorization tool with tap-to-reveal words, first-letter memory hints, blank testing, and mastery tracker.
             - **Expanded Reciters Catalog (36 World-Renowned Qura'a)**: Comprehensive catalog featuring Abdul Rahman Al-Sudais, Saud Al-Shuraim, Maher Al-Muaiqly, Yasser Al-Dosari, Saad Al-Ghamdi, Abu Bakr Ash-Shatri, Ali Jaber, Nasser Al-Qatami, Ahmed Al-Ajamy, Abdullah Awad Al-Juhany, Muhammad Ayyub, Ali Al-Hudhaify, Dr. Ayman Suwayd, Minshawi & Husary (Murattal, Mujawwad & Teacher), and Warsh masters (Omar Al-Kazabri, Yassin Al-Jazaery, Abdul Basit, Ibrahim Al-Dosari).
             - **Interactive In-Sheet Audio Preview**: Audition any reciter's soothing voice with instant streaming audio preview and live animated waveforms before selecting.
             - **Favorite Reciters Pinning**: Pin your most-loved reciters with one tap to keep them at the top of your list.

@@ -6,15 +6,23 @@ struct SurahDetailView: View {
 
     @State private var playerService = AudioPlayerService.shared
     @State private var syncManager = QuranSyncManager.shared
+    @State private var downloadService = QuranAudioDownloadService.shared
     @State private var activeAyah: Int = 1
     @State private var showingReciterSheet = false
     @State private var showingThemeSheet = false
+    @State private var showingTajweedLegend = false
+    @State private var showingHifzCompanion = false
     @State private var selectedTafsirAyah: Int? = nil
 
+    @AppStorage("bayan_tajweed_mode") private var isTajweedEnabled: Bool = false
     @State private var themeManager = AppThemeManager.shared
 
     private var currentTheme: QuranTheme {
         themeManager.currentTheme
+    }
+
+    private var downloadStatus: QuranAudioDownloadService.DownloadStatus {
+        downloadService.downloadStatus(reciterId: playerService.currentReciter.id, surah: surah)
     }
 
     var body: some View {
@@ -30,6 +38,94 @@ struct SurahDetailView: View {
                     VStack(spacing: 24) {
                         // Surah Header Banner (Authentic Mushaf Ornamental Cartouche)
                         SurahOrnamentalFrameView(surah: surah, theme: currentTheme)
+
+                        // Quick Control Strip: Tajweed, Hifz, Download
+                        HStack(spacing: 10) {
+                            // Tajweed Toggle Chip
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    isTajweedEnabled.toggle()
+                                }
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Circle()
+                                        .fill(isTajweedEnabled ? Color.green : Color.white.opacity(0.3))
+                                        .frame(width: 8, height: 8)
+                                    Text("Tajweed")
+                                        .font(.caption2.weight(.bold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(isTajweedEnabled ? currentTheme.toolbarAccentColor.opacity(0.18) : Color.white.opacity(0.06))
+                                .foregroundColor(isTajweedEnabled ? currentTheme.toolbarAccentColor : .white.opacity(0.8))
+                                .clipShape(Capsule())
+                            }
+
+                            // Tajweed Guide Button (when active)
+                            if isTajweedEnabled {
+                                Button {
+                                    showingTajweedLegend = true
+                                } label: {
+                                    Image(systemName: "questionmark.circle")
+                                        .font(.caption)
+                                        .foregroundColor(currentTheme.toolbarAccentColor)
+                                }
+                            }
+
+                            Spacer()
+
+                            // Hifz Companion Launch Button
+                            Button {
+                                showingHifzCompanion = true
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.caption2)
+                                    Text("Hifz")
+                                        .font(.caption2.weight(.bold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.white.opacity(0.06))
+                                .foregroundColor(.white.opacity(0.85))
+                                .clipShape(Capsule())
+                            }
+
+                            // Offline Audio Download Button
+                            Button {
+                                handleDownloadTap()
+                            } label: {
+                                HStack(spacing: 5) {
+                                    switch downloadStatus {
+                                    case .notDownloaded:
+                                        Image(systemName: "arrow.down.circle")
+                                            .font(.caption2)
+                                        Text("Download")
+                                            .font(.caption2.weight(.bold))
+                                    case .downloading(let progress):
+                                        ProgressView()
+                                            .scaleEffect(0.6)
+                                        Text("\(Int(progress * 100))%")
+                                            .font(.caption2.weight(.bold))
+                                    case .downloaded:
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.caption2)
+                                            .foregroundColor(currentTheme.toolbarAccentColor)
+                                        Text("Offline")
+                                            .font(.caption2.weight(.bold))
+                                    }
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.white.opacity(0.06))
+                                .foregroundColor(.white.opacity(0.85))
+                                .clipShape(Capsule())
+                            }
+                        }
+                        .padding(.horizontal)
 
                         // Bismillah (except Surah At-Tawbah #9 and Surah Al-Fatihah #1 where it is Ayah 1)
                         if surah.id != 9 && surah.id != 1 {
@@ -47,6 +143,7 @@ struct SurahDetailView: View {
                                     surah: surah,
                                     ayahNumber: ayahNum,
                                     theme: currentTheme,
+                                    isTajweedEnabled: isTajweedEnabled,
                                     isActive: activeAyah == ayahNum && playerService.isPlaying,
                                     onPlayTap: {
                                         if playerService.isPlaying && playerService.currentSurah?.id == surah.id && playerService.currentAyah == ayahNum {
@@ -153,6 +250,13 @@ struct SurahDetailView: View {
             ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                 .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: $showingTajweedLegend) {
+            TajweedLegendSheet()
+                .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showingHifzCompanion) {
+            HifzCompanionView(surah: surah, initialAyah: activeAyah)
+        }
         .sheet(isPresented: Binding(
             get: { selectedTafsirAyah != nil },
             set: { if !$0 { selectedTafsirAyah = nil } }
@@ -163,6 +267,24 @@ struct SurahDetailView: View {
             }
         }
     }
+
+    private func handleDownloadTap() {
+        switch downloadStatus {
+        case .notDownloaded:
+            downloadService.downloadSurah(surah, reciter: playerService.currentReciter)
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            #endif
+        case .downloading:
+            // In progress
+            break
+        case .downloaded:
+            downloadService.deleteDownloadedSurah(surah, reciterId: playerService.currentReciter.id)
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #endif
+        }
+    }
 }
 
 // Single Ayah Row
@@ -170,6 +292,7 @@ private struct AyahRow: View {
     let surah: Surah
     let ayahNumber: Int
     var theme: QuranTheme = .paper
+    var isTajweedEnabled: Bool = false
     let isActive: Bool
     let onPlayTap: () -> Void
     var onTafsirTap: () -> Void = {}
@@ -263,16 +386,27 @@ private struct AyahRow: View {
                 }
             }
 
-            // Arabic Verse with Authentic Uthmanic Font & Inline End Medallion
-            Text(ayahArabic)
-                .font(.quran(size: 26))
-                .multilineTextAlignment(.trailing)
-                .lineSpacing(12)
-                .foregroundColor(isActive ? theme.activeArabicTextColor : theme.arabicTextColor)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .onTapGesture {
-                    onTafsirTap()
-                }
+            // Arabic Verse: Plain or Tajweed Color-Coded
+            if isTajweedEnabled {
+                Text(TajweedEngine.shared.colorize(arabicText: ayahArabic))
+                    .font(.quran(size: 26))
+                    .multilineTextAlignment(.trailing)
+                    .lineSpacing(12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .onTapGesture {
+                        onTafsirTap()
+                    }
+            } else {
+                Text(ayahArabic)
+                    .font(.quran(size: 26))
+                    .multilineTextAlignment(.trailing)
+                    .lineSpacing(12)
+                    .foregroundColor(isActive ? theme.activeArabicTextColor : theme.arabicTextColor)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .onTapGesture {
+                        onTafsirTap()
+                    }
+            }
 
             // English Translation (Tappable for Tafsir)
             Text(ayahEnglish)

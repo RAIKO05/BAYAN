@@ -34,6 +34,7 @@ targets:
       - sdk: Speech.framework
       - sdk: UserNotifications.framework
       - sdk: StoreKit.framework
+      - sdk: ActivityKit.framework
     settings:
       base:
         PRODUCT_NAME: Bayan
@@ -55,10 +56,12 @@ targets:
       - path: Intents/RecognizeQuranIntent.swift
       - path: Intents/ResumeQuranIntent.swift
       - path: Models/Surah.swift
+      - path: Models/PrayerActivityAttributes.swift
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: AppIntents.framework
       - sdk: SwiftUI.framework
+      - sdk: ActivityKit.framework
     settings:
       base:
         PRODUCT_NAME: BayanWidgets

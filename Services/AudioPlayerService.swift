@@ -78,12 +78,20 @@ public final class AudioPlayerService: NSObject {
         self.currentAyah = ayah
         self.currentReciter = activeReciter
 
-        guard let url = activeReciter.audioUrl(surah: surah.id, ayah: ayah) else {
+        // Prefer offline downloaded audio cache if available
+        let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: activeReciter.id, surah: surah.id, ayah: ayah)
+        let playbackUrl = localUrl ?? activeReciter.audioUrl(surah: surah.id, ayah: ayah)
+
+        guard let url = playbackUrl else {
             print("❌ Invalid audio URL for Surah \(surah.id), Ayah \(ayah)")
             return
         }
 
-        print("▶️ Loading Quran recitation: \(url)")
+        if localUrl != nil {
+            print("💾 Playing from offline local cache: \(url.lastPathComponent)")
+        } else {
+            print("▶️ Streaming Quran recitation: \(url)")
+        }
 
         configureAudioSessionForPlayback()
         cleanupTimeObserver()

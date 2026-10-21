@@ -147,6 +147,7 @@ public struct AdkarCatalog {
 public struct AdkarView: View {
     @State private var selectedCategory: DikrItem.AdkarCategory = .morning
     @State private var currentCounts: [UUID: Int] = [:]
+    @State private var showingHisnAlMuslim: Bool = false
     @State private var themeManager = AppThemeManager.shared
 
     public init() {}
@@ -186,6 +187,47 @@ public struct AdkarView: View {
                                 .foregroundColor(BayanTheme.gold.opacity(0.85))
                         }
                         .padding(.top, 10)
+
+                        // Hisn al-Muslim Complete Fortress Launcher
+                        Button {
+                            showingHisnAlMuslim = true
+                            triggerHaptic()
+                        } label: {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(BayanTheme.gold.opacity(0.2))
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: "shield.checkered")
+                                        .font(.subheadline.weight(.bold))
+                                        .foregroundColor(BayanTheme.gold)
+                                }
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Hisn al-Muslim (حصن المسلم)")
+                                        .font(.subheadline.weight(.bold))
+                                        .foregroundColor(.white)
+                                    Text("Complete Fortress of the Muslim • 7 Categories & Virtues")
+                                        .font(.caption2)
+                                        .foregroundColor(BayanTheme.goldSoft.opacity(0.85))
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundColor(BayanTheme.gold)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color.white.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(BayanTheme.gold.opacity(0.35), lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal)
 
                         // Category Filter Horizontal Scroll
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -282,6 +324,9 @@ public struct AdkarView: View {
             }
             .navigationTitle("Adkar")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingHisnAlMuslim) {
+                HisnAlMuslimView()
+            }
         }
     }
 
