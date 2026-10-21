@@ -586,19 +586,19 @@
       background: rgba(0, 0, 0, 0.12);
       color: #111;
     }
-    .theme-options-row {
-      display: flex;
+    .theme-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
     .theme-option-box {
-      flex: 1;
-      height: 86px;
+      height: 78px;
       border-radius: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       position: relative;
       transition: all 0.2s ease;
@@ -613,13 +613,13 @@
       box-shadow: 0 4px 14px rgba(45, 138, 101, 0.35);
     }
     .theme-arabic-preview {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 700;
       font-family: "Amiri Quran", "Scheherazade New", serif;
       line-height: 1.2;
     }
     .theme-label {
-      font-size: 12.5px;
+      font-size: 11.5px;
       font-weight: 600;
     }
 
@@ -646,6 +646,209 @@
     }
     .theme-dark .theme-arabic-preview { color: #ffffff; }
     .theme-dark .theme-label { color: #e5e7eb; }
+
+    /* Emerald Theme Preview Tile */
+    .theme-emerald {
+      background: #041a14;
+      color: #e6faf1;
+      border: 1px solid rgba(45, 138, 101, 0.4);
+    }
+    .theme-emerald .theme-arabic-preview { color: #e6faf1; }
+    .theme-emerald .theme-label { color: #35d898; }
+
+    /* Midnight Theme Preview Tile */
+    .theme-midnight {
+      background: #060d1a;
+      color: #edf2f7;
+      border: 1px solid rgba(75, 120, 200, 0.3);
+    }
+    .theme-midnight .theme-arabic-preview { color: #edf2f7; }
+    .theme-midnight .theme-label { color: #72a4e8; }
+
+    /* OLED Theme Preview Tile */
+    .theme-oled {
+      background: #000000;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .theme-oled .theme-arabic-preview { color: #ffffff; }
+    .theme-oled .theme-label { color: #cccccc; }
+
+    /* Hero Adhan Button & Banner */
+    .hero-adhan-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 14px;
+      background: var(--gold);
+      color: var(--obsidian);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .hero-adhan-btn.playing {
+      background: #ef4444;
+      color: #ffffff;
+      animation: pulseAdhan 1.5s infinite;
+    }
+    @keyframes pulseAdhan {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.04); }
+    }
+    .adhan-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(14, 55, 42, 0.95);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      margin: 2px 0 6px;
+      animation: slideDownAdhan 0.3s ease;
+    }
+    @keyframes slideDownAdhan {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .adhan-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .adhan-wave-icon {
+      font-size: 18px;
+    }
+    .adhan-banner-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .adhan-banner-title span {
+      color: var(--gold-soft);
+    }
+    .adhan-banner-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.75);
+      font-family: "Amiri Quran", serif;
+      margin-top: 1px;
+    }
+    .adhan-banner-stop {
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 12px;
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .adhan-banner-stop:hover {
+      background: #dc2626;
+    }
+
+    /* App-Wide Theme System */
+    body[data-theme="paper"] .iphone-frame {
+      background: radial-gradient(circle at 50% 15%, #fbf6ec 0%, #f4ecdc 85%);
+      color: #1c1308;
+    }
+    body[data-theme="paper"] .header-brand h1,
+    body[data-theme="paper"] .quran-title-arabic {
+      color: #1c1308 !important;
+      -webkit-text-fill-color: #1c1308 !important;
+      background: none !important;
+    }
+    body[data-theme="paper"] .prayers-date-gregorian { color: #1c1308; }
+    body[data-theme="paper"] .prayers-date-hijri { color: #6b5337; }
+    body[data-theme="paper"] .prayer-now-card,
+    body[data-theme="paper"] .prayer-gauge-card {
+      background: #2a2016 !important;
+    }
+    body[data-theme="paper"] .prayer-row-item {
+      background: #fbf7ee !important;
+      border-color: #e5dbc8 !important;
+      color: #1c1308 !important;
+    }
+    body[data-theme="paper"] .prayer-row-title,
+    body[data-theme="paper"] .prayer-time-val {
+      color: #1c1308 !important;
+    }
+
+    body[data-theme="modern"] .iphone-frame {
+      background: radial-gradient(circle at 50% 15%, #ffffff 0%, #edf1f7 85%);
+      color: #111827;
+    }
+    body[data-theme="modern"] .header-brand h1,
+    body[data-theme="modern"] .quran-title-arabic {
+      color: #111827 !important;
+      -webkit-text-fill-color: #111827 !important;
+      background: none !important;
+    }
+    body[data-theme="modern"] .prayers-date-gregorian { color: #111827; }
+    body[data-theme="modern"] .prayers-date-hijri { color: #4b5563; }
+    body[data-theme="modern"] .prayer-now-card,
+    body[data-theme="modern"] .prayer-gauge-card {
+      background: #103b2f !important;
+    }
+    body[data-theme="modern"] .prayer-row-item {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #111827 !important;
+    }
+    body[data-theme="modern"] .prayer-row-title,
+    body[data-theme="modern"] .prayer-time-val {
+      color: #111827 !important;
+    }
+
+    body[data-theme="dark"] .iphone-frame {
+      background: radial-gradient(circle at 50% 15%, #18202c 0%, #080c10 85%);
+      color: #ffffff;
+    }
+
+    body[data-theme="emerald"] .iphone-frame {
+      background: radial-gradient(circle at 50% 15%, #083827 0%, #02120c 85%);
+      color: #ffffff;
+    }
+    body[data-theme="emerald"] .prayer-now-card,
+    body[data-theme="emerald"] .prayer-gauge-card {
+      background: #093729 !important;
+    }
+    body[data-theme="emerald"] .prayer-row-item {
+      background: #06281e !important;
+      border-color: rgba(45, 138, 101, 0.3) !important;
+    }
+
+    body[data-theme="midnight"] .iphone-frame {
+      background: radial-gradient(circle at 50% 15%, #0f2244 0%, #040916 85%);
+      color: #ffffff;
+    }
+    body[data-theme="midnight"] .prayer-now-card,
+    body[data-theme="midnight"] .prayer-gauge-card {
+      background: #0f244a !important;
+    }
+    body[data-theme="midnight"] .prayer-row-item {
+      background: #0a1832 !important;
+      border-color: rgba(60, 110, 190, 0.3) !important;
+    }
+
+    body[data-theme="oled"] .iphone-frame {
+      background: #000000;
+      color: #ffffff;
+    }
+    body[data-theme="oled"] .prayer-now-card,
+    body[data-theme="oled"] .prayer-gauge-card {
+      background: #111111 !important;
+      border-color: #222222 !important;
+    }
+    body[data-theme="oled"] .prayer-row-item {
+      background: #0a0a0a !important;
+      border-color: #1c1c1c !important;
+    }
 
     /* --------------------------------------------------------
        THEME STYLES APPLIED TO QURAN READER MODAL (#match-modal)
@@ -2372,7 +2575,12 @@
                 <span id="hero-prayer-name">Ashar</span> <span id="hero-prayer-emoji">⛅</span>
               </div>
               <div class="hero-prayer-time" id="hero-prayer-time">15.17</div>
-              <div class="hero-prayer-countdown" id="hero-prayer-countdown">Maghrib in 2h 26m</div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                <div class="hero-prayer-countdown" id="hero-prayer-countdown">Maghrib in 2h 26m</div>
+                <button class="hero-adhan-btn" id="hero-adhan-btn" onclick="toggleAdhanPlayback()">
+                  <span id="hero-adhan-icon">🔊</span> <span id="hero-adhan-txt">Adhan</span>
+                </button>
+              </div>
             </div>
 
             <!-- Right Hero Card (Progress Ring Gauge) -->
@@ -2390,6 +2598,18 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Adhan Now Playing Banner (Appears when Adhan is active) -->
+          <div class="adhan-banner" id="adhan-banner" style="display: none;">
+            <div class="adhan-banner-left">
+              <span class="adhan-wave-icon">🔊</span>
+              <div>
+                <div class="adhan-banner-title">الأذان • Now Playing: <span id="adhan-playing-name">Ashar</span></div>
+                <div class="adhan-banner-sub">حي على الصلاة • حي على الفلاح</div>
+              </div>
+            </div>
+            <button class="adhan-banner-stop" onclick="stopAdhanPlayback()">Stop</button>
           </div>
 
           <!-- List of 5 Prayers -->
@@ -2599,23 +2819,41 @@
             <span class="theme-card-title">Themes</span>
             <button class="theme-card-close" onclick="closeThemeModal()">✕</button>
           </div>
-          <div class="theme-options-row">
-            <!-- Modern Theme Option -->
-            <div class="theme-option-box theme-modern" id="theme-opt-modern" onclick="setQuranTheme('modern')">
-              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
-              <div class="theme-label">Modern</div>
-            </div>
-
+          <div class="theme-options-grid">
             <!-- Paper Theme Option -->
             <div class="theme-option-box theme-paper" id="theme-opt-paper" onclick="setQuranTheme('paper')">
               <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
               <div class="theme-label">Paper</div>
             </div>
 
+            <!-- Modern Theme Option -->
+            <div class="theme-option-box theme-modern" id="theme-opt-modern" onclick="setQuranTheme('modern')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Modern</div>
+            </div>
+
             <!-- Dark Theme Option -->
             <div class="theme-option-box theme-dark" id="theme-opt-dark" onclick="setQuranTheme('dark')">
               <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
               <div class="theme-label">Dark</div>
+            </div>
+
+            <!-- Emerald Theme Option -->
+            <div class="theme-option-box theme-emerald" id="theme-opt-emerald" onclick="setQuranTheme('emerald')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Emerald</div>
+            </div>
+
+            <!-- Midnight Theme Option -->
+            <div class="theme-option-box theme-midnight" id="theme-opt-midnight" onclick="setQuranTheme('midnight')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Midnight</div>
+            </div>
+
+            <!-- OLED Theme Option -->
+            <div class="theme-option-box theme-oled" id="theme-opt-oled" onclick="setQuranTheme('oled')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">OLED</div>
             </div>
           </div>
         </div>
@@ -4330,14 +4568,15 @@
     }
 
     // =========================================================
-    // QURAN THEMES CONTROLLER (MODERN, PAPER, DARK)
+    // QURAN & APP-WIDE THEMES CONTROLLER (6 RICH THEMES)
     // =========================================================
+    const ALL_QURAN_THEMES = ["paper", "modern", "dark", "emerald", "midnight", "oled"];
     let currentQuranTheme = "paper"; // Default to Paper as in screenshot
 
     function initQuranTheme() {
       try {
-        const saved = localStorage.getItem("bayan_quran_theme");
-        if (saved && (saved === "modern" || saved === "paper" || saved === "dark")) {
+        const saved = localStorage.getItem("bayan_app_theme") || localStorage.getItem("bayan_quran_theme");
+        if (saved && ALL_QURAN_THEMES.includes(saved)) {
           currentQuranTheme = saved;
         }
       } catch (e) {}
@@ -4345,9 +4584,10 @@
     }
 
     function setQuranTheme(themeName) {
-      if (themeName !== "modern" && themeName !== "paper" && themeName !== "dark") return;
+      if (!ALL_QURAN_THEMES.includes(themeName)) return;
       currentQuranTheme = themeName;
       try {
+        localStorage.setItem("bayan_app_theme", themeName);
         localStorage.setItem("bayan_quran_theme", themeName);
       } catch (e) {}
       applyQuranTheme(themeName);
@@ -4355,6 +4595,7 @@
     }
 
     function applyQuranTheme(themeName) {
+      document.body.setAttribute("data-theme", themeName);
       const matchModal = document.getElementById("match-modal");
       if (matchModal) {
         matchModal.setAttribute("data-quran-theme", themeName);
@@ -4365,8 +4606,8 @@
         labelEl.textContent = themeName.charAt(0).toUpperCase() + themeName.slice(1);
       }
 
-      // Update selection indicator on theme options (green border on selected)
-      ["modern", "paper", "dark"].forEach(t => {
+      // Update selection indicator on theme options
+      ALL_QURAN_THEMES.forEach(t => {
         const opt = document.getElementById(`theme-opt-${t}`);
         if (opt) {
           if (t === themeName) {
@@ -5184,10 +5425,93 @@
       renderPrayersDashboard();
     }
 
+    let adhanAudio = null;
+    let isAdhanPlaying = false;
+    let lastTriggeredAdhanKey = "";
+
     function togglePrayerSpeaker(btn) {
       btn.classList.toggle("muted");
       btn.textContent = btn.classList.contains("muted") ? "🔇" : "🔊";
     }
+
+    function toggleAdhanPlayback(prayerName) {
+      if (isAdhanPlaying) {
+        stopAdhanPlayback();
+      } else {
+        const pName = prayerName || document.getElementById("hero-prayer-name").textContent || "الصلاة";
+        playAdhanAudio(pName);
+      }
+    }
+
+    function playAdhanAudio(prayerName) {
+      if (!adhanAudio) {
+        adhanAudio = new Audio('adhan.mp3');
+      }
+      adhanAudio.currentTime = 0;
+      adhanAudio.play().then(() => {
+        isAdhanPlaying = true;
+        updateAdhanBanner(true, prayerName);
+      }).catch(e => {
+        console.warn("Autoplay blocked or audio load error:", e);
+        isAdhanPlaying = true;
+        updateAdhanBanner(true, prayerName);
+      });
+
+      adhanAudio.onended = () => {
+        stopAdhanPlayback();
+      };
+    }
+
+    function stopAdhanPlayback() {
+      if (adhanAudio) {
+        adhanAudio.pause();
+        adhanAudio.currentTime = 0;
+      }
+      isAdhanPlaying = false;
+      updateAdhanBanner(false);
+    }
+
+    function updateAdhanBanner(playing, prayerName) {
+      const banner = document.getElementById("adhan-banner");
+      const heroBtn = document.getElementById("hero-adhan-btn");
+      const heroTxt = document.getElementById("hero-adhan-txt");
+      const heroIcon = document.getElementById("hero-adhan-icon");
+      const nameEl = document.getElementById("adhan-playing-name");
+
+      if (playing) {
+        if (banner) banner.style.display = "flex";
+        if (nameEl) nameEl.textContent = prayerName || "الصلاة";
+        if (heroBtn) heroBtn.classList.add("playing");
+        if (heroTxt) heroTxt.textContent = "Stop";
+        if (heroIcon) heroIcon.textContent = "⏹";
+      } else {
+        if (banner) banner.style.display = "none";
+        if (heroBtn) heroBtn.classList.remove("playing");
+        if (heroTxt) heroTxt.textContent = "Adhan";
+        if (heroIcon) heroIcon.textContent = "🔊";
+      }
+    }
+
+    // Auto Adhan Trigger every 5 seconds
+    setInterval(() => {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const dayKey = now.toDateString();
+      DAILY_PRAYERS_DEF.forEach(p => {
+        if (p.hour === h && p.minute === m) {
+          const key = `${p.id}_${dayKey}_${h}:${m}`;
+          if (lastTriggeredAdhanKey !== key) {
+            lastTriggeredAdhanKey = key;
+            const speakerBtn = document.getElementById(`speaker-btn-${p.id}`);
+            const isMuted = speakerBtn && speakerBtn.classList.contains("muted");
+            if (!isMuted) {
+              playAdhanAudio(p.name);
+            }
+          }
+        }
+      });
+    }, 5000);
 
     function switchQiblaTabMode(mode) {
       const pDashboard = document.getElementById("prayers-dashboard");
@@ -5196,13 +5520,29 @@
       const cBtn = document.getElementById("mode-btn-compass");
 
       if (mode === "prayers") {
-        if (pDashboard) pDashboard.style.display = "flex";
+        if (pDashboard) {
+          pDashboard.style.display = "flex";
+          pDashboard.style.opacity = "0";
+          pDashboard.style.transform = "scale(0.98)";
+          setTimeout(() => {
+            pDashboard.style.opacity = "1";
+            pDashboard.style.transform = "scale(1)";
+          }, 10);
+        }
         if (cView) cView.style.display = "none";
         if (pBtn) pBtn.classList.add("active");
         if (cBtn) cBtn.classList.remove("active");
       } else {
         if (pDashboard) pDashboard.style.display = "none";
-        if (cView) cView.style.display = "flex";
+        if (cView) {
+          cView.style.display = "flex";
+          cView.style.opacity = "0";
+          cView.style.transform = "scale(0.98)";
+          setTimeout(() => {
+            cView.style.opacity = "1";
+            cView.style.transform = "scale(1)";
+          }, 10);
+        }
         if (pBtn) pBtn.classList.remove("active");
         if (cBtn) cBtn.classList.add("active");
       }

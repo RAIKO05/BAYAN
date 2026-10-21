@@ -3,6 +3,7 @@ import SwiftUI
 struct BayanIdentifyView: View {
     @State private var recognitionService = AudioRecognitionService.shared
     @State private var syncManager = QuranSyncManager.shared
+    @State private var themeManager = AppThemeManager.shared
     @State private var matchedResult: RecognitionResult?
     @State private var showingResultSheet = false
 
@@ -16,17 +17,8 @@ struct BayanIdentifyView: View {
         NavigationStack {
             ZStack {
                 // Background & Dynamic Ambient Shimmer
-                BayanTheme.obsidian.ignoresSafeArea()
-                RadialGradient(
-                    colors: [
-                        BayanTheme.deepEmerald.opacity(0.85),
-                        BayanTheme.obsidian
-                    ],
-                    center: .center,
-                    startRadius: 20,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
+                themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+                themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
                 VStack(spacing: 24) {
                     // Header Brand

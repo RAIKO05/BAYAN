@@ -42,7 +42,7 @@ public final class AdhanNotificationService {
             content.title = "حان الآن موعد أذان \(prayer.nameArabic)"
             content.subtitle = "\(prayer.nameEnglish) Prayer Time (\(prayer.timeString))"
             content.body = "حي على الصلاة، حي على الفلاح • تقبل الله طاعتكم"
-            content.sound = .default
+            content.sound = UNNotificationSound(named: UNNotificationSoundName("adhan.caf"))
 
             // Repeat daily at the specific hour and minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)

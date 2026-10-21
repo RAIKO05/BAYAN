@@ -1,11 +1,15 @@
 import SwiftUI
+import Combine
 
-// MARK: - Prayers Dashboard View (Matches User Reference UI)
+// MARK: - Prayers Dashboard View (Matches User Reference UI & App-Wide Theme)
 public struct PrayersDashboardView: View {
     @State private var selectedDate: Date = Date()
     @State private var completedPrayers: Set<String> = []
     @State private var trackerService = PrayerTrackerService.shared
     @State private var calculationService = PrayerCalculationService.shared
+    @State private var adhanService = AdhanAudioService.shared
+    @State private var themeManager = AppThemeManager.shared
+    @State private var lastTriggeredPrayerKey: String = ""
 
     // Location coordinates (defaults to Casablanca, Morocco, or passed from location manager)
     public var latitude: Double = 33.5731
@@ -26,26 +30,24 @@ public struct PrayersDashboardView: View {
 
     public var body: some View {
         ZStack {
-            // Dark forest green background
-            Color(red: 0.03, green: 0.12, blue: 0.10).ignoresSafeArea()
-            LinearGradient(
-                colors: [
-                    Color(red: 0.05, green: 0.18, blue: 0.14),
-                    Color(red: 0.02, green: 0.08, blue: 0.06)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Theme-synchronized canvas
+            themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+            themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
-                    // MARK: 1. Date Navigation Header
+                    // MARK: 1. Date Navigation Header (Generous spacing below mode pill)
                     dateHeaderRow
-                        .padding(.top, 8)
+                        .padding(.top, 14)
 
                     // MARK: 2. Dual Hero Cards (Now Prayer + 2/5 Progress Gauge)
                     heroCardsRow
+
+                    // MARK: 2b. Adhan Now Playing Banner (if active)
+                    if adhanService.isPlaying {
+                        adhanNowPlayingBanner
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    }
 
                     // MARK: 3. Daily Prayers List (Subuh, Dzuhur, Ashar, Maghrib, Isya)
                     prayersListSection
@@ -61,6 +63,9 @@ public struct PrayersDashboardView: View {
         .onAppear {
             refreshCompletedState()
         }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            checkPrayerTimeTrigger()
+        }
     }
 
     // MARK: - Date Header Row with < and > Navigation
@@ -69,11 +74,11 @@ public struct PrayersDashboardView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(result.gregorianDateString)
                     .font(.system(size: 21, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(themeManager.currentTheme.isDark ? .white : Color(red: 0.10, green: 0.12, blue: 0.16))
 
                 Text(result.hijriDateString)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color(red: 0.70, green: 0.85, blue: 0.78))
+                    .foregroundColor(themeManager.currentTheme.isDark ? Color(red: 0.70, green: 0.85, blue: 0.78) : Color(red: 0.35, green: 0.40, blue: 0.48))
             }
 
             Spacer()
@@ -84,9 +89,9 @@ public struct PrayersDashboardView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundColor(themeManager.currentTheme.isDark ? .white.opacity(0.85) : Color(red: 0.15, green: 0.18, blue: 0.24))
                         .frame(width: 34, height: 34)
-                        .background(Color.white.opacity(0.08))
+                        .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -96,9 +101,9 @@ public struct PrayersDashboardView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundColor(themeManager.currentTheme.isDark ? .white.opacity(0.85) : Color(red: 0.15, green: 0.18, blue: 0.24))
                         .frame(width: 34, height: 34)
-                        .background(Color.white.opacity(0.08))
+                        .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -132,15 +137,39 @@ public struct PrayersDashboardView: View {
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
-                Text(result.countdownSubtitle)
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundColor(.white.opacity(0.70))
-                    .lineLimit(1)
+                HStack {
+                    Text(result.countdownSubtitle)
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundColor(.white.opacity(0.70))
+                        .lineLimit(1)
+
+                    Spacer(minLength: 4)
+
+                    Button {
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                        adhanService.toggleAdhan(for: result.currentPrayer.name)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: adhanService.isPlaying ? "stop.fill" : "speaker.wave.2.fill")
+                                .font(.system(size: 10, weight: .bold))
+                            Text(adhanService.isPlaying ? "Stop" : "Adhan")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(adhanService.isPlaying ? Color.red.opacity(0.85) : BayanTheme.gold)
+                        .foregroundColor(adhanService.isPlaying ? .white : BayanTheme.obsidian)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 145)
-            .background(Color(red: 0.06, green: 0.20, blue: 0.16))
+            .background(themeManager.currentTheme.heroCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -202,13 +231,67 @@ public struct PrayersDashboardView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 145)
-            .background(Color(red: 0.06, green: 0.20, blue: 0.16))
+            .background(themeManager.currentTheme.heroCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(Color.white.opacity(0.09), lineWidth: 1)
             )
         }
+    }
+
+    // MARK: - Adhan Now Playing Banner
+    private var adhanNowPlayingBanner: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(BayanTheme.gold.opacity(0.2))
+                    .frame(width: 38, height: 38)
+                Image(systemName: "waveform")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(BayanTheme.gold)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text("الأذان • Now Playing")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                    Text(adhanService.currentPrayerName)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(BayanTheme.goldSoft)
+                }
+
+                Text("حي على الصلاة • حي على الفلاح")
+                    .font(.system(size: 11, weight: .medium, design: .serif))
+                    .foregroundColor(.white.opacity(0.75))
+            }
+
+            Spacer()
+
+            Button {
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                #endif
+                adhanService.stopAdhan()
+            } label: {
+                Text("Stop")
+                    .font(.system(size: 11.5, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.red.opacity(0.85))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(Color(red: 0.08, green: 0.22, blue: 0.18))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(BayanTheme.gold.opacity(0.4), lineWidth: 1)
+        )
     }
 
     // MARK: - Prayers List Section
@@ -256,7 +339,7 @@ public struct PrayersDashboardView: View {
         .padding(.horizontal, 28)
     }
 
-    // MARK: - Helpers
+    // MARK: - Helpers & Prayer Trigger
     private func navigateDate(by days: Int) {
         #if os(iOS)
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -280,6 +363,31 @@ public struct PrayersDashboardView: View {
 
     private func refreshCompletedState() {
         completedPrayers = trackerService.getCompletedPrayers(for: selectedDate)
+    }
+
+    private func checkPrayerTimeTrigger() {
+        let now = Date()
+        let calendar = Calendar.current
+        let currentHour = calendar.component(.hour, from: now)
+        let currentMinute = calendar.component(.minute, from: now)
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: now) ?? 0
+
+        for prayer in result.prayers {
+            let parts = prayer.timeString.split(separator: ":")
+            guard parts.count == 2,
+                  let hour = Int(parts[0]),
+                  let minute = Int(parts[1]) else { continue }
+
+            if currentHour == hour && currentMinute == minute {
+                let triggerKey = "\(prayer.id)_\(dayOfYear)_\(hour):\(minute)"
+                if lastTriggeredPrayerKey != triggerKey {
+                    lastTriggeredPrayerKey = triggerKey
+                    if !trackerService.mutedPrayerIds.contains(prayer.id) {
+                        adhanService.playAdhan(for: prayer.name)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -344,7 +452,7 @@ private struct PrayerCardRow: View {
 
             Spacer()
 
-            // Prayer Time Display (e.g. 15.17)
+            // Prayer Time Display (e.g. 15:17)
             Text(prayer.timeString)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundColor(.white)

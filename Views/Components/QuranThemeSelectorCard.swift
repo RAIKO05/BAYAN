@@ -1,11 +1,16 @@
 import SwiftUI
 
-// MARK: - Quran Theme Selector Card (Matches Reference UI)
+// MARK: - Quran Theme Selector Card (Matches Reference UI & Supports 6 Rich Themes)
 public struct QuranThemeSelectorCard: View {
     @Binding var selectedTheme: QuranTheme
     var onThemeChanged: ((QuranTheme) -> Void)? = nil
 
     private let greenSelectedBorder = Color(red: 0.18, green: 0.58, blue: 0.40)
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
+    ]
 
     public init(selectedTheme: Binding<QuranTheme>, onThemeChanged: ((QuranTheme) -> Void)? = nil) {
         self._selectedTheme = selectedTheme
@@ -14,12 +19,20 @@ public struct QuranThemeSelectorCard: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Themes")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(selectedTheme.isDark ? .white : Color(red: 0.10, green: 0.12, blue: 0.16))
-                .padding(.horizontal, 4)
+            HStack {
+                Text("Themes & Appearance")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(selectedTheme.isDark ? .white : Color(red: 0.10, green: 0.12, blue: 0.16))
 
-            HStack(spacing: 12) {
+                Spacer()
+
+                Text("App-Wide Unified")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(selectedTheme.toolbarAccentColor)
+            }
+            .padding(.horizontal, 4)
+
+            LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(QuranTheme.allCases) { theme in
                     let isSelected = selectedTheme == theme
                     Button {
@@ -29,30 +42,31 @@ public struct QuranThemeSelectorCard: View {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                             selectedTheme = theme
                         }
+                        AppThemeManager.shared.setTheme(theme)
                         onThemeChanged?(theme)
                     } label: {
-                        VStack(spacing: 8) {
-                            // Arabic Bismillah Calligraphy Sample
+                        VStack(spacing: 6) {
+                            // Arabic Calligraphy Sample
                             Text("بِسْمِ اللَّهِ")
-                                .font(.system(size: 20, weight: .bold, design: .serif))
+                                .font(.system(size: 17, weight: .bold, design: .serif))
                                 .foregroundColor(theme.previewTextColor)
                                 .multilineTextAlignment(.center)
-                                .frame(height: 36)
+                                .frame(height: 30)
 
                             // Theme Name Label
                             Text(theme.title)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(theme.previewLabelColor)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 86)
+                        .frame(height: 74)
                         .background(theme.previewBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(isSelected ? greenSelectedBorder : Color.black.opacity(0.06), lineWidth: isSelected ? 2.5 : 1)
+                                .stroke(isSelected ? (theme.isDark ? BayanTheme.gold : greenSelectedBorder) : Color.black.opacity(0.08), lineWidth: isSelected ? 2.5 : 1)
                         )
-                        .shadow(color: isSelected ? greenSelectedBorder.opacity(0.2) : Color.black.opacity(0.04), radius: isSelected ? 6 : 2, y: 2)
+                        .shadow(color: isSelected ? (theme.isDark ? BayanTheme.gold.opacity(0.3) : greenSelectedBorder.opacity(0.2)) : Color.black.opacity(0.04), radius: isSelected ? 6 : 2, y: 2)
                     }
                     .buttonStyle(.plain)
                 }

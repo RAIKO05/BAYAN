@@ -4,6 +4,7 @@ struct HistoryView: View {
     @State private var syncManager = QuranSyncManager.shared
     @State private var playerService = AudioPlayerService.shared
     @State private var bookmarkService = BookmarkService.shared
+    @State private var themeManager = AppThemeManager.shared
     @State private var selectedTab: Int = 0
     @State private var selectedTafsirSurah: Surah? = nil
     @State private var selectedTafsirAyah: Int = 1
@@ -11,14 +12,8 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                BayanTheme.obsidian.ignoresSafeArea()
-                RadialGradient(
-                    colors: [BayanTheme.deepEmerald.opacity(0.35), Color.clear],
-                    center: .top,
-                    startRadius: 50,
-                    endRadius: 400
-                )
-                .ignoresSafeArea()
+                themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+                themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // Segmented Filter Bar: Recitations vs Bookmarks

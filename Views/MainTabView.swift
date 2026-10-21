@@ -3,6 +3,7 @@ import SwiftUI
 public struct MainTabView: View {
     @State private var selectedTab: TabItem = .identify
     @State private var playerService = AudioPlayerService.shared
+    @State private var themeManager = AppThemeManager.shared
 
     public enum TabItem: Hashable, CaseIterable {
         case identify
@@ -36,6 +37,10 @@ public struct MainTabView: View {
 
     public var body: some View {
         ZStack(alignment: .bottom) {
+            // Theme Unified Canvas Background
+            themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+            themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
+
             // Main Content Area
             Group {
                 switch selectedTab {
@@ -94,6 +99,7 @@ public struct MainTabView: View {
 // MARK: - Floating Liquid Glass Tab Bar
 public struct LiquidGlassTabBar: View {
     @Binding var selectedTab: MainTabView.TabItem
+    @State private var themeManager = AppThemeManager.shared
     @Namespace private var tabNamespace
 
     public var body: some View {
@@ -111,11 +117,11 @@ public struct LiquidGlassTabBar: View {
                     VStack(spacing: 3) {
                         Image(systemName: tab.icon)
                             .font(.system(size: 15, weight: isSelected ? .bold : .medium))
-                            .foregroundColor(isSelected ? BayanTheme.goldSoft : .white.opacity(0.45))
+                            .foregroundColor(isSelected ? themeManager.currentTheme.activeCardBorder : (themeManager.currentTheme.isDark ? .white.opacity(0.45) : Color(red: 0.40, green: 0.45, blue: 0.52)))
 
                         Text(tab.title)
                             .font(.system(size: 9.5, weight: isSelected ? .bold : .medium))
-                            .foregroundColor(isSelected ? BayanTheme.goldSoft : .white.opacity(0.45))
+                            .foregroundColor(isSelected ? themeManager.currentTheme.activeCardBorder : (themeManager.currentTheme.isDark ? .white.opacity(0.45) : Color(red: 0.40, green: 0.45, blue: 0.52)))
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -123,12 +129,12 @@ public struct LiquidGlassTabBar: View {
                     .background {
                         if isSelected {
                             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .fill(BayanTheme.gold.opacity(0.16))
+                                .fill(themeManager.currentTheme.activeCardFill)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                        .stroke(BayanTheme.gold.opacity(0.4), lineWidth: 1)
+                                        .stroke(themeManager.currentTheme.activeCardBorder.opacity(0.5), lineWidth: 1)
                                 )
-                                .shadow(color: BayanTheme.gold.opacity(0.2), radius: 8, x: 0, y: 2)
+                                .shadow(color: themeManager.currentTheme.activeCardBorder.opacity(0.2), radius: 8, x: 0, y: 2)
                                 .matchedGeometryEffect(id: "activeTabBackground", in: tabNamespace)
                         }
                     }

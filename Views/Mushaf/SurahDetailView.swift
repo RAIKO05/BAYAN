@@ -11,37 +11,18 @@ struct SurahDetailView: View {
     @State private var showingThemeSheet = false
     @State private var selectedTafsirAyah: Int? = nil
 
-    @AppStorage("bayan_quran_theme") private var savedThemeRaw: String = QuranTheme.paper.rawValue
+    @State private var themeManager = AppThemeManager.shared
 
     private var currentTheme: QuranTheme {
-        QuranTheme(rawValue: savedThemeRaw) ?? .paper
+        themeManager.currentTheme
     }
 
     var body: some View {
         ZStack {
             // Theme Background Canvas
             Group {
-                if currentTheme == .dark {
-                    BayanTheme.obsidian.ignoresSafeArea()
-                    RadialGradient(
-                        colors: [BayanTheme.deepEmerald.opacity(0.4), Color.clear],
-                        center: .top,
-                        startRadius: 50,
-                        endRadius: 500
-                    )
-                    .ignoresSafeArea()
-                } else if currentTheme == .paper {
-                    currentTheme.backgroundColor.ignoresSafeArea()
-                    RadialGradient(
-                        colors: [Color(red: 0.99, green: 0.97, blue: 0.90).opacity(0.6), Color.clear],
-                        center: .top,
-                        startRadius: 50,
-                        endRadius: 500
-                    )
-                    .ignoresSafeArea()
-                } else {
-                    currentTheme.backgroundColor.ignoresSafeArea()
-                }
+                currentTheme.backgroundColor.ignoresSafeArea()
+                currentTheme.backgroundGradient.ignoresSafeArea()
             }
 
             ScrollViewReader { proxy in
@@ -158,15 +139,15 @@ struct SurahDetailView: View {
                     .padding(.top, 12)
 
                 QuranThemeSelectorCard(selectedTheme: Binding(
-                    get: { currentTheme },
-                    set: { savedThemeRaw = $0.rawValue }
+                    get: { themeManager.currentTheme },
+                    set: { themeManager.setTheme($0) }
                 ))
                 .padding(.horizontal, 16)
 
                 Spacer()
             }
             .background(currentTheme.backgroundColor.ignoresSafeArea())
-            .presentationDetents([.fraction(0.32), .medium])
+            .presentationDetents([.fraction(0.42), .medium])
         }
         .sheet(isPresented: $showingReciterSheet) {
             ReciterPickerSheet(selectedReciter: $playerService.currentReciter)

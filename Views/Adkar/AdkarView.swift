@@ -147,6 +147,7 @@ public struct AdkarCatalog {
 public struct AdkarView: View {
     @State private var selectedCategory: DikrItem.AdkarCategory = .morning
     @State private var currentCounts: [UUID: Int] = [:]
+    @State private var themeManager = AppThemeManager.shared
 
     public init() {}
 
@@ -161,15 +162,9 @@ public struct AdkarView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                // Obsidian Deep Gradient Background
-                BayanTheme.obsidian.ignoresSafeArea()
-                RadialGradient(
-                    colors: [BayanTheme.deepEmerald.opacity(0.35), Color.clear],
-                    center: .topLeading,
-                    startRadius: 50,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
+                // Theme Unified Background
+                themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+                themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 16) {

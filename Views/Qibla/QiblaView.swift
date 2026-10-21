@@ -9,6 +9,7 @@ public struct QiblaView: View {
     @State private var showingCitySheet = false
     @State private var wasAligned = false
     @State private var selectedMode: QiblaTabMode = .prayers
+    @State private var themeManager = AppThemeManager.shared
 
     public enum QiblaTabMode: String, CaseIterable {
         case prayers = "Prayers"
@@ -64,34 +65,34 @@ public struct QiblaView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                // Background
-                BayanTheme.obsidian.ignoresSafeArea()
-                RadialGradient(
-                    colors: [
-                        isAligned ? BayanTheme.deepEmerald.opacity(0.8) : BayanTheme.deepEmerald.opacity(0.35),
-                        BayanTheme.obsidian
-                    ],
-                    center: .center,
-                    startRadius: 40,
-                    endRadius: 450
-                )
-                .ignoresSafeArea()
-                .animation(.easeInOut(duration: 0.4), value: isAligned)
+                // Background seamlessly matching active theme
+                themeManager.currentTheme.backgroundColor.ignoresSafeArea()
+                themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     modeSwitcherPill
-                        .padding(.top, 4)
-                        .padding(.bottom, 6)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
 
-                    if selectedMode == .prayers {
-                        PrayersDashboardView(latitude: activeLatitude, longitude: activeLongitude)
-                    } else {
-                        compassScrollView
+                    Group {
+                        if selectedMode == .prayers {
+                            PrayersDashboardView(latitude: activeLatitude, longitude: activeLongitude)
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                                    removal: .opacity
+                                ))
+                        } else {
+                            compassScrollView
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                                    removal: .opacity
+                                ))
+                        }
                     }
+                    .animation(.spring(response: 0.35, dampingFraction: 0.82), value: selectedMode)
                 }
             }
-            .navigationTitle(selectedMode == .prayers ? "Prayers" : "Qibla")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .onChange(of: isAligned) { _, newlyAligned in
                 if newlyAligned && !wasAligned {
                     triggerHaptic()
@@ -129,7 +130,7 @@ public struct QiblaView: View {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 7)
                 .background(selectedMode == .prayers ? BayanTheme.gold : Color.clear)
-                .foregroundColor(selectedMode == .prayers ? BayanTheme.obsidian : .white.opacity(0.7))
+                .foregroundColor(selectedMode == .prayers ? BayanTheme.obsidian : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -151,15 +152,15 @@ public struct QiblaView: View {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 7)
                 .background(selectedMode == .compass ? BayanTheme.gold : Color.clear)
-                .foregroundColor(selectedMode == .compass ? BayanTheme.obsidian : .white.opacity(0.7))
+                .foregroundColor(selectedMode == .compass ? BayanTheme.obsidian : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
         }
         .padding(4)
-        .background(Color.white.opacity(0.08))
+        .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
         .clipShape(Capsule())
-        .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
+        .overlay(Capsule().stroke(themeManager.currentTheme.isDark ? Color.white.opacity(0.12) : Color.black.opacity(0.08), lineWidth: 1))
     }
 
     // MARK: - Compass Content View
@@ -356,65 +357,6 @@ public struct QiblaView: View {
                         }
                         .frame(width: 280, height: 280)
                         .padding(.vertical, 10)
-
-                        // MARK: - Task 6: Prayer Times Section (Moroccan Ministry of Habous)
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text("PRAYER TIMES (أَوْقَاتُ الصَّلَاةِ)")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .tracking(1.5)
-                                    .foregroundColor(BayanTheme.gold.opacity(0.85))
-
-                                Spacer()
-
-                                // Adhan Push Notification Toggle
-                                Button {
-                                    #if os(iOS)
-                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    #endif
-                                    if AdhanNotificationService.shared.isNotificationsEnabled {
-                                        AdhanNotificationService.shared.cancelAll()
-                                    } else {
-                                        let prayers = calculatePrayerTimes(lat: activeLatitude, lng: activeLongitude)
-                                        AdhanNotificationService.shared.requestPermission { granted in
-                                            if granted {
-                                                AdhanNotificationService.shared.scheduleAdhanNotifications(prayerTimes: prayers)
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: AdhanNotificationService.shared.isNotificationsEnabled ? "bell.badge.fill" : "bell.slash")
-                                            .font(.system(size: 10, weight: .semibold))
-                                        Text(AdhanNotificationService.shared.isNotificationsEnabled ? "Adhan ON" : "Adhan OFF")
-                                            .font(.system(size: 9, weight: .bold))
-                                    }
-                                    .foregroundColor(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold : .white.opacity(0.45))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(
-                                        Capsule()
-                                            .fill(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold.opacity(0.15) : Color.white.opacity(0.06))
-                                    )
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold.opacity(0.4) : Color.clear, lineWidth: 1)
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                            .padding(.horizontal)
-
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 10) {
-                                    ForEach(calculatePrayerTimes(lat: activeLatitude, lng: activeLongitude)) { prayer in
-                                        PrayerTimeCard(prayer: prayer)
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        .padding(.vertical, 4)
 
                         // Qibla Info Readout Cards
                         HStack(spacing: 12) {

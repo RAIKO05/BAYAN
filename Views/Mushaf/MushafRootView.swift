@@ -11,11 +11,10 @@ struct MushafRootView: View {
     @State private var showingThemeSheet = false
     @State private var navigateToSurah: Surah?
     @State private var navigateToAyah: Int = 1
-
-    @AppStorage("bayan_quran_theme") private var savedThemeRaw: String = QuranTheme.paper.rawValue
+    @State private var themeManager = AppThemeManager.shared
 
     private var currentTheme: QuranTheme {
-        QuranTheme(rawValue: savedThemeRaw) ?? .paper
+        themeManager.currentTheme
     }
 
     enum FilterCategory: String, CaseIterable {
@@ -67,15 +66,15 @@ struct MushafRootView: View {
                         .padding(.top, 12)
 
                     QuranThemeSelectorCard(selectedTheme: Binding(
-                        get: { currentTheme },
-                        set: { savedThemeRaw = $0.rawValue }
+                        get: { themeManager.currentTheme },
+                        set: { themeManager.setTheme($0) }
                     ))
                     .padding(.horizontal, 16)
 
                     Spacer()
                 }
                 .background(currentTheme.backgroundColor.ignoresSafeArea())
-                .presentationDetents([.fraction(0.32), .medium])
+                .presentationDetents([.fraction(0.42), .medium])
             }
             .navigationDestination(item: $navigateToSurah) { surah in
                 SurahDetailView(surah: surah, initialAyah: navigateToAyah)
@@ -86,14 +85,8 @@ struct MushafRootView: View {
     // MARK: - Background Layer
     private var backgroundGradient: some View {
         ZStack {
-            BayanTheme.obsidian.ignoresSafeArea()
-            RadialGradient(
-                colors: [BayanTheme.deepEmerald.opacity(0.35), Color.clear],
-                center: .topLeading,
-                startRadius: 50,
-                endRadius: 500
-            )
-            .ignoresSafeArea()
+            currentTheme.backgroundColor.ignoresSafeArea()
+            currentTheme.backgroundGradient.ignoresSafeArea()
         }
     }
 
@@ -106,11 +99,11 @@ struct MushafRootView: View {
         }
         .padding(.bottom, 10)
         .background(
-            BayanTheme.obsidian.opacity(0.85)
+            currentTheme.backgroundColor.opacity(0.85)
                 .background(.ultraThinMaterial)
         )
         .overlay(
-            Divider().overlay(Color.white.opacity(0.08)),
+            Divider().overlay(currentTheme.cardBorder),
             alignment: .bottom
         )
     }
@@ -122,11 +115,11 @@ struct MushafRootView: View {
                 Text("HOLY QUR'AN")
                     .font(.system(size: 10.5, weight: .bold))
                     .tracking(2.0)
-                    .foregroundColor(BayanTheme.gold.opacity(0.9))
+                    .foregroundColor(currentTheme.headerSubtitleColor)
 
                 Text("المصحف الشريف")
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(currentTheme.headerTitleColor)
             }
 
             Spacer()
@@ -140,10 +133,10 @@ struct MushafRootView: View {
                     Image(systemName: "paintpalette.fill")
                         .font(.system(size: 13, weight: .medium))
                         .padding(8)
-                        .background(Color.white.opacity(0.08))
+                        .background(currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
                         .foregroundColor(currentTheme.toolbarAccentColor)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 1))
+                        .overlay(Circle().stroke(currentTheme.cardBorder, lineWidth: 1))
                 }
             }
         }
