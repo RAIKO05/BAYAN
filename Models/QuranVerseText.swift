@@ -64,10 +64,86 @@ public struct QuranVerseText {
     }
 
     public static func searchVerse(query: String) -> (surahId: Int, ayahNumber: Int)? {
+        if let match = matchRecitedText(query) {
+            return (match.surah.id, match.ayah)
+        }
         let results = searchAllVerses(query: query, limit: 1)
         if let first = results.first {
             return (first.surahId, first.ayahNumber)
         }
+        return nil
+    }
+
+    // MARK: - Advanced Recitation Speech Matcher
+    // Uses Dice coefficient token overlap and Bismillah/Ta'awwudh filtering
+    // to match even partial, noisy, or extended recitations accurately.
+    public static func matchRecitedText(_ query: String) -> (surah: Surah, ayah: Int, confidence: Double)? {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 3 else { return nil }
+
+        let normQuery = normalizeArabic(trimmed)
+        let bismillah = normalizeArabic("بسم الله الرحمن الرحيم")
+        let taawwudh = normalizeArabic("اعوذ بالله من الشيطان الرجيم")
+
+        let cleaned = normQuery
+            .replacingOccurrences(of: taawwudh, with: "")
+            .replacingOccurrences(of: bismillah, with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let activeQuery = cleaned.count >= 4 ? cleaned : normQuery
+        let queryWords = activeQuery.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
+        guard !queryWords.isEmpty else { return nil }
+        let queryWordSet = Set(queryWords)
+
+        // 1. Direct Surah name match
+        for surah in QuranDataService.shared.allSurahs {
+            let normSurah = normalizeArabic(surah.nameArabic)
+            if normSurah.count >= 3 && (activeQuery.contains(normSurah) || normSurah.contains(activeQuery)) {
+                return (surah, 1, 0.95)
+            }
+        }
+
+        // 2. Scan all 114 Surahs for best fuzzy token overlap
+        var bestMatch: (surah: Surah, ayah: Int, score: Double)?
+        var highestScore: Double = 0.0
+
+        for sId in 1...114 {
+            guard let ayahs = arabicCache[String(sId)],
+                  let surah = QuranDataService.shared.surah(for: sId) else { continue }
+
+            for (idx, ayahText) in ayahs.enumerated() {
+                let ayahNum = idx + 1
+                let normAyah = normalizeArabic(ayahText)
+
+                // Substring match in either direction
+                if normAyah.count >= 8 && (normAyah.contains(activeQuery) || activeQuery.contains(normAyah)) {
+                    return (surah, ayahNum, 0.98)
+                }
+
+                let ayahWords = normAyah.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
+                guard !ayahWords.isEmpty else { continue }
+
+                var matchedCount = 0
+                for word in ayahWords {
+                    if queryWordSet.contains(word) {
+                        matchedCount += 1
+                    }
+                }
+
+                if matchedCount >= 2 {
+                    let score = (Double(matchedCount) * 2.0) / Double(ayahWords.count + queryWords.count)
+                    if score > highestScore {
+                        highestScore = score
+                        bestMatch = (surah, ayahNum, score)
+                    }
+                }
+            }
+        }
+
+        if let best = bestMatch, highestScore >= 0.22 {
+            return (best.surah, best.ayah, min(0.98, highestScore + 0.35))
+        }
+
         return nil
     }
 
@@ -86,14 +162,26 @@ public struct QuranVerseText {
 
         if isArabic {
             let normalizedQuery = normalizeArabic(trimmed)
-            let queryTokens = normalizedQuery.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
+            let bismillah = normalizeArabic("بسم الله الرحمن الرحيم")
+            let taawwudh = normalizeArabic("اعوذ بالله من الشيطان الرجيم")
+            let cleaned = normalizedQuery
+                .replacingOccurrences(of: taawwudh, with: "")
+                .replacingOccurrences(of: bismillah, with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let activeQ = cleaned.count >= 3 ? cleaned : normalizedQuery
+            let queryTokens = activeQ.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
 
             for sId in 1...114 {
                 guard let ayahs = arabicCache[String(sId)] else { continue }
                 for (idx, ayahText) in ayahs.enumerated() {
                     let normAyah = normalizeArabic(ayahText)
-                    let matches = normAyah.contains(normalizedQuery) ||
-                        (!queryTokens.isEmpty && queryTokens.count >= 2 && queryTokens.allSatisfy { normAyah.contains($0) })
+                    let matchedWordCount = queryTokens.filter { normAyah.contains($0) }.count
+                    let matches = normAyah.contains(activeQ) ||
+                                  (activeQ.count >= 8 && activeQ.contains(normAyah)) ||
+                                  (!queryTokens.isEmpty && (
+                                      (queryTokens.count == 1 && normAyah.contains(queryTokens[0])) ||
+                                      (queryTokens.count >= 2 && matchedWordCount >= min(2, queryTokens.count))
+                                  ))
                     if matches {
                         let ayahNum = idx + 1
                         let trans = translation(surahId: sId, ayahNumber: ayahNum)

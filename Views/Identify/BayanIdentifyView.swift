@@ -6,6 +6,7 @@ struct BayanIdentifyView: View {
     @State private var themeManager = AppThemeManager.shared
     @State private var matchedResult: RecognitionResult?
     @State private var showingResultSheet = false
+    @State private var showingSearchSheet = false
 
     private var isListening: Bool {
         if case .listening = recognitionService.state { return true }
@@ -68,6 +69,28 @@ struct BayanIdentifyView: View {
                     }
                     .buttonStyle(.plain)
 
+                    // Live Heard Words Indicator
+                    if isListening && !recognitionService.liveTranscription.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "waveform")
+                                .foregroundColor(BayanTheme.gold)
+                            Text(recognitionService.liveTranscription)
+                                .font(.system(size: 13, weight: .medium))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(BayanTheme.goldSoft)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.45))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(BayanTheme.gold.opacity(0.35), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 24)
+                    }
+
                     // Dedicated Primary Action Button
                     Button {
                         #if os(iOS)
@@ -78,7 +101,7 @@ struct BayanIdentifyView: View {
                         HStack(spacing: 10) {
                             Image(systemName: isListening ? "stop.fill" : "waveform.badge.magnifyingglass")
                                 .font(.system(size: 16, weight: .bold))
-                            Text(isListening ? "STOP LISTENING" : "TAP TO IDENTIFY RECITAITON")
+                            Text(isListening ? "STOP LISTENING" : "TAP TO IDENTIFY RECITATION")
                                 .font(.system(size: 13, weight: .bold))
                                 .tracking(1.2)
                         }
@@ -94,6 +117,24 @@ struct BayanIdentifyView: View {
                                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
                         )
                         .shadow(color: isListening ? Color.red.opacity(0.35) : BayanTheme.gold.opacity(0.4), radius: 10, y: 4)
+                    }
+                    .buttonStyle(.plain)
+
+                    // Manual Search / Type Verse Fallback Option
+                    Button {
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                        showingSearchSheet = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 12, weight: .semibold))
+                            Text("Type or Search Verse Text")
+                                .font(.system(size: 13, weight: .semibold))
+                        }
+                        .foregroundColor(BayanTheme.goldSoft.opacity(0.9))
+                        .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
 
@@ -147,6 +188,13 @@ struct BayanIdentifyView: View {
                     }
                     .presentationDetents([.fraction(0.85), .large])
                 }
+            }
+            .sheet(isPresented: $showingSearchSheet) {
+                VerseSearchSheet { result in
+                    self.matchedResult = result
+                    self.showingResultSheet = true
+                }
+                .presentationDetents([.fraction(0.85), .large])
             }
         }
     }

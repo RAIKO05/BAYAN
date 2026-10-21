@@ -39,13 +39,14 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
     public var state: State = .idle
     public var currentDecibels: Float = 0.0
+    public var liveTranscription: String = ""
 
     private var audioEngine = AVAudioEngine()
     private var shSession: SHSession?
     private var recognitionTimeoutTask: Task<Void, Never>?
     private var isMatchingActive = false
 
-    // Speech-to-Text Offline Recognition Fallback
+    // Speech-to-Text Offline/Online Recognition Fallback
     private var speechRecognizer: SFSpeechRecognizer?
     private var speechRequest: SFSpeechAudioBufferRecognitionRequest?
     private var speechRecognitionTask: SFSpeechRecognitionTask?
@@ -64,44 +65,36 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     private func setupSpeechRecognizer() {
-        self.speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ar-SA"))
+        self.speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ar-SA")) ?? SFSpeechRecognizer(locale: Locale(identifier: "ar"))
     }
 
-    // MARK: - Start Real Microphone Listening with Dual Shazam + Offline Speech
+    // MARK: - Start Real Microphone Listening with Dual Shazam + Arabic Speech
     public func startListening() {
         guard !isMatchingActive else { return }
 
-        // Request Speech authorization asynchronously in background (never blocks Shazam)
-        if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
-            SFSpeechRecognizer.requestAuthorization { _ in }
-        }
+        // Request Speech authorization asynchronously
+        SFSpeechRecognizer.requestAuthorization { _ in }
 
-        let session = AVAudioSession.sharedInstance()
-        let micPermission = session.recordPermission
-
-        switch micPermission {
-        case .granted:
+        let audioSession = AVAudioSession.sharedInstance()
+        let recordPermission = audioSession.recordPermission
+        if recordPermission == .granted {
             DispatchQueue.main.async { [weak self] in
                 self?.beginAudioEngineRecording()
             }
-        case .undetermined:
-            session.requestRecordPermission { [weak self] granted in
+        } else if recordPermission == .denied {
+            DispatchQueue.main.async { [weak self] in
+                self?.state = .failed("Microphone permission denied. Enable microphone in iOS Settings -> Bayan -> Microphone.")
+            }
+        } else {
+            audioSession.requestRecordPermission { [weak self] granted in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     if granted {
                         self.beginAudioEngineRecording()
                     } else {
-                        self.state = .failed("Microphone permission denied. Enable microphone in iOS Settings -> Privacy -> Microphone.")
+                        self.state = .failed("Microphone permission denied. Enable microphone in iOS Settings -> Bayan -> Microphone.")
                     }
                 }
-            }
-        case .denied:
-            DispatchQueue.main.async { [weak self] in
-                self?.state = .failed("Microphone permission denied. Please enable Microphone in iOS Settings -> Privacy -> Microphone.")
-            }
-        @unknown default:
-            DispatchQueue.main.async { [weak self] in
-                self?.beginAudioEngineRecording()
             }
         }
     }
@@ -114,7 +107,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker, .allowBluetoothHFP])
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("⚠️ AVAudioSession setup warning: \(error)")
@@ -122,24 +115,26 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
         isMatchingActive = true
         latestTranscription = ""
+        liveTranscription = ""
         state = .listening(decibels: 0.1)
 
-        // Offline Speech Setup
-        if SFSpeechRecognizer.authorizationStatus() == .authorized,
-           let speechRecognizer = speechRecognizer,
-           speechRecognizer.isAvailable {
+        // Arabic Speech Recognition Setup (allows on-device or neural server speech)
+        if let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable {
             let request = SFSpeechAudioBufferRecognitionRequest()
             request.shouldReportPartialResults = true
-            if speechRecognizer.supportsOnDeviceRecognition {
-                request.requiresOnDeviceRecognition = true
-            }
+            request.taskHint = .dictation
+            request.requiresOnDeviceRecognition = false // Avoids failure if offline Arabic voice pack is not pre-installed
+
             self.speechRequest = request
             self.speechRecognitionTask = speechRecognizer.recognitionTask(with: request) { [weak self] result, error in
                 guard let self = self, self.isMatchingActive else { return }
                 if let result = result {
                     let text = result.bestTranscription.formattedString
                     self.latestTranscription = text
-                    // Fast early match: check if speech already matched a verse in the first 1-2 seconds!
+                    DispatchQueue.main.async {
+                        self.liveTranscription = text
+                    }
+                    // Fast early match: check if speech already matched an Ayah in the first 1-3 seconds
                     self.attemptEarlySpeechMatch(capturedText: text)
                 }
             }
@@ -180,10 +175,10 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
             return
         }
 
-        // Fast Scan Resolution: 3.5-second max timeout (reduced from 8 seconds)
+        // Full 9.5-second listening window (allows Shazam and reciter tajweed to match without premature timeout)
         recognitionTimeoutTask?.cancel()
         recognitionTimeoutTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 3_500_000_000)
+            try? await Task.sleep(nanoseconds: 9_500_000_000)
             guard let self = self, self.isMatchingActive else { return }
 
             if case .listening = self.state {
@@ -194,52 +189,22 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     // MARK: - Fast Early Match Resolution
-    // If speech recognition transcribes recognizable Ayah tokens early, resolve immediately without waiting for timeout
     private func attemptEarlySpeechMatch(capturedText: String) {
         let trimmed = capturedText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count >= 6 else { return }
+        guard trimmed.count >= 4 else { return }
 
-        let normalized = QuranVerseText.normalizeArabic(trimmed)
-        let tokens = normalized.components(separatedBy: .whitespaces).filter { $0.count >= 2 }
-        guard tokens.count >= 2 else { return }
-
-        // Check Surah name match
-        if let matchedSurah = QuranDataService.shared.allSurahs.first(where: {
-            let normSurah = QuranVerseText.normalizeArabic($0.nameArabic)
-            return normalized.contains(normSurah) || normSurah.contains(normalized)
-        }) {
+        if let match = QuranVerseText.matchRecitedText(trimmed) {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self, self.isMatchingActive else { return }
                 self.stopAudioEngine()
                 let result = RecognitionResult(
-                    surah: matchedSurah,
-                    startAyah: 1,
-                    endAyah: min(matchedSurah.totalAyahs, 7),
+                    surah: match.surah,
+                    startAyah: match.ayah,
+                    endAyah: min(match.surah.totalAyahs, match.ayah + 2),
                     reciter: Reciter.unknownReciter,
-                    arabicSnippet: QuranVerseText.arabic(surahId: matchedSurah.id, ayahNumber: 1),
-                    translationSnippet: QuranVerseText.translation(surahId: matchedSurah.id, ayahNumber: 1),
-                    confidence: 0.94
-                )
-                QuranSyncManager.shared.addRecognition(result)
-                self.state = .matched(result)
-            }
-            return
-        }
-
-        // Check verse text match
-        if let (surahId, ayahNum) = QuranVerseText.searchVerse(query: trimmed),
-           let surah = QuranDataService.shared.surah(for: surahId) {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self, self.isMatchingActive else { return }
-                self.stopAudioEngine()
-                let result = RecognitionResult(
-                    surah: surah,
-                    startAyah: ayahNum,
-                    endAyah: min(surah.totalAyahs, ayahNum + 2),
-                    reciter: Reciter.unknownReciter,
-                    arabicSnippet: QuranVerseText.arabic(surahId: surah.id, ayahNumber: ayahNum),
-                    translationSnippet: QuranVerseText.translation(surahId: surah.id, ayahNumber: ayahNum),
-                    confidence: 0.92
+                    arabicSnippet: QuranVerseText.arabic(surahId: match.surah.id, ayahNumber: match.ayah),
+                    translationSnippet: QuranVerseText.translation(surahId: match.surah.id, ayahNumber: match.ayah),
+                    confidence: match.confidence
                 )
                 QuranSyncManager.shared.addRecognition(result)
                 self.state = .matched(result)
@@ -254,7 +219,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         var rms: Float = 0.0
         vDSP_rmsqv(channelData, 1, &rms, channelDataCount)
 
-        let normalized = min(max(rms * 8.0, 0.1), 1.0)
+        let normalized = min(max(rms * 25.0, 0.05), 1.0)
         return normalized
     }
 
@@ -307,7 +272,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     public func session(_ session: SHSession, didNotFindMatchFor signature: SHSignature, error: Error?) {
-        // Continue listening across the full 3.5s window; do not abort early
+        // Continue listening across the full 9.5s window; do not abort early
     }
 
     // MARK: - Fast Fallback Resolution Logic
@@ -318,8 +283,23 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
         let capturedText = latestTranscription.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // 1. Try verse matching against the transcribed Arabic text
+        // 1. Try fuzzy token & normalization match against recited Arabic text
         if !capturedText.isEmpty {
+            if let match = QuranVerseText.matchRecitedText(capturedText) {
+                let result = RecognitionResult(
+                    surah: match.surah,
+                    startAyah: match.ayah,
+                    endAyah: min(match.surah.totalAyahs, match.ayah + 2),
+                    reciter: Reciter.unknownReciter,
+                    arabicSnippet: QuranVerseText.arabic(surahId: match.surah.id, ayahNumber: match.ayah),
+                    translationSnippet: QuranVerseText.translation(surahId: match.surah.id, ayahNumber: match.ayah),
+                    confidence: match.confidence
+                )
+                QuranSyncManager.shared.addRecognition(result)
+                state = .matched(result)
+                return
+            }
+
             let normalizedText = QuranVerseText.normalizeArabic(capturedText)
             if let matchedSurah = QuranDataService.shared.allSurahs.first(where: {
                 let normSurah = QuranVerseText.normalizeArabic($0.nameArabic)
@@ -358,10 +338,10 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         }
 
         // 2. Failed match response
-        if currentDecibels < 0.18 {
-            state = .failed("No recitation detected. Please bring your phone closer to the audio source.")
+        if currentDecibels <= 0.05 && capturedText.isEmpty {
+            state = .failed("No audio detected. Please bring your phone closer to the recitation source.")
         } else {
-            state = .failed("Could not identify this recitation. Ensure the audio is clear Quran recitation and try again.")
+            state = .failed("Could not identify this recitation. You can also tap 'Type or Search Verse' below.")
         }
     }
 
@@ -388,5 +368,6 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         state = .idle
         currentDecibels = 0.0
         latestTranscription = ""
+        liveTranscription = ""
     }
 }
