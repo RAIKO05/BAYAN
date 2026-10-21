@@ -6,6 +6,12 @@ struct BayanIdentifyView: View {
     @State private var matchedResult: RecognitionResult?
     @State private var showingResultSheet = false
 
+    private var isListening: Bool {
+        if case .listening = recognitionService.state { return true }
+        if case .analyzing = recognitionService.state { return true }
+        return false
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -22,7 +28,7 @@ struct BayanIdentifyView: View {
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: 32) {
+                VStack(spacing: 24) {
                     // Header Brand
                     VStack(spacing: 4) {
                         Text("بَيَان")
@@ -40,32 +46,66 @@ struct BayanIdentifyView: View {
                             .tracking(3)
                             .foregroundColor(BayanTheme.gold.opacity(0.8))
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 16)
 
-                    Spacer()
+                    Spacer(minLength: 10)
 
-                    // Central Radar Orb
+                    // Central Radar Orb (Directly Tappable with Haptics)
                     ListeningRadarOrb(
                         state: recognitionService.state,
                         decibels: recognitionService.currentDecibels
                     ) {
-                        handleOrbTap()
+                        triggerIdentifyAction()
                     }
 
-                    // Dynamic Status Prompt
-                    VStack(spacing: 8) {
-                        Text(statusHeading)
-                            .font(.title3.weight(.bold))
-                            .foregroundColor(.white)
+                    // Dynamic Status Prompt (Also Tappable)
+                    Button {
+                        triggerIdentifyAction()
+                    } label: {
+                        VStack(spacing: 6) {
+                            Text(statusHeading)
+                                .font(.title3.weight(.bold))
+                                .foregroundColor(.white)
 
-                        Text(statusSubheading)
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.65))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
+                            Text(statusSubheading)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.65))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 36)
+                        }
                     }
+                    .buttonStyle(.plain)
 
-                    Spacer()
+                    // Dedicated Primary Action Button
+                    Button {
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                        #endif
+                        triggerIdentifyAction()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: isListening ? "stop.fill" : "waveform.badge.magnifyingglass")
+                                .font(.system(size: 16, weight: .bold))
+                            Text(isListening ? "STOP LISTENING" : "TAP TO IDENTIFY RECITAITON")
+                                .font(.system(size: 13, weight: .bold))
+                                .tracking(1.2)
+                        }
+                        .foregroundColor(isListening ? .white : BayanTheme.obsidian)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 14)
+                        .background(
+                            Capsule()
+                                .fill(isListening ? Color.red.opacity(0.85) : BayanTheme.gold)
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: isListening ? Color.red.opacity(0.35) : BayanTheme.gold.opacity(0.4), radius: 10, y: 4)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer(minLength: 10)
 
                     // Bottom Recent Matches Quick Bar
                     if let recent = syncManager.recentRecognitions.first {
@@ -100,7 +140,7 @@ struct BayanIdentifyView: View {
                         }
                     }
                 }
-                .padding(.bottom, 80)
+                .padding(.bottom, 100)
             }
             .onChange(of: recognitionService.state) { _, newState in
                 if case let .matched(result) = newState {
@@ -119,7 +159,7 @@ struct BayanIdentifyView: View {
         }
     }
 
-    private func handleOrbTap() {
+    private func triggerIdentifyAction() {
         switch recognitionService.state {
         case .idle, .failed, .matched:
             recognitionService.startListening()
@@ -133,9 +173,9 @@ struct BayanIdentifyView: View {
         case .idle:
             return "Tap to Identify"
         case .listening:
-            return "Listening..."
+            return "Listening to Recitation..."
         case .analyzing:
-            return "Recognizing Recitation..."
+            return "Recognizing Verse..."
         case .matched(let result):
             return "Matched: \(result.surah.nameEnglish)"
         case .failed:
@@ -148,13 +188,13 @@ struct BayanIdentifyView: View {
         case .idle:
             return "Point your iPhone toward any recitation (Mosque, car, video, or TV)"
         case .listening:
-            return "Analyzing Quranic melody, tajweed, and acoustic fingerprint..."
+            return "Analyzing Quranic melody, acoustic fingerprint, and tajweed..."
         case .analyzing:
             return "Cross-referencing Uthmanic Quran index and 200+ Qura'a..."
         case .matched(let result):
             return "Recited by \(result.reciter.nameEnglish)"
-        case .failed:
-            return "Ensure the recitation is clear and tap to try again"
+        case .failed(let reason):
+            return reason
         }
     }
 }

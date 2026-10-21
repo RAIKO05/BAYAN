@@ -70,26 +70,49 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     public func startListening() {
         guard !isMatchingActive else { return }
 
-        // 1. Permissions: request both record permission and speech recognition authorization
-        AVAudioApplication.requestRecordPermission { [weak self] micGranted in
-            guard let self = self else { return }
-            if !micGranted {
-                DispatchQueue.main.async {
-                    self.state = .failed("Microphone permission denied. Enable microphone in iOS Settings.")
-                }
-                return
-            }
+        // Request Speech recognition authorization asynchronously in background (never blocks Shazam)
+        if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
+            SFSpeechRecognizer.requestAuthorization { _ in }
+        }
 
-            SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
-                guard let self = self else { return }
+        // Check microphone permission directly
+        let session = AVAudioSession.sharedInstance()
+        let micPermission = session.recordPermission
+
+        switch micPermission {
+        case .granted:
+            DispatchQueue.main.async { [weak self] in
+                self?.beginAudioEngineRecording()
+            }
+        case .undetermined:
+            session.requestRecordPermission { [weak self] granted in
                 DispatchQueue.main.async {
-                    self.beginAudioEngineRecording()
+                    guard let self = self else { return }
+                    if granted {
+                        self.beginAudioEngineRecording()
+                    } else {
+                        self.state = .failed("Microphone permission denied. Enable microphone in iOS Settings -> Privacy -> Microphone.")
+                    }
                 }
+            }
+        case .denied:
+            DispatchQueue.main.async { [weak self] in
+                self?.state = .failed("Microphone permission denied. Please enable Microphone in iOS Settings -> Privacy -> Microphone.")
+            }
+        @unknown default:
+            DispatchQueue.main.async { [weak self] in
+                self?.beginAudioEngineRecording()
             }
         }
     }
 
     private func beginAudioEngineRecording() {
+        // Reset previous engine instance to guarantee clean audio graph state
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        audioEngine = AVAudioEngine()
+
         // 2. CRITICAL CRASH FIX: Configure and activate AVAudioSession BEFORE accessing inputNode!
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -103,26 +126,36 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         latestTranscription = ""
         state = .listening(decibels: 0.1)
 
-        // 3. Offline Speech Setup: On-device offline transcription for mosques / low cell reception
-        speechRequest = SFSpeechAudioBufferRecognitionRequest()
-        speechRequest?.requiresOnDeviceRecognition = true
-        speechRequest?.shouldReportPartialResults = true
-
-        if let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable, let request = speechRequest {
-            speechRecognitionTask = speechRecognizer.recognitionTask(with: request) { [weak self] result, error in
+        // 3. Offline Speech Setup (Fallback)
+        if SFSpeechRecognizer.authorizationStatus() == .authorized,
+           let speechRecognizer = speechRecognizer,
+           speechRecognizer.isAvailable {
+            let request = SFSpeechAudioBufferRecognitionRequest()
+            request.shouldReportPartialResults = true
+            if speechRecognizer.supportsOnDeviceRecognition {
+                request.requiresOnDeviceRecognition = true
+            }
+            self.speechRequest = request
+            self.speechRecognitionTask = speechRecognizer.recognitionTask(with: request) { [weak self] result, error in
                 guard let self = self else { return }
                 if let result = result {
-                    let text = result.bestTranscription.formattedString
-                    self.latestTranscription = text
+                    self.latestTranscription = result.bestTranscription.formattedString
                 }
             }
         }
 
         // Access inputNode safely after audioSession is active
         let inputNode = audioEngine.inputNode
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        var recordingFormat = inputNode.outputFormat(forBus: 0)
 
-        // Ensure removeTap is called first
+        // Safety fallback: if hardware reports 0Hz or 0 channels, provide standard 44.1kHz float32
+        if recordingFormat.sampleRate <= 0.0 || recordingFormat.channelCount == 0 {
+            if let fallback = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1) {
+                recordingFormat = fallback
+            }
+        }
+
+        // Ensure any previous tap is removed
         inputNode.removeTap(onBus: 0)
 
         // 4. Hybrid Engine Tap: Feed buffer to BOTH ShazamKit and SpeechRequest
@@ -146,7 +179,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
         do {
             try audioEngine.start()
-            print("🎙️ Real microphone listening active (ShazamKit + Offline Speech ar-SA).")
+            print("🎙️ Real microphone listening active (ShazamKit + Speech ar-SA).")
         } catch {
             print("⚠️ AVAudioEngine failed to start: \(error)")
             fallbackToSpeechOrCorpus()
@@ -246,7 +279,6 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
 
             // 1. Try verse matching against the transcribed Arabic text
             if !capturedText.isEmpty {
-                // Check if any Surah name matches the transcription
                 let normalizedText = QuranVerseText.normalizeArabic(capturedText)
                 if let matchedSurah = QuranDataService.shared.allSurahs.first(where: {
                     let normSurah = QuranVerseText.normalizeArabic($0.nameArabic)
@@ -294,7 +326,7 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     // 6. Cleanup
-    private func stopAudioEngine() {
+    public func stopAudioEngine() {
         isMatchingActive = false
         recognitionTimeoutTask?.cancel()
         recognitionTimeoutTask = nil

@@ -119,6 +119,7 @@ public struct LiquidGlassTabBar: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
+                    .contentShape(Rectangle())
                     .background {
                         if isSelected {
                             RoundedRectangle(cornerRadius: 22, style: .continuous)

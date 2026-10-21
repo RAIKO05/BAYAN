@@ -15,7 +15,12 @@ struct ListeningRadarOrb: View {
     }
 
     var body: some View {
-        Button(action: onTap) {
+        Button {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            #endif
+            onTap()
+        } label: {
             ZStack {
                 // Expanding Background Ripple Waves
                 if isListening {
@@ -70,7 +75,7 @@ struct ListeningRadarOrb: View {
                 // Main Frosted Liquid Glass Orb
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .frame(width: 165, height: 165)
+                    .frame(width: 170, height: 170)
                     .overlay(
                         Circle()
                             .stroke(
@@ -87,8 +92,8 @@ struct ListeningRadarOrb: View {
 
                 // Central Icon / Logo (Open Quran)
                 VStack(spacing: 8) {
-                    Image(systemName: isListening ? "book.pages.fill" : "book.fill")
-                        .font(.system(size: 52, weight: .light))
+                    Image(systemName: isListening ? "waveform.and.mic" : "book.fill")
+                        .font(.system(size: 48, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color.white, BayanTheme.goldSoft],
@@ -98,13 +103,14 @@ struct ListeningRadarOrb: View {
                         )
                         .symbolEffect(.variableColor.iterative, isActive: isListening)
 
-                    Text(isListening ? "بَيَان" : "LISTEN")
+                    Text(isListening ? "LISTENING" : "TAP TO IDENTIFY")
                         .font(.caption2.weight(.black))
-                        .tracking(2.5)
+                        .tracking(2.0)
                         .foregroundColor(BayanTheme.goldSoft)
                 }
             }
-            .frame(width: 320, height: 320)
+            .frame(width: 240, height: 240)
+            .contentShape(Circle())
         }
         .buttonStyle(.plain)
     }
