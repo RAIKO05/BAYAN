@@ -397,6 +397,141 @@ public struct QiblaView: View {
         let c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return Int(r * c)
     }
+
+    // MARK: - Task 6: Moroccan Ministry of Habous Prayer Times Calculation
+    private func calculatePrayerTimes(lat: Double, lng: Double) -> [PrayerTimeItem] {
+        let now = Date()
+        let calendar = Calendar.current
+        let dayOfYear = Double(calendar.ordinality(of: .day, in: .year, for: now) ?? 1)
+        let tzOffset = Double(TimeZone.current.secondsFromGMT(for: now)) / 3600.0
+
+        let gamma = 2.0 * .pi / 365.25 * (dayOfYear - 1.0)
+        let eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) - 0.014615 * cos(2.0 * gamma) - 0.040849 * sin(2.0 * gamma))
+        let decl = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma) - 0.006758 * cos(2.0 * gamma) + 0.000907 * sin(2.0 * gamma)
+
+        let solarNoon = (720.0 - 4.0 * lng - eqtime) / 60.0 + tzOffset
+
+        func hourAngle(alphaDeg: Double) -> Double {
+            let latRad = lat * .pi / 180.0
+            let alphaRad = alphaDeg * .pi / 180.0
+            let cosH = (sin(alphaRad) - sin(latRad) * sin(decl)) / (cos(latRad) * cos(decl))
+            let clamped = max(-1.0, min(1.0, cosH))
+            return acos(clamped) * 180.0 / .pi
+        }
+
+        // Moroccan Habous conventions: Fajr 19.0°, Isha 17.0°
+        let haFajr = hourAngle(alphaDeg: -19.0)
+        let haSunset = hourAngle(alphaDeg: -0.833)
+
+        // Asr: Maliki shadow = 1
+        let latRad = lat * .pi / 180.0
+        let asrAltRad = atan(1.0 / (1.0 + tan(abs(latRad - decl))))
+        let cosAsr = (sin(asrAltRad) - sin(latRad) * sin(decl)) / (cos(latRad) * cos(decl))
+        let haAsr = acos(max(-1.0, min(1.0, cosAsr))) * 180.0 / .pi
+
+        let haIsha = hourAngle(alphaDeg: -17.0)
+
+        let fajrHour = (solarNoon - haFajr / 15.0).truncatingRemainder(dividingBy: 24.0)
+        let dhuhrHour = (solarNoon + 5.0 / 60.0).truncatingRemainder(dividingBy: 24.0)
+        let asrHour = (solarNoon + haAsr / 15.0).truncatingRemainder(dividingBy: 24.0)
+        let maghribHour = (solarNoon + haSunset / 15.0 + 2.0 / 60.0).truncatingRemainder(dividingBy: 24.0)
+        let ishaHour = (solarNoon + haIsha / 15.0).truncatingRemainder(dividingBy: 24.0)
+
+        func formatTime(hourVal: Double) -> String {
+            let positive = (hourVal + 24.0).truncatingRemainder(dividingBy: 24.0)
+            let h = Int(positive)
+            let m = Int((positive - Double(h)) * 60.0)
+            return String(format: "%02d:%02d", h, m)
+        }
+
+        let currentDecimalHour = Double(calendar.component(.hour, from: now)) + Double(calendar.component(.minute, from: now)) / 60.0
+
+        let times = [
+            ("الفجر", "Fajr", formatTime(hourVal: fajrHour), (fajrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.horizon.fill"),
+            ("الظهر", "Dhuhr", formatTime(hourVal: dhuhrHour), (dhuhrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.max.fill"),
+            ("العصر", "Asr", formatTime(hourVal: asrHour), (asrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.haze.fill"),
+            ("المغرب", "Maghrib", formatTime(hourVal: maghribHour), (maghribHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sunset.fill"),
+            ("العشاء", "Isha", formatTime(hourVal: ishaHour), (ishaHour + 24.0).truncatingRemainder(dividingBy: 24.0), "moon.stars.fill")
+        ]
+
+        var nextFound = false
+        var result: [PrayerTimeItem] = []
+
+        for item in times {
+            let isNext = !nextFound && item.3 > currentDecimalHour
+            if isNext { nextFound = true }
+            result.append(PrayerTimeItem(nameArabic: item.0, nameEnglish: item.1, timeString: item.2, icon: item.4, isNext: isNext))
+        }
+
+        if !nextFound && !result.isEmpty {
+            result[0] = PrayerTimeItem(nameArabic: result[0].nameArabic, nameEnglish: result[0].nameEnglish, timeString: result[0].timeString, icon: result[0].icon, isNext: true)
+        }
+
+        return result
+    }
+}
+
+// MARK: - Task 3: Compass Arrow Shape
+struct CompassArrowShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY - 12))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// MARK: - Task 6: Prayer Time Models & Card
+public struct PrayerTimeItem: Identifiable {
+    public let id = UUID()
+    public let nameArabic: String
+    public let nameEnglish: String
+    public let timeString: String
+    public let icon: String
+    public let isNext: Bool
+}
+
+private struct PrayerTimeCard: View {
+    let prayer: PrayerTimeItem
+
+    var body: some View {
+        VStack(spacing: 5) {
+            HStack(spacing: 4) {
+                Image(systemName: prayer.icon)
+                    .font(.system(size: 11))
+                    .foregroundColor(prayer.isNext ? BayanTheme.gold : .white.opacity(0.6))
+                Text(prayer.nameEnglish.uppercased())
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(prayer.isNext ? BayanTheme.gold : .white.opacity(0.6))
+                    .tracking(0.5)
+            }
+
+            Text(prayer.nameArabic)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(prayer.isNext ? BayanTheme.goldSoft : .white)
+
+            Text(prayer.timeString)
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .foregroundColor(prayer.isNext ? BayanTheme.gold : .white.opacity(0.95))
+
+            if prayer.isNext {
+                Text("NEXT")
+                    .font(.system(size: 8, weight: .black))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(BayanTheme.gold)
+                    .foregroundColor(BayanTheme.obsidian)
+                    .clipShape(Capsule())
+            }
+        }
+        .frame(width: 88, height: 86)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 6)
+        .liquidGlass(cornerRadius: 16, isGoldBorder: prayer.isNext)
+    }
 }
 
 // MARK: - Stat Box
