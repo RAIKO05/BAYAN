@@ -809,6 +809,30 @@
       background: radial-gradient(circle at 50% 15%, #18202c 0%, #080c10 85%);
       color: #ffffff;
     }
+    body[data-theme="dark"] .prayer-now-card,
+    body[data-theme="dark"] .prayer-gauge-card {
+      background: #101620 !important;
+    }
+    body[data-theme="dark"] .prayer-row-item {
+      background: #0d121a !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body[data-theme="dark"] .prayer-row-item.prayed {
+      background: #141c26 !important;
+      border-color: var(--gold) !important;
+    }
+    body[data-theme="dark"] .prayer-check-btn.prayed {
+      background: var(--gold) !important;
+      color: var(--obsidian) !important;
+    }
+    body[data-theme="dark"] .prayer-gauge-progress {
+      stroke: var(--gold) !important;
+    }
+    body[data-theme="dark"] .mark-prayed-btn {
+      background: var(--gold) !important;
+      color: var(--obsidian) !important;
+      box-shadow: 0 4px 15px rgba(229, 185, 90, 0.35) !important;
+    }
 
     body[data-theme="emerald"] .iphone-frame {
       background: radial-gradient(circle at 50% 15%, #083827 0%, #02120c 85%);
@@ -822,6 +846,22 @@
       background: #06281e !important;
       border-color: rgba(45, 138, 101, 0.3) !important;
     }
+    body[data-theme="emerald"] .prayer-row-item.prayed {
+      background: #083827 !important;
+      border-color: #25d366 !important;
+    }
+    body[data-theme="emerald"] .prayer-check-btn.prayed {
+      background: #25d366 !important;
+      color: #02120c !important;
+    }
+    body[data-theme="emerald"] .prayer-gauge-progress {
+      stroke: #25d366 !important;
+    }
+    body[data-theme="emerald"] .mark-prayed-btn {
+      background: #25d366 !important;
+      color: #03140e !important;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4) !important;
+    }
 
     body[data-theme="midnight"] .iphone-frame {
       background: radial-gradient(circle at 50% 15%, #0f2244 0%, #040916 85%);
@@ -830,10 +870,31 @@
     body[data-theme="midnight"] .prayer-now-card,
     body[data-theme="midnight"] .prayer-gauge-card {
       background: #0f244a !important;
+      border-color: rgba(75, 120, 200, 0.3) !important;
     }
     body[data-theme="midnight"] .prayer-row-item {
-      background: #0a1832 !important;
+      background: #091730 !important;
       border-color: rgba(60, 110, 190, 0.3) !important;
+    }
+    body[data-theme="midnight"] .prayer-row-item.prayed {
+      background: #0d2246 !important;
+      border-color: #f5c242 !important;
+    }
+    body[data-theme="midnight"] .prayer-check-btn.prayed {
+      background: #f5c242 !important;
+      color: #040916 !important;
+    }
+    body[data-theme="midnight"] .prayer-gauge-progress {
+      stroke: #f5c242 !important;
+    }
+    body[data-theme="midnight"] .mark-prayed-btn {
+      background: #f5c242 !important;
+      color: #060d1a !important;
+      box-shadow: 0 4px 15px rgba(245, 194, 66, 0.4) !important;
+    }
+    body[data-theme="midnight"] .prayers-mode-btn.active {
+      background: #f5c242 !important;
+      color: #040916 !important;
     }
 
     body[data-theme="oled"] .iphone-frame {
@@ -848,6 +909,64 @@
     body[data-theme="oled"] .prayer-row-item {
       background: #0a0a0a !important;
       border-color: #1c1c1c !important;
+    }
+    body[data-theme="oled"] .prayer-row-item.prayed {
+      background: #161616 !important;
+      border-color: #e0c068 !important;
+    }
+    body[data-theme="oled"] .prayer-check-btn.prayed {
+      background: #e0c068 !important;
+      color: #000000 !important;
+    }
+    body[data-theme="oled"] .prayer-gauge-progress {
+      stroke: #e0c068 !important;
+    }
+    body[data-theme="oled"] .mark-prayed-btn {
+      background: #e0c068 !important;
+      color: #000000 !important;
+      box-shadow: 0 4px 15px rgba(224, 192, 104, 0.3) !important;
+    }
+
+    body[data-theme="paper"] .mark-prayed-btn {
+      background: #c69226 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(198, 146, 38, 0.4) !important;
+    }
+    body[data-theme="paper"] .prayer-row-item.prayed {
+      background: #f4ecdc !important;
+      border-color: #c69226 !important;
+    }
+    body[data-theme="paper"] .prayer-check-btn.prayed {
+      background: #c69226 !important;
+      color: #ffffff !important;
+    }
+    body[data-theme="paper"] .prayer-gauge-progress {
+      stroke: #c69226 !important;
+    }
+    body[data-theme="paper"] .prayers-mode-btn.active {
+      background: #c69226 !important;
+      color: #ffffff !important;
+    }
+
+    body[data-theme="modern"] .mark-prayed-btn {
+      background: #1b845c !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(27, 132, 92, 0.4) !important;
+    }
+    body[data-theme="modern"] .prayer-row-item.prayed {
+      background: #f0f7f4 !important;
+      border-color: #1b845c !important;
+    }
+    body[data-theme="modern"] .prayer-check-btn.prayed {
+      background: #1b845c !important;
+      color: #ffffff !important;
+    }
+    body[data-theme="modern"] .prayer-gauge-progress {
+      stroke: #1b845c !important;
+    }
+    body[data-theme="modern"] .prayers-mode-btn.active {
+      background: #1b845c !important;
+      color: #ffffff !important;
     }
 
     /* --------------------------------------------------------

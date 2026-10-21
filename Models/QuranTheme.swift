@@ -208,13 +208,127 @@ public enum QuranTheme: String, CaseIterable, Identifiable, Codable {
         case .modern:
             return Color(red: 0.08, green: 0.32, blue: 0.25)
         case .dark:
-            return Color(red: 0.06, green: 0.20, blue: 0.16)
+            return Color(red: 0.08, green: 0.12, blue: 0.18)
         case .emerald:
-            return Color(red: 0.05, green: 0.24, blue: 0.18)
+            return Color(red: 0.04, green: 0.22, blue: 0.16)
         case .midnight:
-            return Color(red: 0.08, green: 0.15, blue: 0.28)
+            return Color(red: 0.06, green: 0.13, blue: 0.25)
         case .oled:
-            return Color(red: 0.11, green: 0.11, blue: 0.11)
+            return Color(red: 0.10, green: 0.10, blue: 0.10)
+        }
+    }
+
+    // MARK: - Prayer Dashboard Theming Tokens
+    public var prayerCardBackground: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.99, green: 0.98, blue: 0.94)
+        case .modern:
+            return Color.white
+        case .dark:
+            return Color(red: 0.09, green: 0.12, blue: 0.16)
+        case .emerald:
+            return Color(red: 0.03, green: 0.16, blue: 0.12)
+        case .midnight:
+            return Color(red: 0.06, green: 0.11, blue: 0.20)
+        case .oled:
+            return Color(red: 0.07, green: 0.07, blue: 0.07)
+        }
+    }
+
+    public var prayerCardActiveBackground: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.95, green: 0.90, blue: 0.80)
+        case .modern:
+            return Color(red: 0.90, green: 0.96, blue: 0.93)
+        case .dark:
+            return Color(red: 0.14, green: 0.18, blue: 0.24)
+        case .emerald:
+            return Color(red: 0.06, green: 0.25, blue: 0.19)
+        case .midnight:
+            return Color(red: 0.09, green: 0.17, blue: 0.30)
+        case .oled:
+            return Color(red: 0.13, green: 0.13, blue: 0.13)
+        }
+    }
+
+    public var prayerCardBorder: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.88, green: 0.82, blue: 0.72)
+        case .modern:
+            return Color(red: 0.88, green: 0.90, blue: 0.94)
+        case .dark:
+            return Color.white.opacity(0.10)
+        case .emerald:
+            return Color(red: 0.15, green: 0.45, blue: 0.32).opacity(0.4)
+        case .midnight:
+            return Color(red: 0.22, green: 0.38, blue: 0.65).opacity(0.4)
+        case .oled:
+            return Color.white.opacity(0.12)
+        }
+    }
+
+    public var prayerActiveAccent: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.80, green: 0.60, blue: 0.20)
+        case .modern:
+            return Color(red: 0.18, green: 0.68, blue: 0.45)
+        case .dark:
+            return BayanTheme.gold
+        case .emerald:
+            return Color(red: 0.18, green: 0.85, blue: 0.52)
+        case .midnight:
+            return Color(red: 0.95, green: 0.78, blue: 0.35)
+        case .oled:
+            return Color(red: 0.90, green: 0.85, blue: 0.70)
+        }
+    }
+
+    public var prayerTextColor: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.12, green: 0.08, blue: 0.04)
+        case .modern:
+            return Color(red: 0.10, green: 0.12, blue: 0.16)
+        case .dark, .emerald, .midnight, .oled:
+            return .white
+        }
+    }
+
+    public var prayerSecondaryTextColor: Color {
+        switch self {
+        case .paper:
+            return Color(red: 0.48, green: 0.40, blue: 0.30)
+        case .modern:
+            return Color(red: 0.42, green: 0.46, blue: 0.54)
+        case .dark:
+            return .white.opacity(0.70)
+        case .emerald:
+            return Color(red: 0.70, green: 0.88, blue: 0.80)
+        case .midnight:
+            return Color(red: 0.65, green: 0.78, blue: 0.94)
+        case .oled:
+            return Color.white.opacity(0.70)
+        }
+    }
+
+    public var prayerGaugeGradient: [Color] {
+        switch self {
+        case .paper:
+            return [Color(red: 0.88, green: 0.70, blue: 0.30), Color(red: 0.75, green: 0.55, blue: 0.18)]
+        case .modern:
+            return [Color(red: 0.18, green: 0.78, blue: 0.48), Color(red: 0.10, green: 0.62, blue: 0.38)]
+        case .dark:
+            return [BayanTheme.gold, BayanTheme.goldSoft]
+        case .emerald:
+            return [Color(red: 0.20, green: 0.88, blue: 0.52), Color(red: 0.10, green: 0.70, blue: 0.40)]
+        case .midnight:
+            return [Color(red: 0.96, green: 0.82, blue: 0.38), Color(red: 0.88, green: 0.68, blue: 0.22)]
+        case .oled:
+            return [Color(red: 0.95, green: 0.90, blue: 0.75), Color(red: 0.80, green: 0.75, blue: 0.60)]
         }
     }
 

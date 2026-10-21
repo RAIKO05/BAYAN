@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-// MARK: - Prayers Dashboard View (Matches User Reference UI & App-Wide Theme)
+// MARK: - Prayers Dashboard View (Fully Synchronized with App Theme)
 public struct PrayersDashboardView: View {
     @State private var selectedDate: Date = Date()
     @State private var completedPrayers: Set<String> = []
@@ -29,36 +29,30 @@ public struct PrayersDashboardView: View {
     }
 
     public var body: some View {
-        ZStack {
-            // Theme-synchronized canvas
-            themeManager.currentTheme.backgroundColor.ignoresSafeArea()
-            themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 16) {
+                // MARK: 1. Date Navigation Header (Clear spacing below mode pill)
+                dateHeaderRow
+                    .padding(.top, 8)
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
-                    // MARK: 1. Date Navigation Header (Generous spacing below mode pill)
-                    dateHeaderRow
-                        .padding(.top, 14)
+                // MARK: 2. Dual Hero Cards (Now Prayer + Progress Gauge)
+                heroCardsRow
 
-                    // MARK: 2. Dual Hero Cards (Now Prayer + 2/5 Progress Gauge)
-                    heroCardsRow
-
-                    // MARK: 2b. Adhan Now Playing Banner (if active)
-                    if adhanService.isPlaying {
-                        adhanNowPlayingBanner
-                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
-                    }
-
-                    // MARK: 3. Daily Prayers List (Subuh, Dzuhur, Ashar, Maghrib, Isya)
-                    prayersListSection
-
-                    // MARK: 4. Action Button ("Mark all as prayed")
-                    markAllButton
-                        .padding(.top, 4)
-                        .padding(.bottom, 120) // Clearance for floating tab bar
+                // MARK: 2b. Adhan Now Playing Banner (if active)
+                if adhanService.isPlaying {
+                    adhanNowPlayingBanner
+                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
                 }
-                .padding(.horizontal, 18)
+
+                // MARK: 3. Daily Prayers List (Subuh, Dzuhur, Ashar, Maghrib, Isya)
+                prayersListSection
+
+                // MARK: 4. Action Button ("Mark all as prayed")
+                markAllButton
+                    .padding(.top, 4)
+                    .padding(.bottom, 120) // Clearance for floating tab bar
             }
+            .padding(.horizontal, 18)
         }
         .onAppear {
             refreshCompletedState()
@@ -74,11 +68,11 @@ public struct PrayersDashboardView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(result.gregorianDateString)
                     .font(.system(size: 21, weight: .bold))
-                    .foregroundColor(themeManager.currentTheme.isDark ? .white : Color(red: 0.10, green: 0.12, blue: 0.16))
+                    .foregroundColor(themeManager.currentTheme.prayerTextColor)
 
                 Text(result.hijriDateString)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(themeManager.currentTheme.isDark ? Color(red: 0.70, green: 0.85, blue: 0.78) : Color(red: 0.35, green: 0.40, blue: 0.48))
+                    .foregroundColor(themeManager.currentTheme.prayerSecondaryTextColor)
             }
 
             Spacer()
@@ -89,9 +83,9 @@ public struct PrayersDashboardView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(themeManager.currentTheme.isDark ? .white.opacity(0.85) : Color(red: 0.15, green: 0.18, blue: 0.24))
+                        .foregroundColor(themeManager.currentTheme.prayerTextColor)
                         .frame(width: 34, height: 34)
-                        .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
+                        .background(themeManager.currentTheme.cardBorder.opacity(0.4))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -101,9 +95,9 @@ public struct PrayersDashboardView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(themeManager.currentTheme.isDark ? .white.opacity(0.85) : Color(red: 0.15, green: 0.18, blue: 0.24))
+                        .foregroundColor(themeManager.currentTheme.prayerTextColor)
                         .frame(width: 34, height: 34)
-                        .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
+                        .background(themeManager.currentTheme.cardBorder.opacity(0.4))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -117,33 +111,17 @@ public struct PrayersDashboardView: View {
         HStack(spacing: 14) {
             // Left Hero Card (Current Active Prayer)
             VStack(alignment: .leading, spacing: 8) {
-                Text("Now")
-                    .font(.system(size: 11, weight: .bold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3.5)
-                    .background(Color.white.opacity(0.14))
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-
-                HStack(spacing: 6) {
-                    Text(result.currentPrayer.name)
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(.white)
-                    Text(result.currentPrayer.emoji)
-                        .font(.system(size: 16))
-                }
-
-                Text(result.currentPrayer.timeString)
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-
+                // Top row: "Now" badge on left, Adhan play/stop button on right
                 HStack {
-                    Text(result.countdownSubtitle)
-                        .font(.system(size: 11.5, weight: .medium))
-                        .foregroundColor(.white.opacity(0.70))
-                        .lineLimit(1)
+                    Text("Now")
+                        .font(.system(size: 11, weight: .bold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 3.5)
+                        .background(themeManager.currentTheme.prayerActiveAccent.opacity(0.2))
+                        .foregroundColor(themeManager.currentTheme.prayerActiveAccent)
+                        .clipShape(Capsule())
 
-                    Spacer(minLength: 4)
+                    Spacer()
 
                     Button {
                         #if os(iOS)
@@ -153,18 +131,35 @@ public struct PrayersDashboardView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: adhanService.isPlaying ? "stop.fill" : "speaker.wave.2.fill")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.system(size: 9.5, weight: .bold))
                             Text(adhanService.isPlaying ? "Stop" : "Adhan")
                                 .font(.system(size: 10, weight: .bold))
                         }
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(adhanService.isPlaying ? Color.red.opacity(0.85) : BayanTheme.gold)
-                        .foregroundColor(adhanService.isPlaying ? .white : BayanTheme.obsidian)
+                        .padding(.vertical, 3.5)
+                        .background(adhanService.isPlaying ? Color.red.opacity(0.85) : themeManager.currentTheme.prayerActiveAccent)
+                        .foregroundColor(adhanService.isPlaying ? .white : (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white))
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
                 }
+
+                HStack(spacing: 6) {
+                    Text(result.currentPrayer.name)
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(themeManager.currentTheme.prayerTextColor)
+                    Text(result.currentPrayer.emoji)
+                        .font(.system(size: 16))
+                }
+
+                Text(result.currentPrayer.timeString)
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(themeManager.currentTheme.prayerTextColor)
+
+                Text(result.countdownSubtitle)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundColor(themeManager.currentTheme.prayerSecondaryTextColor)
+                    .lineLimit(1)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -173,7 +168,7 @@ public struct PrayersDashboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white.opacity(0.09), lineWidth: 1)
+                    .stroke(themeManager.currentTheme.cardBorder, lineWidth: 1)
             )
 
             // Right Hero Card (Circular Progress Gauge)
@@ -181,17 +176,14 @@ public struct PrayersDashboardView: View {
                 ZStack {
                     // Gauge Background Ring
                     Circle()
-                        .stroke(Color.white.opacity(0.08), lineWidth: 9)
+                        .stroke(themeManager.currentTheme.cardBorder.opacity(0.35), lineWidth: 9)
 
                     // Gauge Progress Arc
                     Circle()
                         .trim(from: 0, to: CGFloat(completedCount) / 5.0)
                         .stroke(
                             LinearGradient(
-                                colors: [
-                                    Color(red: 0.18, green: 0.88, blue: 0.50),
-                                    Color(red: 0.10, green: 0.68, blue: 0.40)
-                                ],
+                                colors: themeManager.currentTheme.prayerGaugeGradient,
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -204,12 +196,12 @@ public struct PrayersDashboardView: View {
                     if completedCount > 0 {
                         VStack {
                             Circle()
-                                .fill(Color(red: 0.15, green: 0.82, blue: 0.48))
+                                .fill(themeManager.currentTheme.prayerActiveAccent)
                                 .frame(width: 14, height: 14)
                                 .overlay(
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 8, weight: .bold))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white)
                                 )
                                 .offset(y: -42)
                             Spacer()
@@ -220,11 +212,11 @@ public struct PrayersDashboardView: View {
                     VStack(spacing: 2) {
                         Text("\(completedCount)/5")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(themeManager.currentTheme.prayerTextColor)
 
                         Text("prayed")
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.68))
+                            .foregroundColor(themeManager.currentTheme.prayerSecondaryTextColor)
                     }
                 }
                 .frame(width: 88, height: 88)
@@ -235,7 +227,7 @@ public struct PrayersDashboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white.opacity(0.09), lineWidth: 1)
+                    .stroke(themeManager.currentTheme.cardBorder, lineWidth: 1)
             )
         }
     }
@@ -245,26 +237,26 @@ public struct PrayersDashboardView: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(BayanTheme.gold.opacity(0.2))
+                    .fill(themeManager.currentTheme.prayerActiveAccent.opacity(0.2))
                     .frame(width: 38, height: 38)
                 Image(systemName: "waveform")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(BayanTheme.gold)
+                    .foregroundColor(themeManager.currentTheme.prayerActiveAccent)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text("الأذان • Now Playing")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeManager.currentTheme.prayerTextColor)
                     Text(adhanService.currentPrayerName)
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(BayanTheme.goldSoft)
+                        .foregroundColor(themeManager.currentTheme.prayerActiveAccent)
                 }
 
                 Text("حي على الصلاة • حي على الفلاح")
                     .font(.system(size: 11, weight: .medium, design: .serif))
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(themeManager.currentTheme.prayerSecondaryTextColor)
             }
 
             Spacer()
@@ -286,11 +278,11 @@ public struct PrayersDashboardView: View {
             .buttonStyle(.plain)
         }
         .padding(12)
-        .background(Color(red: 0.08, green: 0.22, blue: 0.18))
+        .background(themeManager.currentTheme.heroCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(BayanTheme.gold.opacity(0.4), lineWidth: 1)
+                .stroke(themeManager.currentTheme.prayerActiveAccent.opacity(0.4), lineWidth: 1)
         )
     }
 
@@ -300,6 +292,7 @@ public struct PrayersDashboardView: View {
             ForEach(result.prayers) { prayer in
                 PrayerCardRow(
                     prayer: prayer,
+                    theme: themeManager.currentTheme,
                     isPrayed: completedPrayers.contains(prayer.id),
                     isMuted: trackerService.mutedPrayerIds.contains(prayer.id),
                     onTogglePrayed: {
@@ -329,12 +322,12 @@ public struct PrayersDashboardView: View {
         } label: {
             Text(completedCount == 5 ? "Reset all for today" : "Mark all as prayed")
                 .font(.system(size: 14.5, weight: .bold))
-                .foregroundColor(Color(red: 0.03, green: 0.14, blue: 0.11))
+                .foregroundColor(themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(Color(red: 0.18, green: 0.78, blue: 0.48))
+                .background(themeManager.currentTheme.prayerActiveAccent)
                 .clipShape(Capsule())
-                .shadow(color: Color(red: 0.18, green: 0.78, blue: 0.48).opacity(0.35), radius: 10, y: 3)
+                .shadow(color: themeManager.currentTheme.prayerActiveAccent.opacity(0.35), radius: 10, y: 3)
         }
         .padding(.horizontal, 28)
     }
@@ -391,9 +384,10 @@ public struct PrayersDashboardView: View {
     }
 }
 
-// MARK: - Individual Prayer Card Row (Exact Match with Image)
+// MARK: - Individual Prayer Card Row (Theme-Aware)
 private struct PrayerCardRow: View {
     let prayer: PrayerTimeItem
+    let theme: QuranTheme
     let isPrayed: Bool
     let isMuted: Bool
     let onTogglePrayed: () -> Void
@@ -406,15 +400,15 @@ private struct PrayerCardRow: View {
                 ZStack {
                     if isPrayed {
                         Circle()
-                            .fill(Color(red: 0.15, green: 0.82, blue: 0.48))
+                            .fill(theme.prayerActiveAccent)
                             .frame(width: 26, height: 26)
 
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(theme.isDark ? BayanTheme.obsidian : .white)
                     } else {
                         Circle()
-                            .stroke(Color.white.opacity(0.35), lineWidth: 1.8)
+                            .stroke(theme.prayerSecondaryTextColor.opacity(0.35), lineWidth: 1.8)
                             .frame(width: 26, height: 26)
                     }
                 }
@@ -425,7 +419,7 @@ private struct PrayerCardRow: View {
             HStack(spacing: 6) {
                 Text(prayer.name)
                     .font(.system(size: 15.5, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.prayerTextColor)
 
                 Text(prayer.emoji)
                     .font(.system(size: 15))
@@ -437,33 +431,33 @@ private struct PrayerCardRow: View {
                     .font(.system(size: 10, weight: .bold))
                     .padding(.horizontal, 7)
                     .padding(.vertical, 2.5)
-                    .background(Color.white.opacity(0.12))
-                    .foregroundColor(.white)
+                    .background(theme.prayerActiveAccent.opacity(0.18))
+                    .foregroundColor(theme.prayerActiveAccent)
                     .clipShape(Capsule())
             } else if prayer.isNext, let countdown = prayer.countdownString {
                 Text(countdown)
                     .font(.system(size: 10, weight: .bold))
                     .padding(.horizontal, 7)
                     .padding(.vertical, 2.5)
-                    .background(Color.white.opacity(0.12))
-                    .foregroundColor(.white.opacity(0.85))
+                    .background(theme.prayerCardBorder.opacity(0.35))
+                    .foregroundColor(theme.prayerSecondaryTextColor)
                     .clipShape(Capsule())
             }
 
             Spacer()
 
-            // Prayer Time Display (e.g. 15:17)
+            // Prayer Time Display (e.g. 15.17)
             Text(prayer.timeString)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(theme.prayerTextColor)
 
             // Notification Speaker Toggle Button
             Button(action: onToggleMute) {
                 Image(systemName: isMuted ? "speaker.slash" : "speaker.wave.2.fill")
                     .font(.system(size: 13.5))
-                    .foregroundColor(isMuted ? .white.opacity(0.35) : Color(red: 0.70, green: 0.85, blue: 0.78))
+                    .foregroundColor(isMuted ? theme.prayerSecondaryTextColor.opacity(0.35) : theme.prayerActiveAccent)
                     .frame(width: 32, height: 32)
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.prayerCardBorder.opacity(0.3))
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -472,21 +466,21 @@ private struct PrayerCardRow: View {
         .padding(.vertical, 14)
         .background(
             isPrayed || prayer.isCurrent
-                ? Color(red: 0.08, green: 0.26, blue: 0.20)
-                : Color(red: 0.06, green: 0.20, blue: 0.16)
+                ? theme.prayerCardActiveBackground
+                : theme.prayerCardBackground
         )
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(
                     prayer.isCurrent
-                        ? Color(red: 0.20, green: 0.75, blue: 0.45).opacity(0.4)
-                        : Color.white.opacity(0.06),
-                    lineWidth: 1
+                        ? theme.prayerActiveAccent.opacity(0.6)
+                        : theme.prayerCardBorder,
+                    lineWidth: prayer.isCurrent ? 1.5 : 1
                 )
         )
         .shadow(
-            color: (isPrayed || prayer.isCurrent) ? Color(red: 0.10, green: 0.50, blue: 0.30).opacity(0.18) : Color.clear,
+            color: (isPrayed || prayer.isCurrent) ? theme.prayerActiveAccent.opacity(0.15) : Color.clear,
             radius: 8,
             y: 3
         )

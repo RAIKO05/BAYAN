@@ -129,8 +129,8 @@ public struct QiblaView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 7)
-                .background(selectedMode == .prayers ? BayanTheme.gold : Color.clear)
-                .foregroundColor(selectedMode == .prayers ? BayanTheme.obsidian : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
+                .background(selectedMode == .prayers ? themeManager.currentTheme.prayerActiveAccent : Color.clear)
+                .foregroundColor(selectedMode == .prayers ? (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white) : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -151,8 +151,8 @@ public struct QiblaView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 7)
-                .background(selectedMode == .compass ? BayanTheme.gold : Color.clear)
-                .foregroundColor(selectedMode == .compass ? BayanTheme.obsidian : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
+                .background(selectedMode == .compass ? themeManager.currentTheme.prayerActiveAccent : Color.clear)
+                .foregroundColor(selectedMode == .compass ? (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white) : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
