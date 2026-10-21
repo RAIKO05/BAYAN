@@ -448,6 +448,287 @@
       color: var(--gold-soft);
     }
 
+    /* ========================================================
+       QURAN READING THEMES (MODERN, PAPER, DARK)
+       ======================================================== */
+    .theme-card-modal {
+      position: absolute;
+      top: 130px;
+      left: 14px;
+      right: 14px;
+      z-index: 1005;
+      display: none;
+      animation: themePopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .theme-card-modal.open {
+      display: block;
+    }
+    @keyframes themePopIn {
+      0% { opacity: 0; transform: scale(0.95) translateY(-8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .theme-card-container {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.08);
+      color: #111827;
+    }
+    .theme-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+    .theme-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.2px;
+    }
+    .theme-card-close {
+      background: rgba(0, 0, 0, 0.06);
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-card-close:hover {
+      background: rgba(0, 0, 0, 0.12);
+      color: #111;
+    }
+    .theme-options-row {
+      display: flex;
+      gap: 10px;
+    }
+    .theme-option-box {
+      flex: 1;
+      height: 86px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+    .theme-option-box:active {
+      transform: scale(0.97);
+    }
+    .theme-option-box.selected {
+      border-color: #2D8A65 !important;
+      box-shadow: 0 4px 14px rgba(45, 138, 101, 0.35);
+    }
+    .theme-arabic-preview {
+      font-size: 19px;
+      font-weight: 700;
+      font-family: "Amiri Quran", "Scheherazade New", serif;
+      line-height: 1.2;
+    }
+    .theme-label {
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    /* Modern Theme Preview Tile */
+    .theme-modern {
+      background: #eceef1;
+      color: #111827;
+    }
+    .theme-modern .theme-arabic-preview { color: #111827; }
+    .theme-modern .theme-label { color: #374151; }
+
+    /* Paper Theme Preview Tile */
+    .theme-paper {
+      background: #faf4e6;
+      color: #1c1308;
+    }
+    .theme-paper .theme-arabic-preview { color: #1c1308; }
+    .theme-paper .theme-label { color: #4a3824; font-family: serif; }
+
+    /* Dark Theme Preview Tile */
+    .theme-dark {
+      background: #222224;
+      color: #ffffff;
+    }
+    .theme-dark .theme-arabic-preview { color: #ffffff; }
+    .theme-dark .theme-label { color: #e5e7eb; }
+
+    /* --------------------------------------------------------
+       THEME STYLES APPLIED TO QURAN READER MODAL (#match-modal)
+       -------------------------------------------------------- */
+
+    /* 1. PAPER THEME (Classic Antique Mushaf Parchment) */
+    #match-modal[data-quran-theme="paper"] {
+      background: radial-gradient(circle at 50% 10%, #faf3e3 0%, #f4ebd6 100%) !important;
+      border-top-color: #c69b38 !important;
+      color: #2c1e10 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .modal-close {
+      background: rgba(80, 50, 20, 0.25) !important;
+    }
+    #match-modal[data-quran-theme="paper"] .modal-badge {
+      background: #eae0c8 !important;
+      border-color: #d8c8a3 !important;
+      color: #8c672b !important;
+    }
+    #match-modal[data-quran-theme="paper"] .modal-arabic {
+      color: #201306 !important;
+    }
+    #match-modal[data-quran-theme="paper"] #modal-en-name {
+      color: #805c24 !important;
+      font-weight: 600 !important;
+    }
+    #match-modal[data-quran-theme="paper"] #modal-qari {
+      color: #634f3a !important;
+    }
+    #match-modal[data-quran-theme="paper"] .modal-reader-toolbar {
+      border-bottom-color: rgba(140, 103, 43, 0.18) !important;
+    }
+    #match-modal[data-quran-theme="paper"] .reader-tool-btn {
+      background: #ede3cc !important;
+      border-color: #dacba7 !important;
+      color: #3d2d1d !important;
+    }
+    #match-modal[data-quran-theme="paper"] .reader-tool-btn:hover {
+      background: #e3d7bb !important;
+      border-color: #c7b385 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .reader-tool-btn.active {
+      background: #e2d1a8 !important;
+      border-color: #a37c35 !important;
+      color: #4a3411 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .modal-verses-scroll {
+      background: #ede4ce !important;
+      border-color: #dfd1b0 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-card {
+      background: #fffdf7 !important;
+      border: 1px solid #e5d9be !important;
+      box-shadow: 0 1px 4px rgba(60, 40, 10, 0.05) !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-card:hover {
+      background: #ffffff !important;
+      border-color: #d6c6a4 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-badge {
+      background: #f2e7cd !important;
+      border-color: #caa564 !important;
+      color: #7d5c22 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-status-label {
+      color: #8c775f !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-text-ar {
+      color: #1a1005 !important;
+      font-weight: 600 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-text-trans {
+      color: #554332 !important;
+    }
+    #match-modal[data-quran-theme="paper"] .verse-card.playing {
+      background: #fff8e3 !important;
+      border-color: #c89832 !important;
+      box-shadow: 0 0 18px rgba(200, 152, 50, 0.28) !important;
+    }
+    #match-modal[data-quran-theme="paper"] .play-btn {
+      background: #b8860b !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 18px rgba(184, 134, 11, 0.35) !important;
+    }
+
+    /* 2. MODERN THEME (Clean Crisp Light Gray / Slate) */
+    #match-modal[data-quran-theme="modern"] {
+      background: radial-gradient(circle at 50% 10%, #ffffff 0%, #f3f5f8 100%) !important;
+      border-top-color: #0d9488 !important;
+      color: #111827 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .modal-close {
+      background: rgba(0, 0, 0, 0.2) !important;
+    }
+    #match-modal[data-quran-theme="modern"] .modal-badge {
+      background: #e0f2fe !important;
+      border-color: #bae6fd !important;
+      color: #0369a1 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .modal-arabic {
+      color: #0f172a !important;
+    }
+    #match-modal[data-quran-theme="modern"] #modal-en-name {
+      color: #0d9488 !important;
+      font-weight: 600 !important;
+    }
+    #match-modal[data-quran-theme="modern"] #modal-qari {
+      color: #4b5563 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .modal-reader-toolbar {
+      border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    #match-modal[data-quran-theme="modern"] .reader-tool-btn {
+      background: #e5e7eb !important;
+      border-color: #d1d5db !important;
+      color: #1f2937 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .reader-tool-btn:hover {
+      background: #dbeafe !important;
+      border-color: #93c5fd !important;
+    }
+    #match-modal[data-quran-theme="modern"] .reader-tool-btn.active {
+      background: #ccfbf1 !important;
+      border-color: #14b8a6 !important;
+      color: #0f766e !important;
+    }
+    #match-modal[data-quran-theme="modern"] .modal-verses-scroll {
+      background: #e9ecef !important;
+      border-color: #d8dde3 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e6ec !important;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.04) !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-card:hover {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-badge {
+      background: #f1f5f9 !important;
+      border-color: #0d9488 !important;
+      color: #0f766e !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-status-label {
+      color: #64748b !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-text-ar {
+      color: #0f172a !important;
+      font-weight: 600 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-text-trans {
+      color: #475569 !important;
+    }
+    #match-modal[data-quran-theme="modern"] .verse-card.playing {
+      background: #f0fdf4 !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.22) !important;
+    }
+    #match-modal[data-quran-theme="modern"] .play-btn {
+      background: #0f766e !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 18px rgba(15, 118, 110, 0.3) !important;
+    }
+
     /* Scrollable verses inside the modal */
     .modal-verses-scroll {
       flex: 1;
@@ -1805,7 +2086,7 @@
         <span style="color: var(--gold); font-size: 11px; margin-left: 4px;">(Change Qari ❯)</span>
       </div>
 
-      <!-- Reader Toolbar: Translation Toggle + Language Picker -->
+      <!-- Reader Toolbar: Translation Toggle + Language Picker + Theme Selector -->
       <div class="modal-reader-toolbar">
         <button class="reader-tool-btn active" id="trans-toggle-btn" onclick="toggleTranslation()">
           <span id="trans-toggle-icon">🌐</span>
@@ -1818,6 +2099,39 @@
         <button class="reader-tool-btn" onclick="openReciterModal()">
           🎙️ Qari
         </button>
+        <button class="reader-tool-btn" id="theme-btn" onclick="openThemeModal()">
+          <span>🎨</span>
+          <span id="current-theme-label">Paper</span> ▾
+        </button>
+      </div>
+
+      <!-- Theme Selection Card Modal (Exact Match with Reference UI) -->
+      <div class="theme-card-modal" id="theme-modal">
+        <div class="theme-card-container">
+          <div class="theme-card-header">
+            <span class="theme-card-title">Themes</span>
+            <button class="theme-card-close" onclick="closeThemeModal()">✕</button>
+          </div>
+          <div class="theme-options-row">
+            <!-- Modern Theme Option -->
+            <div class="theme-option-box theme-modern" id="theme-opt-modern" onclick="setQuranTheme('modern')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Modern</div>
+            </div>
+
+            <!-- Paper Theme Option -->
+            <div class="theme-option-box theme-paper" id="theme-opt-paper" onclick="setQuranTheme('paper')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Paper</div>
+            </div>
+
+            <!-- Dark Theme Option -->
+            <div class="theme-option-box theme-dark" id="theme-opt-dark" onclick="setQuranTheme('dark')">
+              <div class="theme-arabic-preview">بِسْمِ اللَّهِ</div>
+              <div class="theme-label">Dark</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="modal-verses-scroll" id="modal-verses-container">
@@ -3278,6 +3592,7 @@
     }
 
     function closeModal() {
+      closeThemeModal();
       document.getElementById("match-modal").classList.remove("open");
       if (!audioPlayer.paused || (audioPlayer.currentTime > 0 && !audioPlayer.ended)) {
         showMiniPlayer();
@@ -3452,6 +3767,71 @@
       closeLangModal();
       closeCityModal();
       closeTextScannerModal();
+      closeThemeModal();
+    }
+
+    // =========================================================
+    // QURAN THEMES CONTROLLER (MODERN, PAPER, DARK)
+    // =========================================================
+    let currentQuranTheme = "paper"; // Default to Paper as in screenshot
+
+    function initQuranTheme() {
+      try {
+        const saved = localStorage.getItem("bayan_quran_theme");
+        if (saved && (saved === "modern" || saved === "paper" || saved === "dark")) {
+          currentQuranTheme = saved;
+        }
+      } catch (e) {}
+      applyQuranTheme(currentQuranTheme);
+    }
+
+    function setQuranTheme(themeName) {
+      if (themeName !== "modern" && themeName !== "paper" && themeName !== "dark") return;
+      currentQuranTheme = themeName;
+      try {
+        localStorage.setItem("bayan_quran_theme", themeName);
+      } catch (e) {}
+      applyQuranTheme(themeName);
+      closeThemeModal();
+    }
+
+    function applyQuranTheme(themeName) {
+      const matchModal = document.getElementById("match-modal");
+      if (matchModal) {
+        matchModal.setAttribute("data-quran-theme", themeName);
+      }
+
+      const labelEl = document.getElementById("current-theme-label");
+      if (labelEl) {
+        labelEl.textContent = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+      }
+
+      // Update selection indicator on theme options (green border on selected)
+      ["modern", "paper", "dark"].forEach(t => {
+        const opt = document.getElementById(`theme-opt-${t}`);
+        if (opt) {
+          if (t === themeName) {
+            opt.classList.add("selected");
+          } else {
+            opt.classList.remove("selected");
+          }
+        }
+      });
+    }
+
+    function openThemeModal() {
+      const modal = document.getElementById("theme-modal");
+      if (modal) {
+        modal.classList.add("open");
+        applyQuranTheme(currentQuranTheme);
+      }
+    }
+
+    function closeThemeModal() {
+      const modal = document.getElementById("theme-modal");
+      if (modal) {
+        modal.classList.remove("open");
+      }
     }
 
     function selectReciter(index) {
@@ -4078,6 +4458,7 @@
     renderAdkarList();
     renderHistoryList();
     updateLastReadUI();
+    initQuranTheme();
 
     // Show local server recommendation if opened directly via file://
     if (window.location.protocol === "file:") {

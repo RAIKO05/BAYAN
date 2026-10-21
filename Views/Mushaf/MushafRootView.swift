@@ -8,8 +8,15 @@ struct MushafRootView: View {
     @State private var searchQuery = ""
     @State private var selectedFilter: FilterCategory = .all
     @State private var showingReciterPicker = false
+    @State private var showingThemeSheet = false
     @State private var navigateToSurah: Surah?
     @State private var navigateToAyah: Int = 1
+
+    @AppStorage("bayan_quran_theme") private var savedThemeRaw: String = QuranTheme.paper.rawValue
+
+    private var currentTheme: QuranTheme {
+        QuranTheme(rawValue: savedThemeRaw) ?? .paper
+    }
 
     enum FilterCategory: String, CaseIterable {
         case all = "All"
@@ -51,6 +58,24 @@ struct MushafRootView: View {
             .sheet(isPresented: $showingReciterPicker) {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingThemeSheet) {
+                VStack(spacing: 20) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.3))
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 12)
+
+                    QuranThemeSelectorCard(selectedTheme: Binding(
+                        get: { currentTheme },
+                        set: { savedThemeRaw = $0.rawValue }
+                    ))
+                    .padding(.horizontal, 16)
+
+                    Spacer()
+                }
+                .background(currentTheme.backgroundColor.ignoresSafeArea())
+                .presentationDetents([.fraction(0.32), .medium])
             }
             .navigationDestination(item: $navigateToSurah) { surah in
                 SurahDetailView(surah: surah, initialAyah: navigateToAyah)
@@ -106,7 +131,21 @@ struct MushafRootView: View {
 
             Spacer()
 
-            qiraahTogglePill
+            HStack(spacing: 8) {
+                qiraahTogglePill
+
+                Button {
+                    showingThemeSheet = true
+                } label: {
+                    Image(systemName: "paintpalette.fill")
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(8)
+                        .background(Color.white.opacity(0.08))
+                        .foregroundColor(currentTheme.toolbarAccentColor)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 1))
+                }
+            }
         }
         .padding(.horizontal, 18)
         .padding(.top, 4)
