@@ -275,9 +275,41 @@ public struct QiblaView: View {
 
                                 Spacer()
 
-                                Text("Habous Morocco (أوقاف المغرب)")
-                                    .font(.system(size: 9))
-                                    .foregroundColor(.white.opacity(0.55))
+                                // Adhan Push Notification Toggle
+                                Button {
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    #endif
+                                    if AdhanNotificationService.shared.isNotificationsEnabled {
+                                        AdhanNotificationService.shared.cancelAll()
+                                    } else {
+                                        let prayers = calculatePrayerTimes(lat: activeLatitude, lng: activeLongitude)
+                                        AdhanNotificationService.shared.requestPermission { granted in
+                                            if granted {
+                                                AdhanNotificationService.shared.scheduleAdhanNotifications(prayerTimes: prayers)
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: AdhanNotificationService.shared.isNotificationsEnabled ? "bell.badge.fill" : "bell.slash")
+                                            .font(.system(size: 10, weight: .semibold))
+                                        Text(AdhanNotificationService.shared.isNotificationsEnabled ? "Adhan ON" : "Adhan OFF")
+                                            .font(.system(size: 9, weight: .bold))
+                                    }
+                                    .foregroundColor(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold : .white.opacity(0.45))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold.opacity(0.15) : Color.white.opacity(0.06))
+                                    )
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(AdhanNotificationService.shared.isNotificationsEnabled ? BayanTheme.gold.opacity(0.4) : Color.clear, lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
                             .padding(.horizontal)
 
@@ -437,34 +469,59 @@ public struct QiblaView: View {
         let maghribHour = (solarNoon + haSunset / 15.0 + 2.0 / 60.0).truncatingRemainder(dividingBy: 24.0)
         let ishaHour = (solarNoon + haIsha / 15.0).truncatingRemainder(dividingBy: 24.0)
 
-        func formatTime(hourVal: Double) -> String {
+        func prayerComponents(hourVal: Double) -> (String, Int, Int) {
             let positive = (hourVal + 24.0).truncatingRemainder(dividingBy: 24.0)
             let h = Int(positive)
             let m = Int((positive - Double(h)) * 60.0)
-            return String(format: "%02d:%02d", h, m)
+            return (String(format: "%02d:%02d", h, m), h, m)
         }
 
         let currentDecimalHour = Double(calendar.component(.hour, from: now)) + Double(calendar.component(.minute, from: now)) / 60.0
 
+        let fajr = prayerComponents(hourVal: fajrHour)
+        let dhuhr = prayerComponents(hourVal: dhuhrHour)
+        let asr = prayerComponents(hourVal: asrHour)
+        let maghrib = prayerComponents(hourVal: maghribHour)
+        let isha = prayerComponents(hourVal: ishaHour)
+
         let times = [
-            ("الفجر", "Fajr", formatTime(hourVal: fajrHour), (fajrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.horizon.fill"),
-            ("الظهر", "Dhuhr", formatTime(hourVal: dhuhrHour), (dhuhrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.max.fill"),
-            ("العصر", "Asr", formatTime(hourVal: asrHour), (asrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.haze.fill"),
-            ("المغرب", "Maghrib", formatTime(hourVal: maghribHour), (maghribHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sunset.fill"),
-            ("العشاء", "Isha", formatTime(hourVal: ishaHour), (ishaHour + 24.0).truncatingRemainder(dividingBy: 24.0), "moon.stars.fill")
+            ("fajr", "الفجر", "Fajr", fajr.0, fajr.1, fajr.2, (fajrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.horizon.fill"),
+            ("dhuhr", "الظهر", "Dhuhr", dhuhr.0, dhuhr.1, dhuhr.2, (dhuhrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.max.fill"),
+            ("asr", "العصر", "Asr", asr.0, asr.1, asr.2, (asrHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sun.haze.fill"),
+            ("maghrib", "المغرب", "Maghrib", maghrib.0, maghrib.1, maghrib.2, (maghribHour + 24.0).truncatingRemainder(dividingBy: 24.0), "sunset.fill"),
+            ("isha", "العشاء", "Isha", isha.0, isha.1, isha.2, (ishaHour + 24.0).truncatingRemainder(dividingBy: 24.0), "moon.stars.fill")
         ]
 
         var nextFound = false
         var result: [PrayerTimeItem] = []
 
         for item in times {
-            let isNext = !nextFound && item.3 > currentDecimalHour
+            let isNext = !nextFound && item.6 > currentDecimalHour
             if isNext { nextFound = true }
-            result.append(PrayerTimeItem(nameArabic: item.0, nameEnglish: item.1, timeString: item.2, icon: item.4, isNext: isNext))
+            result.append(PrayerTimeItem(
+                id: item.0,
+                nameArabic: item.1,
+                nameEnglish: item.2,
+                timeString: item.3,
+                hour: item.4,
+                minute: item.5,
+                icon: item.7,
+                isNext: isNext
+            ))
         }
 
         if !nextFound && !result.isEmpty {
-            result[0] = PrayerTimeItem(nameArabic: result[0].nameArabic, nameEnglish: result[0].nameEnglish, timeString: result[0].timeString, icon: result[0].icon, isNext: true)
+            let first = result[0]
+            result[0] = PrayerTimeItem(
+                id: first.id,
+                nameArabic: first.nameArabic,
+                nameEnglish: first.nameEnglish,
+                timeString: first.timeString,
+                hour: first.hour,
+                minute: first.minute,
+                icon: first.icon,
+                isNext: true
+            )
         }
 
         return result
@@ -482,16 +539,6 @@ struct CompassArrowShape: Shape {
         path.closeSubpath()
         return path
     }
-}
-
-// MARK: - Task 6: Prayer Time Models & Card
-public struct PrayerTimeItem: Identifiable {
-    public let id = UUID()
-    public let nameArabic: String
-    public let nameEnglish: String
-    public let timeString: String
-    public let icon: String
-    public let isNext: Bool
 }
 
 private struct PrayerTimeCard: View {

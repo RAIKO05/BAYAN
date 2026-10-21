@@ -76,7 +76,38 @@ struct RecognitionResultSheet: View {
                     // Arabic Text Box
                     VStack(alignment: .trailing, spacing: 14) {
                         HStack {
+                            // Bookmark Favorite Toggle
+                            Button {
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                #endif
+                                BookmarkService.shared.toggleBookmark(
+                                    surahId: result.surah.id,
+                                    ayahNumber: result.startAyah,
+                                    surahNameArabic: result.surah.nameArabic,
+                                    surahNameEnglish: result.surah.nameEnglish,
+                                    arabicText: result.arabicSnippet,
+                                    translationText: result.translationSnippet
+                                )
+                            } label: {
+                                let isBookmarked = BookmarkService.shared.isBookmarked(surahId: result.surah.id, ayahNumber: result.startAyah)
+                                HStack(spacing: 5) {
+                                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(isBookmarked ? BayanTheme.gold : .white.opacity(0.6))
+                                    Text(isBookmarked ? "Saved" : "Save Ayah")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(isBookmarked ? BayanTheme.goldSoft : .white.opacity(0.7))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Capsule().fill(isBookmarked ? BayanTheme.gold.opacity(0.18) : Color.white.opacity(0.08)))
+                                .overlay(Capsule().stroke(isBookmarked ? BayanTheme.gold.opacity(0.4) : Color.clear, lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+
                             Spacer()
+
                             Label("النص القرآني", systemImage: "text.book.closed.fill")
                                 .font(.caption.weight(.bold))
                                 .foregroundColor(BayanTheme.gold)

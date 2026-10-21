@@ -134,6 +134,26 @@ private struct AyahRow: View {
                         .foregroundColor(isActive ? BayanTheme.gold : .white.opacity(0.6))
                 }
 
+                Button {
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                    BookmarkService.shared.toggleBookmark(
+                        surahId: surah.id,
+                        ayahNumber: ayahNumber,
+                        surahNameArabic: surah.nameArabic,
+                        surahNameEnglish: surah.nameEnglish,
+                        arabicText: sampleArabicAyah(ayahNumber: ayahNumber),
+                        translationText: sampleEnglishAyah(ayahNumber: ayahNumber)
+                    )
+                } label: {
+                    let isBookmarked = BookmarkService.shared.isBookmarked(surahId: surah.id, ayahNumber: ayahNumber)
+                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 16))
+                        .foregroundColor(isBookmarked ? BayanTheme.gold : .white.opacity(0.4))
+                }
+                .padding(.leading, 6)
+
                 Spacer()
 
                 // Ayah Medallion
