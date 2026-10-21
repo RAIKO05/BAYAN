@@ -72,6 +72,7 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **New Official App Icon (Imperial Emerald Calligraphy)**: 3D sculpted solid gold Arabic calligraphy monogram of "بيان" (Bayan) with minaret finial on rich imperial Damascus emerald green.
             - **iCloud Sync & Cloud Backup**: Seamless automatic cross-device sync of Khatmah goals, reading position, Ayah bookmarks, daily prayer tracker history, and preferences across iPhone, iPad, and Mac via Apple CloudKit (`NSUbiquitousKeyValueStore`).
             - **Lock Screen & Home Screen Prayer Widgets**: Live next-prayer countdown and daily timeline widgets across Lock Screen (`accessoryRectangular`, `accessoryCircular`, `accessoryInline`) and Home Screen (`systemSmall`, `systemMedium`).
             - **Lock Screen Media Controls & Dynamic Island**: Background audio recitation with dynamic golden artwork, Surah title, Ayah number, reciter, scrubbing timeline, next/prev Ayah skipping, and play/pause from Lock Screen and Control Center.
