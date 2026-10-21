@@ -12,6 +12,7 @@ public struct AudioMiniPlayerView: View {
     @State private var playerService = AudioPlayerService.shared
     @State private var bookmarkService = BookmarkService.shared
     @State private var showingReciterSheet = false
+    @State private var showingNowPlayingSheet = false
     var onTapExpand: () -> Void
 
     public init(onTapExpand: @escaping () -> Void = {}) {
@@ -39,7 +40,10 @@ public struct AudioMiniPlayerView: View {
                 // Main Capsule Card
                 HStack(spacing: 12) {
                     // MARK: - Left: Cover Artwork Thumbnail
-                    Button(action: onTapExpand) {
+                    Button {
+                        showingNowPlayingSheet = true
+                        onTapExpand()
+                    } label: {
                         ZStack {
                             // Rounded Square Artwork Frame
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -73,7 +77,10 @@ public struct AudioMiniPlayerView: View {
                     .buttonStyle(.plain)
 
                     // MARK: - Middle: Title & Connected Reciter/Device Text
-                    Button(action: onTapExpand) {
+                    Button {
+                        showingNowPlayingSheet = true
+                        onTapExpand()
+                    } label: {
                         VStack(alignment: .leading, spacing: 3) {
                             // Line 1: Song / Surah Title
                             Text("Surah \(surah.nameEnglish) • Ayah \(playerService.currentAyah)")
@@ -193,6 +200,10 @@ public struct AudioMiniPlayerView: View {
             .sheet(isPresented: $showingReciterSheet) {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingNowPlayingSheet) {
+                BayanNowPlayingSheet()
+                    .presentationDragIndicator(.visible)
             }
             .transition(.asymmetric(
                 insertion: .move(edge: .bottom).combined(with: .opacity),
