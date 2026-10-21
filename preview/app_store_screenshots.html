@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayan (البيان) — Official App Store Screenshots Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --emerald-deep: #03140c;
+            --emerald-surface: #062316;
+            --emerald-card: rgba(10, 38, 26, 0.7);
+            --gold-primary: #D4AF37;
+            --gold-soft: #F3E5AB;
+            --gold-gradient: linear-gradient(135deg, #FFE082 0%, #D4AF37 50%, #AA7C11 100%);
+            --titanium-bezel: #1b1e22;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #020905 radial-gradient(circle at 50% 10%, #082518 0%, #020905 100%);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .header-section {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 50px auto;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 999px;
+            margin-bottom: 20px;
+        }
+
+        .brand-badge img {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .brand-badge span {
+            color: var(--gold-soft);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* Screenshot Deck Container */
+        .screenshots-track {
+            display: flex;
+            gap: 32px;
+            overflow-x: auto;
+            padding: 20px 20px 60px 20px;
+            scroll-snap-type: x mandatory;
+            justify-content: flex-start;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .screenshots-track::-webkit-scrollbar {
+            height: 8px;
+        }
+        .screenshots-track::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+        }
+
+        /* Single App Store Slide (1290 x 2796 Aspect Ratio ~ 1:2.167) */
+        .app-store-slide {
+            flex: 0 0 380px;
+            height: 780px;
+            background: radial-gradient(circle at 50% 0%, #0d3824 0%, #03140c 55%, #010805 100%);
+            border-radius: 44px;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(212, 175, 55, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 38px 24px 0 24px;
+            position: relative;
+            overflow: hidden;
+            scroll-snap-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .app-store-slide:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        /* Decorative Background Aura */
+        .slide-glow {
+            position: absolute;
+            top: -60px;
+            width: 280px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Slide Typography */
+        .slide-header {
+            text-align: center;
+            margin-bottom: 24px;
+            z-index: 2;
+        }
+
+        .slide-tag {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 6px;
+        }
+
+        .slide-title {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .slide-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.45;
+            padding: 0 10px;
+        }
+
+        /* iPhone 16 Pro Device Mockup Frame */
+        .iphone-frame {
+            width: 320px;
+            height: 600px;
+            background: #000000;
+            border-radius: 48px 48px 0 0;
+            border: 4px solid var(--titanium-bezel);
+            border-bottom: none;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8), inset 0 0 0 2px rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dynamic Island */
+        .dynamic-island {
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95px;
+            height: 26px;
+            background: #000000;
+            border-radius: 18px;
+            z-index: 10;
+        }
+
+        /* Phone Screen Content Mockup */
+        .phone-screen {
+            flex: 1;
+            padding-top: 48px;
+            padding-left: 16px;
+            padding-right: 16px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #071f14 0%, #020b07 100%);
+            font-size: 12px;
+        }
+
+        /* Slide 1 - Identify Elements */
+        .radar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .radar-orb {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #D4AF37 0%, #166240 60%, #03180e 100%);
+            box-shadow: 0 0 45px rgba(212, 175, 55, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .radar-orb-ring {
+            position: absolute;
+            border: 1.5px solid rgba(212, 175, 55, 0.4);
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite ease-out;
+        }
+
+        .radar-orb svg {
+            width: 48px;
+            height: 48px;
+            fill: #ffffff;
+        }
+
+        .match-card {
+            margin-top: 36px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 20px;
+            padding: 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        .match-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold-soft);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .arabic-surah {
+            font-family: 'Amiri Quran', serif;
+            font-size: 26px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .reciter-name {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Slide 2 - Mushaf Reader */
+        .mushaf-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 15px;
+            text-align: right;
+            direction: rtl;
+        }
+
+        .mushaf-header {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold-soft);
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            margin-bottom: 12px;
+        }
+
+        .mushaf-text {
+            font-family: 'Amiri Quran', serif;
+            font-size: 20px;
+            line-height: 2.1;
+            color: #ffffff;
+        }
+
+        .ayah-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border: 1px solid var(--gold-primary);
+            border-radius: 50%;
+            font-size: 11px;
+            color: var(--gold-primary);
+            margin: 0 4px;
+        }
+
+        /* Slide 3 - Prayer Times */
+        .next-prayer-hero {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(6, 35, 22, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .next-prayer-countdown {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            font-variant-numeric: tabular-nums;
+            margin: 6px 0;
+        }
+
+        .prayer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            margin-top: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .prayer-row.active {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.12);
+        }
+
+        /* Slide 4 - 3D Qibla */
+        .compass-dial {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px dashed rgba(212, 175, 55, 0.4);
+            margin: 30px auto 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 30px rgba(212, 175, 55, 0.15);
+        }
+
+        .needle {
+            width: 6px;
+            height: 160px;
+            background: linear-gradient(to bottom, #D4AF37 50%, rgba(255, 255, 255, 0.3) 50%);
+            border-radius: 4px;
+            transform: rotate(102deg);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+        }
+
+        .kaaba-icon {
+            position: absolute;
+            top: 14px;
+            right: 48px;
+            background: var(--gold-primary);
+            color: #000;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 6px;
+            border-radius: 6px;
+        }
+
+        /* Slide 5 - Siri Shortcuts */
+        .siri-bubble {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .siri-prompt {
+            color: var(--gold-soft);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .siri-response {
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        /* Bottom Floating Bar */
+        .footer-cta {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: var(--gold-gradient);
+            color: #03140c;
+            font-weight: 800;
+            font-size: 15px;
+            border-radius: 999px;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
+            transition: transform 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.04);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <div class="brand-badge">
+            <img src="app_icon.png" alt="Bayan App Icon">
+            <span>Official App Store Visual Assets • Bayan v1.1</span>
+        </div>
+        <h1>App Store Marketing Showcase</h1>
+        <p class="subtitle">Designed for Apple App Store 6.7" iPhone Displays (iPhone 16 Pro Max / 15 Pro Max) in luxury Imperial Emerald & 24K Gold.</p>
+    </div>
+
+    <div class="screenshots-track">
+
+        <!-- SLIDE 1 -->
+        <div class="app-store-slide">
+            <div class="slide-glow"></div>
+            <div class="slide-header">
+                <div class="slide-tag">Audio Recognition</div>
+                <div class="slide-title">Instant Quran Identifier</div>
+                <div class="slide-desc">Identify any recited Surah, Ayah range & Qari in seconds.</div>
+            </div>
+
+            <div class="iphone-frame">
+                <div class="dynamic-island"></div>
+                <div class="phone-screen">
+                    <div style="text-align: center; margin-top: 10px;">
+                        <span style="font-family: 'Amiri Quran'; font-size: 22px; color: var(--gold-soft);">بَيَان</span>
+                        <div style="font-size: 9px; letter-spacing: 2px; color: var(--gold-primary); font-weight: 700;">QURAN RECOGNIZER</div>
+                    </div>
+
+                    <div class="radar-container">
+                        <div class="radar-orb">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="match-card">
+                        <div class="match-badge">
+                            <span>✓ 98% RECOGNITION MATCH</span>
+                        </div>
+                        <div class="arabic-surah">سورة الرحمن</div>
+                        <div style="font-weight: 700; color: #fff; font-size: 13px;">Surah Ar-Rahman • Ayah 1–4</div>
+                        <div class="reciter-name">Mishary Rashid Alafasy • حفص عن عاصم</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="app-store-slide">
+            <div class="slide-glow"></div>
+            <div class="slide-header">
+                <div class="slide-tag">Holy Quran</div>
+                <div class="slide-title">Authentic Mushaf & Tafsir</div>
+                <div class="slide-desc">Full Hafs & Warsh with synchronized audio and word highlighting.</div>
+            </div>
+
+            <div class="iphone-frame">
+                <div class="dynamic-island"></div>
+                <div class="phone-screen">
+                    <div class="mushaf-card">
+                        <div class="mushaf-header">سورة الكهف • Surah Al-Kahf</div>
+                        <div class="mushaf-text">
+                            ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَاۜ <span class="ayah-num">١</span> قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ ٱلْمُؤْمِنِينَ <span class="ayah-num">٢</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px; padding: 12px; background: rgba(212, 175, 55, 0.1); border-radius: 14px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                        <div style="font-size: 10px; font-weight: 700; color: var(--gold-soft);">TAFSIR IBN KATHIR</div>
+                        <div style="font-size: 11px; color: #fff; margin-top: 4px;">Praise be to Allah, who sent down upon His Servant the Book...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="app-store-slide">
+            <div class="slide-glow"></div>
+            <div class="slide-header">
+                <div class="slide-tag">Precision Timing</div>
+                <div class="slide-title">Astronomical Prayers</div>
+                <div class="slide-desc">All world conventions, Asr juristic schools & 15m pre-Adhan alerts.</div>
+            </div>
+
+            <div class="iphone-frame">
+                <div class="dynamic-island"></div>
+                <div class="phone-screen">
+                    <div class="next-prayer-hero">
+                        <div style="font-size: 10px; font-weight: 700; color: var(--gold-soft); letter-spacing: 1px;">NEXT PRAYER IN CASABLANCA</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #fff;">Asr • صلاة العصر</div>
+                        <div class="next-prayer-countdown">01:42:18</div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.7);">Time: 03:45 PM • 15m Alert Active</div>
+                    </div>
+
+                    <div class="prayer-row"><span>Fajr (الفجر)</span><span style="font-weight:700;">05:18 AM</span></div>
+                    <div class="prayer-row"><span>Dhuhr (الظهر)</span><span style="font-weight:700;">12:32 PM</span></div>
+                    <div class="prayer-row active"><span style="color:var(--gold-soft); font-weight:700;">Asr (العصر)</span><span style="color:var(--gold-primary); font-weight:800;">03:45 PM</span></div>
+                    <div class="prayer-row"><span>Maghrib (المغرب)</span><span style="font-weight:700;">06:48 PM</span></div>
+                    <div class="prayer-row"><span>Isha (العشاء)</span><span style="font-weight:700;">08:08 PM</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4 -->
+        <div class="app-store-slide">
+            <div class="slide-glow"></div>
+            <div class="slide-header">
+                <div class="slide-tag">Qibla Direction</div>
+                <div class="slide-title">Real-Time 3D Compass</div>
+                <div class="slide-desc">Direct bearing to Holy Kaaba with smooth motion and haptic lock.</div>
+            </div>
+
+            <div class="iphone-frame">
+                <div class="dynamic-island"></div>
+                <div class="phone-screen">
+                    <div style="text-align: center; margin-top: 10px;">
+                        <div style="font-size: 28px; font-weight: 800; color: var(--gold-soft);">102° ESE</div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Casablanca to Makkah (4,820 km)</div>
+                    </div>
+
+                    <div class="compass-dial">
+                        <div class="kaaba-icon">KAABA</div>
+                        <div class="needle"></div>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: center; padding: 10px; background: rgba(212, 175, 55, 0.12); border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--gold-soft);">✓ ALIGNED WITH HOLY KAABA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5 -->
+        <div class="app-store-slide">
+            <div class="slide-glow"></div>
+            <div class="slide-header">
+                <div class="slide-tag">Siri & iCloud</div>
+                <div class="slide-title">Hands-Free Siri Voice</div>
+                <div class="slide-desc">"Hey Siri, when is Maghrib?" & seamless cross-device cloud sync.</div>
+            </div>
+
+            <div class="iphone-frame">
+                <div class="dynamic-island"></div>
+                <div class="phone-screen">
+                    <div class="siri-bubble">
+                        <div class="siri-prompt">🗣️ "When is Maghrib with Bayan?"</div>
+                        <div class="siri-response">"Maghrib prayer is at 06:48 PM in Casablanca (in 2 hours and 14 minutes)."</div>
+                    </div>
+
+                    <div class="siri-bubble">
+                        <div class="siri-prompt">🗣️ "Identify Quran with Bayan"</div>
+                        <div class="siri-response">"Listening to recitation... Matched Surah Ar-Rahman by Mishary Alafasy."</div>
+                    </div>
+
+                    <div style="margin-top: 18px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 14px;">☁️</span>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #fff;">iCloud Sync Enabled</div>
+                                <div style="font-size: 10px; color: rgba(255, 255, 255, 0.6);">Khatmah, Bookmarks & Daily Tracker</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer-cta">
+        <a href="index.html" class="cta-button">
+            <span>Explore Live Interactive App Preview</span>
+            <span>→</span>
+        </a>
+    </div>
+
+</body>
+</html>
