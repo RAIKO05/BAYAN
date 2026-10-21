@@ -52,6 +52,10 @@ public final class AudioPlayerService: NSObject {
     private var timeObserverToken: Any?
     private var statusObservation: NSKeyValueObservation?
 
+    // Gapless Verse Pre-buffering
+    private var preloadedPlayerItem: AVPlayerItem?
+    private var preloadedTarget: (surahId: Int, ayah: Int, reciterId: String)?
+
     public override init() {
         super.init()
         let savedQariId = QuranSyncManager.shared.lastQariId
@@ -100,7 +104,18 @@ public final class AudioPlayerService: NSObject {
 
         player?.pause()
 
-        let playerItem = AVPlayerItem(url: url)
+        let playerItem: AVPlayerItem
+        if let preloaded = preloadedPlayerItem,
+           let target = preloadedTarget,
+           target.surahId == surah.id && target.ayah == ayah && target.reciterId == activeReciter.id {
+            playerItem = preloaded
+            preloadedPlayerItem = nil
+            preloadedTarget = nil
+        } else {
+            playerItem = AVPlayerItem(url: url)
+        }
+        playerItem.preferredForwardBufferDuration = 10.0
+
         let newPlayer = AVPlayer(playerItem: playerItem)
         newPlayer.automaticallyWaitsToMinimizeStalling = true
         newPlayer.volume = 1.0
@@ -147,6 +162,31 @@ public final class AudioPlayerService: NSObject {
         )
 
         updateNowPlayingInfo()
+
+        // Asynchronously preload next Ayah in background for seamless gapless playback
+        preloadNextAyahAsync(surah: surah, nextAyah: ayah + 1, reciter: activeReciter)
+    }
+
+    private func preloadNextAyahAsync(surah: Surah, nextAyah: Int, reciter: Reciter) {
+        guard nextAyah <= surah.totalAyahs else {
+            preloadedPlayerItem = nil
+            preloadedTarget = nil
+            return
+        }
+
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self = self else { return }
+            let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: nextAyah)
+            guard let nextUrl = localUrl ?? reciter.audioUrl(surah: surah.id, ayah: nextAyah) else { return }
+
+            let item = AVPlayerItem(url: nextUrl)
+            item.preferredForwardBufferDuration = 10.0
+
+            DispatchQueue.main.async {
+                self.preloadedPlayerItem = item
+                self.preloadedTarget = (surah.id, nextAyah, reciter.id)
+            }
+        }
     }
 
     private func setupTimeObserver() {

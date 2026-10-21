@@ -273,11 +273,9 @@ public final class PrayerCalculationService: Sendable {
             ))
         }
 
-        // Dates
+        // Dates (Using static cached formatters for zero-allocation performance)
         let gregorianString: String
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "d MMMM"
-        let dayMonth = dayFormatter.string(from: date)
+        let dayMonth = Self.dayMonthFormatter.string(from: date)
 
         if calendar.isDateInToday(date) {
             gregorianString = "Today, \(dayMonth)"
@@ -286,17 +284,11 @@ public final class PrayerCalculationService: Sendable {
         } else if calendar.isDateInYesterday(date) {
             gregorianString = "Yesterday, \(dayMonth)"
         } else {
-            let fullFormatter = DateFormatter()
-            fullFormatter.dateFormat = "EEEE, d MMMM"
-            gregorianString = fullFormatter.string(from: date)
+            gregorianString = Self.fullDayFormatter.string(from: date)
         }
 
         // Hijri date
-        let hijriFormatter = DateFormatter()
-        hijriFormatter.calendar = Calendar(identifier: .islamicUmmAlQura)
-        hijriFormatter.dateFormat = "d MMMM yyyy 'AH'"
-        hijriFormatter.locale = Locale(identifier: "en_US")
-        let hijriString = hijriFormatter.string(from: date)
+        let hijriString = Self.hijriFormatter.string(from: date)
 
         return PrayerTimesDayResult(
             date: date,
@@ -308,4 +300,25 @@ public final class PrayerCalculationService: Sendable {
             countdownSubtitle: countdownSubtitle
         )
     }
+
+    // MARK: - Cached Reusable Formatters
+    private static let dayMonthFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMMM"
+        return f
+    }()
+
+    private static let fullDayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, d MMMM"
+        return f
+    }()
+
+    private static let hijriFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .islamicUmmAlQura)
+        f.dateFormat = "d MMMM yyyy 'AH'"
+        f.locale = Locale(identifier: "en_US")
+        return f
+    }()
 }
