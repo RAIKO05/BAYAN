@@ -78,6 +78,13 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Recitation Speed with Natural Pitch Preservation**: Fine-tune recitation tempo across 0.75x, 1.0x, 1.25x, and 1.5x with .timeDomain pitch algorithm preserving the authentic voice tone of world-renowned Qura'a without distortion.
+            - **Bedtime Sleep Timer with Gentle Auto-Fade**: Fall asleep peacefully listening to the Quran with configurable 15m, 30m, 45m, 60m, End of Current Ayah, or End of Current Surah timers featuring a gentle 2-second volume fade-out.
+            - **Dual Audio Mode (Arabic Recitation + English Voiceover)**: Seamlessly listen to the Arabic verse recitation followed immediately by dignified English translation audio (AVSpeechSynthesizer) before advancing to the next Ayah.
+            - **Ayah of the Day Widgets**: Daily inspirational Quran verses in Arabic and English across Small, Medium, Large Home Screen and Lock Screen Rectangular widgets, with 1-tap deep link to jump into the Mushaf.
+            - **Quick Quran Identify Widgets**: 1-tap audio recognition launcher widget on Home Screen and Lock Screen (ccessoryCircular and ccessoryInline) to instantly identify any recitation.
+            - **Spotify-Style Full-Screen Player with Synchronized Quran Lyrics**: Real-time synchronized verse scrolling, highlighted active Ayah, tap-to-recite jump navigation, full cover art flip, and smooth scrubber.
+            - **WhatsApp Floating Capsule Navigation Bar**: Frosted glass floating capsule with sliding selection pill and badge indicators.
             - **Hisn al-Muslim (حصن المسلم - Fortress of the Muslim)**: Complete authentic daily Adhkar & Duas (Morning, Evening, Sleep, Waking, After Prayer, Quranic Duas, Protection) with interactive circular counter dial, haptics, and Hadith virtues.
             - **Offline Quran Audio Downloader**: Download full Surahs or Ayahs for 100% offline recitation without cellular or Wi-Fi data usage, complete with storage manager.
             - **Color-Coded Tajweed Rules Mushaf**: Authentic Tajweed coloring (Ghunnah, Qalqalah, Idgham, Ikhfa, Iqlab, Madd) with interactive Tajweed rules guide sheet.

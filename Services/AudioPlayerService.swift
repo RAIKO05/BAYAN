@@ -48,6 +48,61 @@ public final class AudioPlayerService: NSObject {
     public var repeatMode: RepeatMode = .off
     public var remainingAyahRepeats: Int = 0
 
+    // MARK: - Recitation Speed & Pitch Preservation
+    public var playbackRate: Float = 1.0
+
+    // MARK: - Bedtime Sleep Timer
+    public enum SleepTimerOption: Equatable, CaseIterable {
+        case off
+        case minutes15
+        case minutes30
+        case minutes45
+        case minutes60
+        case endOfAyah
+        case endOfSurah
+
+        public var title: String {
+            switch self {
+            case .off: return "Off"
+            case .minutes15: return "15 Minutes"
+            case .minutes30: return "30 Minutes"
+            case .minutes45: return "45 Minutes"
+            case .minutes60: return "60 Minutes"
+            case .endOfAyah: return "End of Current Ayah"
+            case .endOfSurah: return "End of Current Surah"
+            }
+        }
+
+        public var iconName: String {
+            switch self {
+            case .off: return "moon.zzz"
+            case .minutes15, .minutes30, .minutes45, .minutes60: return "timer"
+            case .endOfAyah: return "stop.circle"
+            case .endOfSurah: return "book.closed"
+            }
+        }
+
+        public var durationSeconds: Int? {
+            switch self {
+            case .minutes15: return 15 * 60
+            case .minutes30: return 30 * 60
+            case .minutes45: return 45 * 60
+            case .minutes60: return 60 * 60
+            default: return nil
+            }
+        }
+    }
+
+    public var sleepTimerOption: SleepTimerOption = .off
+    public var sleepTimerRemainingSeconds: Int = 0
+    @ObservationIgnored private var sleepTimerTask: Task<Void, Never>?
+
+    // MARK: - Dual Audio Mode (Arabic Recitation + English Translation Voiceover)
+    public var isDualAudioEnabled: Bool = false
+    public var isSpeakingTranslation: Bool = false
+    @ObservationIgnored private var speechSynthesizer: AVSpeechSynthesizer?
+    @ObservationIgnored private var speechWatchdogTask: Task<Void, Never>?
+
     private var player: AVPlayer?
     private var timeObserverToken: Any?
     private var statusObservation: NSKeyValueObservation?
@@ -63,6 +118,12 @@ public final class AudioPlayerService: NSObject {
         if let saved = Reciter.standardCatalog.first(where: { $0.id == savedQariId }) {
             self.currentReciter = saved
         }
+        let savedRate = UserDefaults.standard.float(forKey: "bayan_audio_playback_rate")
+        if savedRate >= 0.5 && savedRate <= 2.5 {
+            self.playbackRate = savedRate
+        }
+        self.isDualAudioEnabled = UserDefaults.standard.bool(forKey: "bayan_dual_audio_enabled")
+
         configureAudioSessionForPlayback()
         setupRemoteCommandCenter()
         setupAudioSessionNotifications()
@@ -104,6 +165,13 @@ public final class AudioPlayerService: NSObject {
         statusObservation?.invalidate()
         statusObservation = nil
 
+        speechWatchdogTask?.cancel()
+        speechWatchdogTask = nil
+        if speechSynthesizer?.isSpeaking == true {
+            speechSynthesizer?.stopSpeaking(at: .immediate)
+        }
+        isSpeakingTranslation = false
+
         player?.pause()
 
         let playerItem: AVPlayerItem
@@ -117,6 +185,7 @@ public final class AudioPlayerService: NSObject {
             playerItem = AVPlayerItem(url: url)
         }
         playerItem.preferredForwardBufferDuration = 10.0
+        playerItem.audioTimePitchAlgorithm = .timeDomain
 
         let newPlayer = AVPlayer(playerItem: playerItem)
         newPlayer.automaticallyWaitsToMinimizeStalling = true
@@ -149,6 +218,9 @@ public final class AudioPlayerService: NSObject {
         )
 
         newPlayer.play()
+        if playbackRate != 1.0 {
+            newPlayer.rate = playbackRate
+        }
         self.isPlaying = true
 
         if case .repeatAyah(let count) = repeatMode {
@@ -183,6 +255,7 @@ public final class AudioPlayerService: NSObject {
 
             let item = AVPlayerItem(url: nextUrl)
             item.preferredForwardBufferDuration = 10.0
+            item.audioTimePitchAlgorithm = .timeDomain
 
             DispatchQueue.main.async {
                 self.preloadedPlayerItem = item
@@ -247,12 +320,47 @@ public final class AudioPlayerService: NSObject {
     @objc private func playerItemDidFinishPlaying() {
         guard let surah = currentSurah else { return }
 
+        // 1. Bedtime Sleep Timer: End of Current Ayah
+        if sleepTimerOption == .endOfAyah {
+            Task { @MainActor [weak self] in
+                await self?.fadeVolumeAndPause()
+            }
+            return
+        }
+
+        // 2. Dual Audio Mode: Speak English Translation Before Advancing
+        if isDualAudioEnabled {
+            let translation = QuranVerseText.translation(surahId: surah.id, ayahNumber: currentAyah)
+            let clean = translation.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !clean.isEmpty {
+                speakTranslation(clean) { [weak self] in
+                    guard let self = self, let activeSurah = self.currentSurah else { return }
+                    self.advanceAfterCurrentAyah(surah: activeSurah)
+                }
+                return
+            }
+        }
+
+        // 3. Normal Sequential Progression or Repeat Mode
+        advanceAfterCurrentAyah(surah: surah)
+    }
+
+    public func advanceAfterCurrentAyah(surah: Surah) {
+        // Bedtime Sleep Timer: End of Surah Check
+        if sleepTimerOption == .endOfSurah && currentAyah >= surah.totalAyahs {
+            Task { @MainActor [weak self] in
+                await self?.fadeVolumeAndPause()
+            }
+            return
+        }
+
         switch repeatMode {
         case .repeatAyah(let count):
             if count == Int.max {
                 // Continuous infinite loop of this single Ayah
                 seek(to: 0)
                 player?.play()
+                if playbackRate != 1.0 { player?.rate = playbackRate }
                 isPlaying = true
                 return
             }
@@ -262,6 +370,7 @@ public final class AudioPlayerService: NSObject {
                 remainingAyahRepeats -= 1
                 seek(to: 0)
                 player?.play()
+                if playbackRate != 1.0 { player?.rate = playbackRate }
                 isPlaying = true
                 return
             } else {
@@ -329,12 +438,21 @@ public final class AudioPlayerService: NSObject {
         } else {
             configureAudioSessionForPlayback()
             player?.play()
+            if playbackRate != 1.0 {
+                player?.rate = playbackRate
+            }
             isPlaying = true
             updateNowPlayingInfo()
         }
     }
 
     public func pause() {
+        speechWatchdogTask?.cancel()
+        speechWatchdogTask = nil
+        if speechSynthesizer?.isSpeaking == true {
+            speechSynthesizer?.stopSpeaking(at: .immediate)
+        }
+        isSpeakingTranslation = false
         player?.pause()
         isPlaying = false
         updateNowPlayingInfo()
@@ -344,11 +462,24 @@ public final class AudioPlayerService: NSObject {
         guard !isPlaying, player != nil else { return }
         configureAudioSessionForPlayback()
         player?.play()
+        if playbackRate != 1.0 {
+            player?.rate = playbackRate
+        }
         isPlaying = true
         updateNowPlayingInfo()
     }
 
     public func stop() {
+        speechWatchdogTask?.cancel()
+        speechWatchdogTask = nil
+        if speechSynthesizer?.isSpeaking == true {
+            speechSynthesizer?.stopSpeaking(at: .immediate)
+        }
+        isSpeakingTranslation = false
+        sleepTimerTask?.cancel()
+        sleepTimerTask = nil
+        sleepTimerOption = .off
+        sleepTimerRemainingSeconds = 0
         cleanupTimeObserver()
         statusObservation?.invalidate()
         statusObservation = nil
@@ -356,6 +487,110 @@ public final class AudioPlayerService: NSObject {
         isPlaying = false
         currentTime = 0.0
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+    }
+
+    // MARK: - Recitation Speed & Playback Rate Controls
+    public func setPlaybackRate(_ rate: Float) {
+        playbackRate = rate
+        UserDefaults.standard.set(rate, forKey: "bayan_audio_playback_rate")
+        if isPlaying {
+            player?.rate = rate
+        }
+        updateNowPlayingInfo()
+    }
+
+    public func cyclePlaybackRate() {
+        let rates: [Float] = [0.75, 1.0, 1.25, 1.5]
+        if let idx = rates.firstIndex(of: playbackRate) {
+            let nextIndex = (idx + 1) % rates.count
+            setPlaybackRate(rates[nextIndex])
+        } else {
+            setPlaybackRate(1.0)
+        }
+    }
+
+    // MARK: - Bedtime Sleep Timer Engine
+    public func setSleepTimer(_ option: SleepTimerOption) {
+        sleepTimerTask?.cancel()
+        sleepTimerTask = nil
+        sleepTimerOption = option
+
+        if let seconds = option.durationSeconds {
+            sleepTimerRemainingSeconds = seconds
+            sleepTimerTask = Task { @MainActor [weak self] in
+                while let self = self, self.sleepTimerRemainingSeconds > 0 {
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    self.sleepTimerRemainingSeconds -= 1
+                }
+                guard let self = self, !Task.isCancelled, self.sleepTimerRemainingSeconds == 0 else { return }
+                await self.fadeVolumeAndPause()
+            }
+        } else {
+            sleepTimerRemainingSeconds = 0
+        }
+    }
+
+    @MainActor
+    public func fadeVolumeAndPause() async {
+        guard let p = player, isPlaying else {
+            sleepTimerOption = .off
+            sleepTimerRemainingSeconds = 0
+            return
+        }
+        let originalVolume = p.volume
+        // Gentle 2-second volume fade out
+        for step in stride(from: 10, through: 0, by: -1) {
+            p.volume = (Float(step) / 10.0) * originalVolume
+            try? await Task.sleep(nanoseconds: 180_000_000)
+        }
+        pause()
+        p.volume = originalVolume
+        sleepTimerOption = .off
+        sleepTimerRemainingSeconds = 0
+    }
+
+    public var sleepTimerFormatted: String {
+        let mins = sleepTimerRemainingSeconds / 60
+        let secs = sleepTimerRemainingSeconds % 60
+        return String(format: "%02d:%02d", mins, secs)
+    }
+
+    // MARK: - Dual Audio Voiceover Synthesizer
+    public func toggleDualAudio() {
+        isDualAudioEnabled.toggle()
+        UserDefaults.standard.set(isDualAudioEnabled, forKey: "bayan_dual_audio_enabled")
+    }
+
+    private func speakTranslation(_ text: String, fallback: @escaping () -> Void) {
+        speechWatchdogTask?.cancel()
+        speechWatchdogTask = nil
+
+        if speechSynthesizer == nil {
+            let synth = AVSpeechSynthesizer()
+            synth.delegate = self
+            self.speechSynthesizer = synth
+        }
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US") ?? AVSpeechSynthesisVoice(language: "en-GB")
+        utterance.rate = 0.48 // Dignified, serene, easy-to-follow pace
+        utterance.pitchMultiplier = 1.0
+        utterance.volume = 1.0
+
+        isSpeakingTranslation = true
+        speechSynthesizer?.speak(utterance)
+
+        // Safety Watchdog: If AVSpeechSynthesizer fails to fire didFinish within reasonable time, advance anyway
+        let wordCount = text.split(separator: " ").count
+        let timeoutSeconds = max(4.0, Double(wordCount) * 0.45 + 3.0)
+        speechWatchdogTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(timeoutSeconds * 1_000_000_000))
+            guard let self = self, !Task.isCancelled, self.isSpeakingTranslation else { return }
+            print("⏱️ Translation speech watchdog advancing")
+            self.isSpeakingTranslation = false
+            fallback()
+        }
     }
 
     // MARK: - Lock Screen & Control Center Remote Command Center
@@ -427,8 +662,8 @@ public final class AudioPlayerService: NSObject {
             MPMediaItemPropertyAlbumTitle: "The Holy Qur'an • Bayan",
             MPNowPlayingInfoPropertyElapsedPlaybackTime: currentTime,
             MPMediaItemPropertyPlaybackDuration: duration > 0 ? duration : 1.0,
-            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
-            MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? Double(playbackRate) : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: Double(playbackRate)
         ]
 
         #if canImport(UIKit)
@@ -543,5 +778,27 @@ public final class AudioPlayerService: NSObject {
             self?.preloadedTarget = nil
         }
         #endif
+    }
+}
+
+// MARK: - AVSpeechSynthesizerDelegate Conformance (Dual Audio English Translation)
+extension AudioPlayerService: AVSpeechSynthesizerDelegate {
+    public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, self.isSpeakingTranslation else { return }
+            self.speechWatchdogTask?.cancel()
+            self.speechWatchdogTask = nil
+            self.isSpeakingTranslation = false
+            guard let surah = self.currentSurah else { return }
+            self.advanceAfterCurrentAyah(surah: surah)
+        }
+    }
+
+    public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        DispatchQueue.main.async { [weak self] in
+            self?.speechWatchdogTask?.cancel()
+            self?.speechWatchdogTask = nil
+            self?.isSpeakingTranslation = false
+        }
     }
 }

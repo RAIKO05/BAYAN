@@ -136,6 +136,18 @@ public struct MainTabView: View {
             }
         case "resume":
             selectedTab = .mushaf
+        case "surah", "ayah":
+            selectedTab = .mushaf
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            let surahIdStr = components?.queryItems?.first(where: { $0.name == "id" || $0.name == "surah" })?.value
+            let ayahIdStr = components?.queryItems?.first(where: { $0.name == "ayah" })?.value
+
+            if let sId = Int(surahIdStr ?? ""), let surah = QuranDataService.shared.surah(for: sId) {
+                let aId = Int(ayahIdStr ?? "") ?? 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    AudioPlayerService.shared.play(surah: surah, ayah: aId)
+                }
+            }
         case "prayer", "prayers", "qibla":
             selectedTab = .qibla
         case "adkar":

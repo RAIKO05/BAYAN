@@ -18,6 +18,7 @@ public struct BayanNowPlayingSheet: View {
     @State private var showingLyricsMode: Bool = true
     @State private var showingReciterSheet: Bool = false
     @State private var showingTafsirSheet: Bool = false
+    @State private var showingSleepTimerSheet: Bool = false
     @State private var isDraggingScrubber: Bool = false
     @State private var dragPosition: Double = 0.0
 
@@ -263,6 +264,90 @@ public struct BayanNowPlayingSheet: View {
                 .padding(.horizontal, 22)
                 .padding(.top, 8)
 
+                // MARK: - 4b. Secondary Audio Utilities (Speed, Dual Audio, Bedtime Sleep Timer)
+                HStack(spacing: 0) {
+                    // Recitation Speed Pill (0.75x, 1.0x, 1.25x, 1.5x)
+                    Button {
+                        playerService.cyclePlaybackRate()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "gauge.with.needle")
+                                .font(.system(size: 11, weight: .bold))
+                            Text(String(format: "%.2gx", playerService.playbackRate))
+                                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        }
+                        .foregroundColor(playerService.playbackRate != 1.0 ? spotifyGreen : .white.opacity(0.85))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(playerService.playbackRate != 1.0 ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    // Dual Audio Mode (Arabic Recitation + English Translation Voiceover)
+                    Button {
+                        playerService.toggleDualAudio()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "globe")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text("DUAL")
+                                .font(.system(size: 10, weight: .heavy))
+                            if playerService.isDualAudioEnabled {
+                                Circle()
+                                    .fill(playerService.isSpeakingTranslation ? Color.orange : spotifyGreen)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        .foregroundColor(playerService.isDualAudioEnabled ? spotifyGreen : .white.opacity(0.65))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(playerService.isDualAudioEnabled ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    // Bedtime Sleep Timer Button with Countdown
+                    Button {
+                        showingSleepTimerSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: playerService.sleepTimerOption != .off ? "moon.zzz.fill" : "moon.zzz")
+                                .font(.system(size: 11, weight: .semibold))
+                            if playerService.sleepTimerOption != .off {
+                                if playerService.sleepTimerRemainingSeconds > 0 {
+                                    Text(playerService.sleepTimerFormatted)
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                } else {
+                                    Text(playerService.sleepTimerOption == .endOfAyah ? "Ayah" : "Surah")
+                                        .font(.system(size: 11, weight: .bold))
+                                }
+                            } else {
+                                Text("Sleep")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                        }
+                        .foregroundColor(playerService.sleepTimerOption != .off ? spotifyGreen : .white.opacity(0.65))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(playerService.sleepTimerOption != .off ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
+
                 // MARK: - 5. Playback Controls Row
                 HStack(spacing: 0) {
                     // Repeat / Hifz Memorization Loop Toggle
@@ -406,6 +491,10 @@ public struct BayanNowPlayingSheet: View {
             AyahTafsirSheet(surah: currentSurah, ayahNumber: playerService.currentAyah)
                 .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: $showingSleepTimerSheet) {
+            SleepTimerPickerSheet()
+                .presentationDetents([.medium])
+        }
     }
 
     // MARK: - Synchronized Lyrics View (Quran Verses)
@@ -436,11 +525,27 @@ public struct BayanNowPlayingSheet: View {
 
                                 // Translation (shown when active or lightly dimmed)
                                 if !translation.isEmpty {
-                                    Text(translation)
-                                        .font(.system(size: isCurrent ? 14 : 12, weight: isCurrent ? .medium : .regular))
-                                        .foregroundColor(isCurrent ? Color(red: 0.95, green: 0.82, blue: 0.45) : Color.white.opacity(0.25))
-                                        .multilineTextAlignment(.leading)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text(translation)
+                                            .font(.system(size: isCurrent ? 14 : 12, weight: isCurrent ? .medium : .regular))
+                                            .foregroundColor(isCurrent ? Color(red: 0.95, green: 0.82, blue: 0.45) : Color.white.opacity(0.25))
+                                            .multilineTextAlignment(.leading)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                                        if isCurrent && playerService.isSpeakingTranslation {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "waveform")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                Text("Voiceover")
+                                                    .font(.system(size: 10, weight: .bold))
+                                            }
+                                            .foregroundColor(spotifyGreen)
+                                            .padding(.horizontal, 7)
+                                            .padding(.vertical, 3)
+                                            .background(spotifyGreen.opacity(0.18))
+                                            .clipShape(Capsule())
+                                        }
+                                    }
                                 }
                             }
                             .padding(.horizontal, 22)
@@ -546,5 +651,75 @@ public struct BayanNowPlayingSheet: View {
         let minutes = total / 60
         let secs = total % 60
         return String(format: "%d:%02d", minutes, secs)
+    }
+}
+
+// MARK: - Bedtime Sleep Timer Selection Sheet
+public struct SleepTimerPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var playerService = AudioPlayerService.shared
+
+    private let spotifyGreen = Color(red: 0.18, green: 0.85, blue: 0.50)
+
+    public init() {}
+
+    public var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(AudioPlayerService.SleepTimerOption.allCases, id: \.title) { option in
+                        Button {
+                            playerService.setSleepTimer(option)
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                            dismiss()
+                        } label: {
+                            HStack {
+                                Label {
+                                    Text(option.title)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white)
+                                } icon: {
+                                    Image(systemName: option.iconName)
+                                        .foregroundColor(playerService.sleepTimerOption == option ? spotifyGreen : Color.white.opacity(0.6))
+                                }
+
+                                Spacer()
+
+                                if playerService.sleepTimerOption == option {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(spotifyGreen)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                    }
+                } header: {
+                    Text("Select Duration")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.6))
+                } footer: {
+                    Text("Audio volume will gently fade out over 2 seconds before pausing playback when the timer completes.")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color.white.opacity(0.45))
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color(red: 0.08, green: 0.08, blue: 0.10).ignoresSafeArea())
+            .navigationTitle("Bedtime Sleep Timer")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(spotifyGreen)
+                }
+            }
+        }
     }
 }
