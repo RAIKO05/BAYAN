@@ -12,15 +12,15 @@ public struct MainTabView: View {
         case mushaf
         case qibla
         case adkar
-        case history
+        case you
 
         public var title: String {
             switch self {
-            case .identify: return "tab_identify".localized
-            case .mushaf: return "tab_mushaf".localized
-            case .qibla: return "tab_prayers".localized
-            case .adkar: return "tab_adkar".localized
-            case .history: return "tab_history".localized
+            case .identify: return "Identify"
+            case .mushaf: return "Mushaf"
+            case .qibla: return "Prayers"
+            case .adkar: return "Adhkar"
+            case .you: return "You"
             }
         }
 
@@ -29,8 +29,16 @@ public struct MainTabView: View {
             case .identify: return "waveform.circle.fill"
             case .mushaf: return "book.pages.fill"
             case .qibla: return "clock.badge.checkmark.fill"
-            case .adkar: return "hand.raised.fill"
-            case .history: return "clock.arrow.circlepath"
+            case .adkar: return "hands.sparkles.fill"
+            case .you: return "person.crop.circle.fill"
+            }
+        }
+
+        public var badgeText: String? {
+            switch self {
+            case .mushaf: return "1"
+            case .adkar: return "9"
+            default: return nil
             }
         }
     }
@@ -54,24 +62,24 @@ public struct MainTabView: View {
                     QiblaView()
                 case .adkar:
                     AdkarView()
-                case .history:
+                case .you:
                     HistoryView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Floating Liquid Glass Navigation Dock
+            // Floating Navigation Stack (Spotify Mini Player + WhatsApp Floating Pill Tab Bar)
             VStack(spacing: 8) {
-                // Persistent Global Audio Mini Player (when recitation is active/loaded)
+                // Image 2: Spotify Floating Mini-Player Bar
                 AudioMiniPlayerView {
                     selectedTab = .mushaf
                 }
 
-                // Floating Liquid Glass Tab Bar
-                LiquidGlassTabBar(selectedTab: $selectedTab)
+                // Image 1: WhatsApp Floating Capsule Tab Bar
+                WhatsAppFloatingTabBar(selectedTab: $selectedTab)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            .padding(.horizontal, 14)
+            .padding(.bottom, 10)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedTab)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.isPlaying)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.currentSurah == nil)
@@ -132,62 +140,138 @@ public struct MainTabView: View {
             selectedTab = .qibla
         case "adkar":
             selectedTab = .adkar
-        case "history":
-            selectedTab = .history
+        case "history", "you", "saved":
+            selectedTab = .you
         default:
             break
         }
     }
 }
 
-// MARK: - Floating Liquid Glass Tab Bar
-public struct LiquidGlassTabBar: View {
+// MARK: - WhatsApp-Style Floating Pill Tab Bar (Image 1)
+// Pixel-perfect replica of the floating capsule dock:
+// 1. Dark translucent frosted glass capsule
+// 2. Solid dark gray sliding selection pill for active tab (.matchedGeometryEffect)
+// 3. Vibrant green notification badges with bold numbers
+// 4. Circular profile avatar on 5th "You" tab
+public struct WhatsAppFloatingTabBar: View {
     @Binding var selectedTab: MainTabView.TabItem
     @State private var themeManager = AppThemeManager.shared
     @Namespace private var tabNamespace
 
+    // WhatsApp Iconic Green for Badges
+    private let whatsAppGreen = Color(red: 0.15, green: 0.82, blue: 0.40)
+
     public var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             ForEach(MainTabView.TabItem.allCases, id: \.self) { tab in
                 let isSelected = selectedTab == tab
+
                 Button {
                     #if os(iOS)
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     #endif
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.76)) {
                         selectedTab = tab
                     }
                 } label: {
                     VStack(spacing: 3) {
-                        Image(systemName: tab.icon)
-                            .font(.system(size: 15, weight: isSelected ? .bold : .medium))
-                            .foregroundColor(isSelected ? themeManager.currentTheme.activeCardBorder : (themeManager.currentTheme.isDark ? .white.opacity(0.45) : Color(red: 0.40, green: 0.45, blue: 0.52)))
+                        ZStack(alignment: .topTrailing) {
+                            // Icon or Avatar Circle
+                            if tab == .you {
+                                // "You" Circular Avatar (Exact Match to Image 1)
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [
+                                                    Color(red: 0.20, green: 0.22, blue: 0.26),
+                                                    Color(red: 0.12, green: 0.14, blue: 0.17)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 27, height: 27)
 
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                                }
+                                .overlay(
+                                    Circle()
+                                        .stroke(isSelected ? Color.white.opacity(0.8) : Color.white.opacity(0.25), lineWidth: 1.2)
+                                )
+                                .padding(.top, 1)
+                            } else {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 19, weight: isSelected ? .bold : .medium))
+                                    .foregroundColor(isSelected ? .white : Color.white.opacity(0.60))
+                                    .frame(width: 28, height: 26)
+                            }
+
+                            // Green Pill Badge with Number (Image 1 replica)
+                            if let badge = tab.badgeText {
+                                ZStack {
+                                    Circle()
+                                        .fill(whatsAppGreen)
+                                        .frame(width: 17, height: 17)
+
+                                    Text(badge)
+                                        .font(.system(size: 10, weight: .black, design: .rounded))
+                                        .foregroundColor(.black)
+                                }
+                                .offset(x: 10, y: -6)
+                            }
+                        }
+
+                        // Label
                         Text(tab.title)
-                            .font(.system(size: 9.5, weight: isSelected ? .bold : .medium))
-                            .foregroundColor(isSelected ? themeManager.currentTheme.activeCardBorder : (themeManager.currentTheme.isDark ? .white.opacity(0.45) : Color(red: 0.40, green: 0.45, blue: 0.52)))
+                            .font(.system(size: 10.5, weight: isSelected ? .bold : .medium))
+                            .foregroundColor(isSelected ? .white : Color.white.opacity(0.60))
+                            .lineLimit(1)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 44)
+                    .frame(height: 52)
                     .contentShape(Rectangle())
                     .background {
                         if isSelected {
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .fill(themeManager.currentTheme.activeCardFill)
+                            // Dark Charcoal Sliding Capsule Pill (Image 1 replica)
+                            Capsule()
+                                .fill(Color(red: 0.18, green: 0.19, blue: 0.23))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                        .stroke(themeManager.currentTheme.activeCardBorder.opacity(0.5), lineWidth: 1)
+                                    Capsule()
+                                        .stroke(Color.white.opacity(0.09), lineWidth: 0.8)
                                 )
-                                .shadow(color: themeManager.currentTheme.activeCardBorder.opacity(0.2), radius: 8, x: 0, y: 2)
-                                .matchedGeometryEffect(id: "activeTabBackground", in: tabNamespace)
+                                .matchedGeometryEffect(id: "whatsappActivePill", in: tabNamespace)
                         }
                     }
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 8)
-        .frame(height: 58)
-        .liquidGlass(cornerRadius: 32, isGoldBorder: true)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 5)
+        .frame(height: 64)
+        .background(
+            Capsule()
+                .fill(Color(red: 0.10, green: 0.11, blue: 0.13).opacity(0.90))
+        )
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            Capsule()
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.22), Color.white.opacity(0.04)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: Color.black.opacity(0.48), radius: 18, x: 0, y: 8)
     }
 }
