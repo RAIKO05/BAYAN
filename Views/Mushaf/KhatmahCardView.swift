@@ -7,6 +7,7 @@ public struct KhatmahCardView: View {
     @State private var khatmahService = KhatmahService.shared
     @State private var showingSetupSheet: Bool = false
     @State private var showingCloudSyncSheet: Bool = false
+    @State private var showingPlannerSheet: Bool = false
     var onResumeReading: (Surah, Int) -> Void
 
     public init(onResumeReading: @escaping (Surah, Int) -> Void = { _, _ in }) {
@@ -169,11 +170,37 @@ public struct KhatmahCardView: View {
                 }
                 .buttonStyle(.plain)
 
+                // Daily Prayer Schedule Planner Button
+                Button {
+                    showingPlannerSheet = true
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar.badge.clock")
+                        Text("Schedule")
+                    }
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(Color(red: 0.18, green: 0.85, blue: 0.50))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(red: 0.18, green: 0.85, blue: 0.50).opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
             }
         }
         .padding(16)
         .liquidGlass(cornerRadius: 20, isGoldBorder: true)
+        .sheet(isPresented: $showingPlannerSheet) {
+            KhatmahPlannerView { page in
+                let surah = QuranDataService.shared.allSurahs.last(where: { $0.startPage <= page }) ?? khatmahService.currentSurah()
+                onResumeReading(surah, 1)
+            }
+        }
         .sheet(isPresented: $showingSetupSheet) {
             KhatmahSetupSheet()
                 .presentationDetents([.medium, .large])

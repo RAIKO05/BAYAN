@@ -148,6 +148,7 @@ public struct AdkarView: View {
     @State private var selectedCategory: DikrItem.AdkarCategory = .morning
     @State private var currentCounts: [UUID: Int] = [:]
     @State private var showingHisnAlMuslim: Bool = false
+    @State private var showingDigitalTasbih: Bool = false
     @State private var themeManager = AppThemeManager.shared
 
     public init() {}
@@ -225,6 +226,52 @@ public struct AdkarView: View {
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
                                     .stroke(BayanTheme.gold.opacity(0.35), lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal)
+
+                        // Interactive 3D Digital Tasbih Launcher
+                        Button {
+                            showingDigitalTasbih = true
+                            triggerHaptic()
+                        } label: {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(red: 0.18, green: 0.85, blue: 0.50).opacity(0.18))
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: "circle.circle.fill")
+                                        .font(.subheadline.weight(.bold))
+                                        .foregroundColor(Color(red: 0.18, green: 0.85, blue: 0.50))
+                                }
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack(spacing: 6) {
+                                        Text("Interactive 3D Digital Tasbih")
+                                            .font(.subheadline.weight(.bold))
+                                            .foregroundColor(.white)
+                                        Text("المسبحة")
+                                            .font(.caption2.weight(.bold))
+                                            .foregroundColor(Color(red: 0.18, green: 0.85, blue: 0.50))
+                                    }
+                                    Text("Physical Bead String • Blind Touch Mode • Custom Targets")
+                                        .font(.caption2)
+                                        .foregroundColor(BayanTheme.goldSoft.opacity(0.85))
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundColor(BayanTheme.gold)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color.white.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color(red: 0.18, green: 0.85, blue: 0.50).opacity(0.35), lineWidth: 1)
                             )
                         }
                         .padding(.horizontal)
@@ -326,6 +373,9 @@ public struct AdkarView: View {
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingHisnAlMuslim) {
                 HisnAlMuslimView()
+            }
+            .fullScreenCover(isPresented: $showingDigitalTasbih) {
+                DigitalTasbihView()
             }
         }
     }

@@ -78,6 +78,8 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Interactive 3D Digital Tasbih (المسبحة الإلكترونية)**: Physics-simulated 3D rosary bead loop with rotation gestures, realistic bead click haptics (UIImpactFeedbackGenerator), 8 authentic Sunnah dhikr presets (Subhanallah, Alhamdulillah, Allahu Akbar, Astaghfirullah, etc.), custom bead materials (Obsidian Gold, Imperial Emerald, Sandalwood, Opalescent Pearl), milestone vibration celebrations, and full-screen OLED Blind Counting Mode for night and mosque meditation.
+            - **Khatmah Reading Planner & Streak Engine**: Per-prayer reading quota breakdown (e.g. 4 pages after each of the 5 daily prayers to finish in 30 days), interactive prayer checkmarks, dynamic estimated completion date, and reading streak flame counter.
             - **Recitation Speed with Natural Pitch Preservation**: Fine-tune recitation tempo across 0.75x, 1.0x, 1.25x, and 1.5x with .timeDomain pitch algorithm preserving the authentic voice tone of world-renowned Qura'a without distortion.
             - **Bedtime Sleep Timer with Gentle Auto-Fade**: Fall asleep peacefully listening to the Quran with configurable 15m, 30m, 45m, 60m, End of Current Ayah, or End of Current Surah timers featuring a gentle 2-second volume fade-out.
             - **Dual Audio Mode (Arabic Recitation + English Voiceover)**: Seamlessly listen to the Arabic verse recitation followed immediately by dignified English translation audio (AVSpeechSynthesizer) before advancing to the next Ayah.

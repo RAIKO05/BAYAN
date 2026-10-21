@@ -110,6 +110,10 @@ public final class KhatmahService {
         max(1, Int(ceil(Double(totalPages) / Double(targetDays))))
     }
 
+    public var dailyPageTarget: Int {
+        dailyTargetPages
+    }
+
     public var pagesLeftToday: Int {
         max(0, dailyTargetPages - pagesReadToday)
     }
@@ -136,6 +140,13 @@ public final class KhatmahService {
             pagesReadToday += diff
         }
         currentPage = clamped
+        userDefaults.set(Date(), forKey: kLastLogDate)
+    }
+
+    public func logPagesRead(_ count: Int) {
+        checkDateRollover()
+        pagesReadToday += count
+        currentPage = min(totalPages, currentPage + count)
         userDefaults.set(Date(), forKey: kLastLogDate)
     }
 
