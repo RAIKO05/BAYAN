@@ -7,6 +7,9 @@ struct BayanIdentifyView: View {
     @State private var matchedResult: RecognitionResult?
     @State private var showingResultSheet = false
     @State private var showingSearchSheet = false
+    @State private var showingLanguageSheet = false
+    @State private var showingThemeSheet = false
+    @State private var languageManager = AppLanguageManager.shared
 
     private var isListening: Bool {
         if case .listening = recognitionService.state { return true }
@@ -22,24 +25,68 @@ struct BayanIdentifyView: View {
                 themeManager.currentTheme.backgroundGradient.ignoresSafeArea()
 
                 VStack(spacing: 24) {
-                    // Header Brand
-                    VStack(spacing: 4) {
-                        Text("بَيَان")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.white, BayanTheme.goldSoft],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                    // Header Bar with Language, Brand, and Theme
+                    HStack(alignment: .center) {
+                        Button {
+                            showingLanguageSheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text(languageManager.currentLanguage.flagEmoji)
+                                Text(languageManager.currentLanguage.rawValue.uppercased())
+                                    .font(.system(size: 11, weight: .bold))
+                            }
+                            .foregroundColor(BayanTheme.goldSoft)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(BayanTheme.gold.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
 
-                        Text("QURAN AUDIO RECOGNIZER")
-                            .font(.system(size: 10, weight: .bold))
-                            .tracking(3)
-                            .foregroundColor(BayanTheme.gold.opacity(0.8))
+                        Spacer()
+
+                        // Center Brand
+                        VStack(spacing: 2) {
+                            Text("بَيَان")
+                                .font(.system(size: 30, weight: .bold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color.white, BayanTheme.goldSoft],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+
+                            Text("QURAN AUDIO RECOGNIZER")
+                                .font(.system(size: 9, weight: .bold))
+                                .tracking(2.5)
+                                .foregroundColor(BayanTheme.gold.opacity(0.8))
+                        }
+
+                        Spacer()
+
+                        Button {
+                            showingThemeSheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            Image(systemName: "paintpalette.fill")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(BayanTheme.goldSoft)
+                                .padding(8)
+                                .background(Color.white.opacity(0.08))
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(BayanTheme.gold.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.top, 16)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
 
                     Spacer(minLength: 10)
 
@@ -196,6 +243,14 @@ struct BayanIdentifyView: View {
                 }
                 .presentationDetents([.fraction(0.85), .large])
             }
+            .sheet(isPresented: $showingLanguageSheet) {
+                LanguagePickerSheet()
+                    .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showingThemeSheet) {
+                ThemePickerSheet()
+                    .presentationDetents([.medium, .large])
+            }
         }
     }
 
@@ -211,28 +266,28 @@ struct BayanIdentifyView: View {
     private var statusHeading: String {
         switch recognitionService.state {
         case .idle:
-            return "Tap to Identify"
+            return "tap_to_identify".localized
         case .listening:
-            return "Listening to Recitation..."
+            return "listening_recitation".localized
         case .analyzing:
-            return "Recognizing Verse..."
+            return "listening_recitation".localized
         case .matched(let result):
-            return "Matched: \(result.surah.nameEnglish)"
+            return "\(result.surah.nameArabic) • \(result.surah.nameEnglish)"
         case .failed:
-            return "Could not match audio"
+            return "no_recitation".localized
         }
     }
 
     private var statusSubheading: String {
         switch recognitionService.state {
         case .idle:
-            return "Point your iPhone toward any recitation (Mosque, car, video, or TV)"
+            return "point_iphone".localized
         case .listening:
             return "Analyzing Quranic melody, acoustic fingerprint, and tajweed..."
         case .analyzing:
             return "Cross-referencing Uthmanic Quran index and 200+ Qura'a..."
         case .matched(let result):
-            return "Recited by \(result.reciter.nameEnglish)"
+            return "\(result.reciter.nameEnglish)"
         case .failed(let reason):
             return reason
         }

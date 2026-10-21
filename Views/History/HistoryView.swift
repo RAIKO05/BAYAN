@@ -5,9 +5,13 @@ struct HistoryView: View {
     @State private var playerService = AudioPlayerService.shared
     @State private var bookmarkService = BookmarkService.shared
     @State private var themeManager = AppThemeManager.shared
+    @State private var languageManager = AppLanguageManager.shared
     @State private var selectedTab: Int = 0
     @State private var selectedTafsirSurah: Surah? = nil
     @State private var selectedTafsirAyah: Int = 1
+    @State private var showingLanguageSheet = false
+    @State private var showingThemeSheet = false
+    @State private var showingCloudSyncSheet = false
 
     var body: some View {
         NavigationStack {
@@ -264,11 +268,57 @@ struct HistoryView: View {
                     }
                 }
             }
-            .navigationTitle(selectedTab == 0 ? "Recognized History" : "Saved Bookmarks")
+            .navigationTitle(selectedTab == 0 ? "tab_history".localized : "Bookmarks")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingLanguageSheet = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(languageManager.currentLanguage.flagEmoji)
+                            Text(languageManager.currentLanguage.rawValue.uppercased())
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundColor(BayanTheme.goldSoft)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+                }
+
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingCloudSyncSheet = true
+                    } label: {
+                        Image(systemName: "icloud.and.arrow.up")
+                            .foregroundColor(BayanTheme.goldSoft)
+                    }
+
+                    Button {
+                        showingThemeSheet = true
+                    } label: {
+                        Image(systemName: "paintpalette.fill")
+                            .foregroundColor(BayanTheme.goldSoft)
+                    }
+                }
+            }
             .sheet(item: $selectedTafsirSurah) { surah in
                 AyahTafsirSheet(surah: surah, ayahNumber: selectedTafsirAyah)
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingLanguageSheet) {
+                LanguagePickerSheet()
+                    .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showingThemeSheet) {
+                ThemePickerSheet()
+                    .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingCloudSyncSheet) {
+                CloudSyncSheet()
+                    .presentationDetents([.large])
             }
         }
     }

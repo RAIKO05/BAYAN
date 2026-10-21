@@ -4,6 +4,8 @@ public struct MainTabView: View {
     @State private var selectedTab: TabItem = .identify
     @State private var playerService = AudioPlayerService.shared
     @State private var themeManager = AppThemeManager.shared
+    @State private var languageManager = AppLanguageManager.shared
+    @State private var showingLanguageSheet = false
 
     public enum TabItem: Hashable, CaseIterable {
         case identify
@@ -14,11 +16,11 @@ public struct MainTabView: View {
 
         public var title: String {
             switch self {
-            case .identify: return "Identify"
-            case .mushaf: return "Mushaf"
-            case .qibla: return "Prayers"
-            case .adkar: return "Adkar"
-            case .history: return "History"
+            case .identify: return "tab_identify".localized
+            case .mushaf: return "tab_mushaf".localized
+            case .qibla: return "tab_prayers".localized
+            case .adkar: return "tab_adkar".localized
+            case .history: return "tab_history".localized
             }
         }
 
@@ -75,15 +77,31 @@ public struct MainTabView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.currentSurah == nil)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .environment(\.layoutDirection, languageManager.currentLanguage.layoutDirection)
         .onAppear {
             checkSiriLaunchFlags()
+            refreshDailyAdhanNotifications()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             checkSiriLaunchFlags()
+            refreshDailyAdhanNotifications()
         }
         .onOpenURL { url in
             handleDeepLink(url: url)
         }
+        .sheet(isPresented: $showingLanguageSheet) {
+            LanguagePickerSheet()
+                .presentationDetents([.medium])
+        }
+    }
+
+    private func refreshDailyAdhanNotifications() {
+        guard AdhanNotificationService.shared.isNotificationsEnabled else { return }
+        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        let lat = defaults.double(forKey: "bayan_last_latitude") != 0.0 ? defaults.double(forKey: "bayan_last_latitude") : 33.5731
+        let lng = defaults.double(forKey: "bayan_last_longitude") != 0.0 ? defaults.double(forKey: "bayan_last_longitude") : -7.5898
+        let result = PrayerCalculationService.shared.calculate(for: Date(), lat: lat, lng: lng)
+        AdhanNotificationService.shared.scheduleAdhanNotifications(prayerTimes: result.prayers)
     }
 
     private func checkSiriLaunchFlags() {

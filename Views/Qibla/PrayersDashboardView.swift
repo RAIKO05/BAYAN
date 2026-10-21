@@ -637,6 +637,44 @@ private struct PrayerSettingsSheet: View {
                             .foregroundColor(currentTheme.prayerActiveAccent)
 
                         VStack(spacing: 12) {
+                            // Full Adhan Audio Notification Toggle
+                            Toggle(isOn: Binding(
+                                get: { adhanNotificationService.isNotificationsEnabled },
+                                set: { newValue in
+                                    if newValue {
+                                        adhanNotificationService.requestPermission { granted in
+                                            if granted {
+                                                adhanNotificationService.scheduleAdhanNotifications(prayerTimes: prayerTimes)
+                                            }
+                                        }
+                                    } else {
+                                        adhanNotificationService.cancelAll()
+                                    }
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
+                                }
+                            )) {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Adhan Audio Notifications")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(currentTheme.prayerTextColor)
+                                    Text("Play authentic Adhan call to prayer when prayer time arrives")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(currentTheme.prayerSecondaryTextColor)
+                                }
+                            }
+                            .tint(currentTheme.prayerActiveAccent)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(currentTheme.prayerCardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(currentTheme.prayerCardBorder, lineWidth: 1)
+                            )
+
+                            // 15-Minute Pre-Adhan Reminder Toggle
                             Toggle(isOn: Binding(
                                 get: { prayerSettings.isPreAdhanReminderEnabled },
                                 set: { newValue in
@@ -665,6 +703,48 @@ private struct PrayerSettingsSheet: View {
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .stroke(currentTheme.prayerCardBorder, lineWidth: 1)
                             )
+
+                            // Preview Authentic Adhan Button
+                            Button {
+                                AdhanAudioService.shared.toggleAdhan(for: "الأذان")
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                #endif
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: AdhanAudioService.shared.isPlaying ? "stop.circle.fill" : "speaker.wave.3.fill")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(currentTheme.prayerActiveAccent)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(AdhanAudioService.shared.isPlaying ? "Stop Adhan Preview" : "Play Authentic Adhan Audio")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundColor(currentTheme.prayerTextColor)
+                                        Text("Listen to the authentic bundled Adhan sound")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(currentTheme.prayerSecondaryTextColor)
+                                    }
+
+                                    Spacer()
+
+                                    Text(AdhanAudioService.shared.isPlaying ? "STOP" : "PREVIEW")
+                                        .font(.system(size: 10, weight: .black))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(currentTheme.prayerActiveAccent.opacity(0.18))
+                                        .foregroundColor(currentTheme.prayerActiveAccent)
+                                        .clipShape(Capsule())
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(currentTheme.prayerCardBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .stroke(AdhanAudioService.shared.isPlaying ? currentTheme.prayerActiveAccent : currentTheme.prayerCardBorder, lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
