@@ -42,13 +42,18 @@ public final class QuranDataService {
     }
 
     public func search(query: String) -> [Surah] {
-        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return allSurahs }
-        let lower = query.lowercased()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return allSurahs }
+        let lower = trimmed.lowercased()
+        let normQuery = QuranVerseText.normalizeArabic(trimmed)
+
         return allSurahs.filter {
-            $0.nameArabic.contains(query) ||
-            $0.nameEnglish.lowercased().contains(lower) ||
-            $0.nameTranslation.lowercased().contains(lower) ||
-            String($0.id) == query
+            let normArabic = QuranVerseText.normalizeArabic($0.nameArabic)
+            return $0.nameArabic.contains(trimmed) ||
+                   normArabic.contains(normQuery) ||
+                   $0.nameEnglish.lowercased().contains(lower) ||
+                   $0.nameTranslation.lowercased().contains(lower) ||
+                   String($0.id) == trimmed
         }
     }
 

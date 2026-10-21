@@ -49,55 +49,26 @@ struct MushafRootView: View {
                 )
                 .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // "Where I Stopped" Resume Banner
-                        if let lastSurah = lastReadSurah {
-                            ResumeReadingCard(
-                                surah: lastSurah,
-                                ayahNumber: syncManager.lastAyahId,
-                                page: syncManager.lastPageNumber
-                            ) {
-                                self.navigateToSurah = lastSurah
-                                self.navigateToAyah = syncManager.lastAyahId
-                            }
-                            .padding(.horizontal)
-                        }
+                VStack(spacing: 0) {
+                    // MARK: - Pinned Header (Title, Qira'at Toggle & Always-Visible Search Bar)
+                    VStack(spacing: 12) {
+                        // Title & Qira'at Switcher Row
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("HOLY QUR'AN")
+                                    .font(.system(size: 10.5, weight: .bold))
+                                    .tracking(2.0)
+                                    .foregroundColor(BayanTheme.gold.opacity(0.9))
 
-                        // Active Reciter Quick Selector
-                        Button {
-                            showingReciterPicker = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "person.wave.2.fill")
-                                    .foregroundColor(BayanTheme.gold)
-                                Text(playerService.currentReciter.nameEnglish)
-                                    .font(.subheadline.weight(.semibold))
+                                Text("المصحف الشريف")
+                                    .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(.white)
-                                Spacer()
-                                Text("Change Qari")
-                                    .font(.caption)
-                                    .foregroundColor(BayanTheme.goldSoft)
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .liquidGlass(cornerRadius: 18)
-                            .padding(.horizontal)
-                        }
-
-                        // Qira'at Toggle: Hafs (حفص) vs Warsh (ورش)
-                        HStack(spacing: 8) {
-                            Text("QIRA'AT (القراءة):")
-                                .font(.system(size: 10, weight: .bold))
-                                .tracking(1.5)
-                                .foregroundColor(BayanTheme.gold.opacity(0.85))
 
                             Spacer()
 
-                            HStack(spacing: 4) {
+                            // Qira'at Pill Switcher: Hafs vs Warsh
+                            HStack(spacing: 2) {
                                 ForEach(QuranDataService.Qiraah.allCases) { qiraah in
                                     Button {
                                         dataService.selectedQiraah = qiraah
@@ -106,20 +77,23 @@ struct MushafRootView: View {
                                                 playerService.currentReciter = kazabri
                                             }
                                         }
+                                        #if os(iOS)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        #endif
                                     } label: {
                                         Text(qiraah.shortLabel)
                                             .font(.system(size: 12, weight: .bold))
-                                            .padding(.horizontal, 14)
+                                            .padding(.horizontal, 12)
                                             .padding(.vertical, 5)
                                             .background(
                                                 dataService.selectedQiraah == qiraah ?
                                                     BayanTheme.gold :
-                                                    Color.white.opacity(0.06)
+                                                    Color.clear
                                             )
                                             .foregroundColor(
                                                 dataService.selectedQiraah == qiraah ?
                                                     BayanTheme.obsidian :
-                                                    .white.opacity(0.8)
+                                                    .white.opacity(0.7)
                                             )
                                             .clipShape(Capsule())
                                     }
@@ -127,55 +101,201 @@ struct MushafRootView: View {
                                 }
                             }
                             .padding(3)
-                            .background(Color.white.opacity(0.06))
+                            .background(Color.white.opacity(0.08))
                             .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 4)
 
-                        // Filter Chips
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(FilterCategory.allCases, id: \.self) { category in
-                                    Button {
-                                        selectedFilter = category
-                                    } label: {
-                                        Text(category.rawValue)
-                                            .font(.caption.weight(.semibold))
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 8)
-                                            .background(selectedFilter == category ? BayanTheme.gold : Color.white.opacity(0.08))
-                                            .foregroundColor(selectedFilter == category ? BayanTheme.obsidian : .white)
-                                            .clipShape(Capsule())
-                                            .overlay(
-                                                Capsule().stroke(selectedFilter == category ? Color.clear : Color.white.opacity(0.12), lineWidth: 1)
-                                            )
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
+                        // MARK: - Dedicated Custom Search Bar (Always Accessible)
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(searchQuery.isEmpty ? .white.opacity(0.4) : BayanTheme.gold)
 
-                        // Surah List
-                        LazyVStack(spacing: 12) {
-                            ForEach(filteredSurahs) { surah in
-                                NavigationLink {
-                                    SurahDetailView(surah: surah, initialAyah: 1)
+                            TextField("Search Surah name or number (e.g. 18, Kahf, كهف)...", text: $searchQuery)
+                                .font(.system(size: 14))
+                                .foregroundColor(.white)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+
+                            if !searchQuery.isEmpty {
+                                Button {
+                                    searchQuery = ""
+                                    #if os(iOS)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
                                 } label: {
-                                    SurahListRow(surah: surah)
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.white.opacity(0.55))
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom, 110)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color.white.opacity(0.07))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(searchQuery.isEmpty ? Color.white.opacity(0.12) : BayanTheme.gold.opacity(0.5), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 18)
+
+                        // MARK: - Category Filter Chips
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(FilterCategory.allCases, id: \.self) { category in
+                                    let isSelected = selectedFilter == category
+                                    Button {
+                                        selectedFilter = category
+                                        #if os(iOS)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        #endif
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Text(category.rawValue)
+                                            if category == .favorites && !syncManager.favoriteSurahIds.isEmpty {
+                                                Text("(\(syncManager.favoriteSurahIds.count))")
+                                                    .font(.system(size: 10, weight: .bold))
+                                            }
+                                        }
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 6)
+                                        .background(isSelected ? BayanTheme.gold : Color.white.opacity(0.06))
+                                        .foregroundColor(isSelected ? BayanTheme.obsidian : .white.opacity(0.85))
+                                        .clipShape(Capsule())
+                                        .overlay(
+                                            Capsule().stroke(isSelected ? Color.clear : Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 18)
+                        }
                     }
-                    .padding(.top, 12)
+                    .padding(.bottom, 10)
+                    .background(
+                        BayanTheme.obsidian.opacity(0.85)
+                            .background(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        Divider().overlay(Color.white.opacity(0.08)),
+                        alignment: .bottom
+                    )
+
+                    // MARK: - Scrollable Surah Content
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // Show "Resume" and "Change Qari" when not searching
+                            if searchQuery.isEmpty {
+                                // "Where I Stopped" Resume Banner
+                                if let lastSurah = lastReadSurah {
+                                    ResumeReadingCard(
+                                        surah: lastSurah,
+                                        ayahNumber: syncManager.lastAyahId,
+                                        page: syncManager.lastPageNumber
+                                    ) {
+                                        self.navigateToSurah = lastSurah
+                                        self.navigateToAyah = syncManager.lastAyahId
+                                    }
+                                    .padding(.horizontal, 18)
+                                }
+
+                                // Active Reciter Quick Selector
+                                Button {
+                                    showingReciterPicker = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "person.wave.2.fill")
+                                            .foregroundColor(BayanTheme.gold)
+                                        Text(playerService.currentReciter.nameEnglish)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundColor(.white)
+                                        Spacer()
+                                        Text("Change Qari")
+                                            .font(.caption)
+                                            .foregroundColor(BayanTheme.goldSoft)
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .liquidGlass(cornerRadius: 18)
+                                    .padding(.horizontal, 18)
+                                }
+                            } else {
+                                // Search Result Status Badge
+                                HStack {
+                                    Text("FOUND \(filteredSurahs.count) SURAHS")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .tracking(1.5)
+                                        .foregroundColor(BayanTheme.goldSoft)
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 4)
+                            }
+
+                            // Empty State
+                            if filteredSurahs.isEmpty {
+                                VStack(spacing: 12) {
+                                    Image(systemName: "doc.text.magnifyingglass")
+                                        .font(.system(size: 48))
+                                        .foregroundColor(BayanTheme.gold.opacity(0.4))
+                                        .padding(.top, 40)
+
+                                    Text("No Surahs Found")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+
+                                    Text("No Surahs matched \"\(searchQuery)\". Check the spelling or search by number (1–114).")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 30)
+
+                                    Button("Clear Search") {
+                                        searchQuery = ""
+                                    }
+                                    .font(.caption.weight(.bold))
+                                    .foregroundColor(BayanTheme.obsidian)
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 8)
+                                    .background(BayanTheme.gold)
+                                    .clipShape(Capsule())
+                                    .padding(.top, 8)
+                                }
+                            } else {
+                                // Surah List
+                                LazyVStack(spacing: 12) {
+                                    ForEach(filteredSurahs) { surah in
+                                        NavigationLink {
+                                            SurahDetailView(surah: surah, initialAyah: 1)
+                                        } label: {
+                                            SurahListRow(surah: surah)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal, 18)
+                            }
+                        }
+                        .padding(.top, 12)
+                        .padding(.bottom, 20)
+                    }
+                    .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
                 }
-                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 120) }
             }
-            .navigationTitle("Holy Qur'an")
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchQuery, prompt: "Search 114 Surahs...")
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationBarHidden(true)
             .sheet(isPresented: $showingReciterPicker) {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])
