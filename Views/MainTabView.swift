@@ -75,8 +75,28 @@ public struct MainTabView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.currentSurah == nil)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onAppear {
+            checkSiriLaunchFlags()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            checkSiriLaunchFlags()
+        }
         .onOpenURL { url in
             handleDeepLink(url: url)
+        }
+    }
+
+    private func checkSiriLaunchFlags() {
+        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        if defaults.bool(forKey: "bayan_trigger_identify_on_launch") {
+            defaults.set(false, forKey: "bayan_trigger_identify_on_launch")
+            selectedTab = .identify
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                AudioRecognitionService.shared.startListening()
+            }
+        } else if defaults.bool(forKey: "bayan_trigger_resume_on_launch") {
+            defaults.set(false, forKey: "bayan_trigger_resume_on_launch")
+            selectedTab = .mushaf
         }
     }
 
@@ -90,6 +110,12 @@ public struct MainTabView: View {
             }
         case "resume":
             selectedTab = .mushaf
+        case "prayer", "prayers", "qibla":
+            selectedTab = .qibla
+        case "adkar":
+            selectedTab = .adkar
+        case "history":
+            selectedTab = .history
         default:
             break
         }

@@ -806,14 +806,20 @@ public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManage
             self.userCoordinate = location.coordinate
         }
 
+        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        defaults.set(location.coordinate.latitude, forKey: "bayan_last_latitude")
+        defaults.set(location.coordinate.longitude, forKey: "bayan_last_longitude")
+
         if userCityName == nil {
             geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, _ in
                 if let place = placemarks?.first {
                     let city = place.locality ?? place.administrativeArea ?? place.name ?? "Current Location"
                     let country = place.country ?? ""
+                    let fullCity = country.isEmpty ? city : "\(city), \(country)"
                     DispatchQueue.main.async {
-                        self?.userCityName = country.isEmpty ? city : "\(city), \(country)"
+                        self?.userCityName = fullCity
                     }
+                    defaults.set(city, forKey: "bayan_last_city_name")
                 }
             }
         }
