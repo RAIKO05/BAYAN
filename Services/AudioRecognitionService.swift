@@ -90,10 +90,6 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
     }
 
     private func beginAudioEngineRecording() {
-        isMatchingActive = true
-        latestTranscription = ""
-        state = .listening(decibels: 0.1)
-
         // 2. CRITICAL CRASH FIX: Configure and activate AVAudioSession BEFORE accessing inputNode!
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -102,6 +98,10 @@ public final class AudioRecognitionService: NSObject, SHSessionDelegate {
         } catch {
             print("⚠️ AVAudioSession setup warning: \(error)")
         }
+
+        isMatchingActive = true
+        latestTranscription = ""
+        state = .listening(decibels: 0.1)
 
         // 3. Offline Speech Setup: On-device offline transcription for mosques / low cell reception
         speechRequest = SFSpeechAudioBufferRecognitionRequest()
