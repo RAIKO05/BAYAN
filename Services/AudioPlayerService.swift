@@ -54,6 +54,10 @@ public final class AudioPlayerService: NSObject {
 
     public override init() {
         super.init()
+        let savedQariId = QuranSyncManager.shared.lastQariId
+        if let saved = Reciter.standardCatalog.first(where: { $0.id == savedQariId }) {
+            self.currentReciter = saved
+        }
         configureAudioSessionForPlayback()
         setupRemoteCommandCenter()
     }

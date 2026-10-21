@@ -72,6 +72,9 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Expanded Reciters Catalog (36 World-Renowned Qura'a)**: Comprehensive catalog featuring Abdul Rahman Al-Sudais, Saud Al-Shuraim, Maher Al-Muaiqly, Yasser Al-Dosari, Saad Al-Ghamdi, Abu Bakr Ash-Shatri, Ali Jaber, Nasser Al-Qatami, Ahmed Al-Ajamy, Abdullah Awad Al-Juhany, Muhammad Ayyub, Ali Al-Hudhaify, Dr. Ayman Suwayd, Minshawi & Husary (Murattal, Mujawwad & Teacher), and Warsh masters (Omar Al-Kazabri, Yassin Al-Jazaery, Abdul Basit, Ibrahim Al-Dosari).
+            - **Interactive In-Sheet Audio Preview**: Audition any reciter's soothing voice with instant streaming audio preview and live animated waveforms before selecting.
+            - **Favorite Reciters Pinning**: Pin your most-loved reciters with one tap to keep them at the top of your list.
             - **New Official App Icon (Imperial Emerald Calligraphy)**: 3D sculpted solid gold Arabic calligraphy monogram of "بيان" (Bayan) with minaret finial on rich imperial Damascus emerald green.
             - **iCloud Sync & Cloud Backup**: Seamless automatic cross-device sync of Khatmah goals, reading position, Ayah bookmarks, daily prayer tracker history, and preferences across iPhone, iPad, and Mac via Apple CloudKit (`NSUbiquitousKeyValueStore`).
             - **Lock Screen & Home Screen Prayer Widgets**: Live next-prayer countdown and daily timeline widgets across Lock Screen (`accessoryRectangular`, `accessoryCircular`, `accessoryInline`) and Home Screen (`systemSmall`, `systemMedium`).

@@ -33,13 +33,19 @@ public struct Reciter: Identifiable, Codable, Hashable {
         }
 
         if id == "yassin_warsh" {
-            // Yassin Al-Jazaery (Warsh verse-by-verse EveryAyah)
             return URL(string: "https://everyayah.com/data/warsh/warsh_yassin_al_jazaery_64kbps/\(fullAyahCode).mp3")
         }
 
         if id == "abdulbasit_warsh" {
-            // Abdul Basit (Warsh verse-by-verse EveryAyah)
             return URL(string: "https://everyayah.com/data/warsh/warsh_Abdul_Basit_128kbps/\(fullAyahCode).mp3")
+        }
+
+        if id == "ibrahim_dosari_warsh" {
+            return URL(string: "https://everyayah.com/data/warsh/warsh_ibrahim_aldosary_128kbps/\(fullAyahCode).mp3")
+        }
+
+        if serverSubdomain.hasPrefix("warsh/") {
+            return URL(string: "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3")
         }
 
         if id == "omardiaa" {
@@ -48,6 +54,10 @@ public struct Reciter: Identifiable, Codable, Hashable {
 
         let urlString = "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3"
         return URL(string: urlString)
+    }
+
+    public var sampleAudioUrl: URL? {
+        audioUrl(surah: 1, ayah: 1)
     }
 
     public static let unknownReciter = Reciter(
@@ -59,8 +69,9 @@ public struct Reciter: Identifiable, Codable, Hashable {
         serverSubdomain: "Alafasy_128kbps"
     )
 
-    // Curated standard reciters catalog
+    // Curated standard reciters catalog (36 world-renowned Qura'a)
     public static let standardCatalog: [Reciter] = [
+        // MARK: - Most Popular / Al-Haramain Imams
         Reciter(
             id: "alafasy",
             nameArabic: "مشاري راشد العفاسي",
@@ -68,70 +79,6 @@ public struct Reciter: Identifiable, Codable, Hashable {
             style: .murattal,
             riwayah: .hafs,
             serverSubdomain: "Alafasy_128kbps"
-        ),
-        Reciter(
-            id: "yassin_warsh",
-            nameArabic: "ياسين الجزائري (ورش)",
-            nameEnglish: "Yassin Al-Jazaery (Warsh)",
-            style: .murattal,
-            riwayah: .warsh,
-            serverSubdomain: "warsh_yassin"
-        ),
-        Reciter(
-            id: "kazabri_warsh",
-            nameArabic: "عمر القزابري (ورش)",
-            nameEnglish: "Omar Al-Kazabri (Warsh)",
-            style: .murattal,
-            riwayah: .warsh,
-            serverSubdomain: "Warsh_Omar_AlQazabri"
-        ),
-        Reciter(
-            id: "abdulbasit_warsh",
-            nameArabic: "عبد الباسط عبد الصمد (ورش)",
-            nameEnglish: "Abdul Basit (Warsh)",
-            style: .murattal,
-            riwayah: .warsh,
-            serverSubdomain: "warsh_abdulbasit"
-        ),
-        Reciter(
-            id: "abdulbasit_mujawwad",
-            nameArabic: "عبد الباسط عبد الصمد (مجود)",
-            nameEnglish: "Abdul Basit (Mujawwad)",
-            style: .mujawwad,
-            riwayah: .hafs,
-            serverSubdomain: "Abdul_Basit_Mujawwad_128kbps"
-        ),
-        Reciter(
-            id: "abdulbasit_murattal",
-            nameArabic: "عبد الباسط عبد الصمد (مرتل)",
-            nameEnglish: "Abdul Basit (Murattal)",
-            style: .murattal,
-            riwayah: .hafs,
-            serverSubdomain: "Abdul_Basit_Murattal_192kbps"
-        ),
-        Reciter(
-            id: "minshawi_mujawwad",
-            nameArabic: "محمد صديق المنشاوي (مجود)",
-            nameEnglish: "Mohamed Siddiq Al-Minshawi (Mujawwad)",
-            style: .mujawwad,
-            riwayah: .hafs,
-            serverSubdomain: "Minshawy_Mujawwad_192kbps"
-        ),
-        Reciter(
-            id: "minshawi_murattal",
-            nameArabic: "محمد صديق المنشاوي (مرتل)",
-            nameEnglish: "Mohamed Siddiq Al-Minshawi (Murattal)",
-            style: .murattal,
-            riwayah: .hafs,
-            serverSubdomain: "Minshawy_Murattal_128kbps"
-        ),
-        Reciter(
-            id: "husary_murattal",
-            nameArabic: "محمود خليل الحصري",
-            nameEnglish: "Mahmoud Khalil Al-Husary",
-            style: .murattal,
-            riwayah: .hafs,
-            serverSubdomain: "Husary_128kbps"
         ),
         Reciter(
             id: "sudais",
@@ -150,12 +97,12 @@ public struct Reciter: Identifiable, Codable, Hashable {
             serverSubdomain: "Saood_ash-Shuraym_128kbps"
         ),
         Reciter(
-            id: "ghamdi",
-            nameArabic: "سعد الغامدي",
-            nameEnglish: "Saad Al-Ghamdi",
+            id: "maher",
+            nameArabic: "ماهر المعيقلي",
+            nameEnglish: "Maher Al-Muaiqly",
             style: .murattal,
             riwayah: .hafs,
-            serverSubdomain: "Ghamadi_40kbps"
+            serverSubdomain: "MaherAlMuaiqly128kbps"
         ),
         Reciter(
             id: "dosari",
@@ -166,12 +113,260 @@ public struct Reciter: Identifiable, Codable, Hashable {
             serverSubdomain: "Yasser_Ad-Dussary_128kbps"
         ),
         Reciter(
-            id: "maher",
-            nameArabic: "ماهر المعيقلي",
-            nameEnglish: "Maher Al-Muaiqly",
+            id: "ghamdi",
+            nameArabic: "سعد الغامدي",
+            nameEnglish: "Saad Al-Ghamdi",
             style: .murattal,
             riwayah: .hafs,
-            serverSubdomain: "Maher_AlMuaiqly_64kbps"
+            serverSubdomain: "Ghamadi_40kbps"
+        ),
+        Reciter(
+            id: "shatri",
+            nameArabic: "أبو بكر الشاطري",
+            nameEnglish: "Abu Bakr Ash-Shatri",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Abu_Bakr_Ash-Shaatree_128kbps"
+        ),
+        Reciter(
+            id: "ali_jaber",
+            nameArabic: "علي عبد الله جابر",
+            nameEnglish: "Ali Jaber",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Ali_Jaber_64kbps"
+        ),
+        Reciter(
+            id: "qatami",
+            nameArabic: "ناصر القطامي",
+            nameEnglish: "Nasser Al-Qatami",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Nasser_Alqatami_128kbps"
+        ),
+        Reciter(
+            id: "ajamy",
+            nameArabic: "أحمد بن علي العجمي",
+            nameEnglish: "Ahmed Al-Ajamy",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "ahmed_ibn_ali_al_ajamy_128kbps"
+        ),
+        Reciter(
+            id: "juhany",
+            nameArabic: "عبد الله عواد الجهني",
+            nameEnglish: "Abdullah Awad Al-Juhany",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Abdullaah_3awwaad_Al-Juhaynee_128kbps"
+        ),
+        Reciter(
+            id: "ayyub",
+            nameArabic: "محمد أيوب",
+            nameEnglish: "Muhammad Ayyub",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Muhammad_Ayyoub_128kbps"
+        ),
+        Reciter(
+            id: "hudhaify",
+            nameArabic: "علي بن عبد الرحمن الحذيفي",
+            nameEnglish: "Ali Al-Hudhaify",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Hudhaify_128kbps"
+        ),
+        Reciter(
+            id: "budair",
+            nameArabic: "صلاح البدير",
+            nameEnglish: "Salah Al-Budair",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Salah_Al_Budair_128kbps"
+        ),
+        Reciter(
+            id: "basfar",
+            nameArabic: "عبد الله بصفر",
+            nameEnglish: "Abdullah Basfar",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Abdullah_Basfar_192kbps"
+        ),
+        Reciter(
+            id: "fares_abbad",
+            nameArabic: "فارس عباد",
+            nameEnglish: "Fares Abbad",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Fares_Abbad_64kbps"
+        ),
+        Reciter(
+            id: "hani_rifai",
+            nameArabic: "هاني الرفاعي",
+            nameEnglish: "Hani Ar-Rifai",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Hani_Rifai_192kbps"
+        ),
+        Reciter(
+            id: "jibreel",
+            nameArabic: "محمد جبريل",
+            nameEnglish: "Muhammad Jibreel",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Muhammad_Jibreel_128kbps"
+        ),
+        Reciter(
+            id: "bukhatir",
+            nameArabic: "صلاح بوخاطر",
+            nameEnglish: "Salah Bukhatir",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Salaah_AbdulRahman_Bukhatir_128kbps"
+        ),
+        Reciter(
+            id: "tunaiji",
+            nameArabic: "خليفة الطنيجي",
+            nameEnglish: "Khalifa Al-Tunaiji",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "khalefa_al_tunaiji_64kbps"
+        ),
+
+        // MARK: - Egyptian Classical Masters (Murattal)
+        Reciter(
+            id: "abdulbasit_murattal",
+            nameArabic: "عبد الباسط عبد الصمد (مرتل)",
+            nameEnglish: "Abdul Basit (Murattal)",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Abdul_Basit_Murattal_192kbps"
+        ),
+        Reciter(
+            id: "minshawi_murattal",
+            nameArabic: "محمد صديق المنشاوي (مرتل)",
+            nameEnglish: "Mohamed Siddiq Al-Minshawi (Murattal)",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Minshawy_Murattal_128kbps"
+        ),
+        Reciter(
+            id: "husary_murattal",
+            nameArabic: "محمود خليل الحصري (مرتل)",
+            nameEnglish: "Mahmoud Khalil Al-Husary (Murattal)",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Husary_128kbps"
+        ),
+        Reciter(
+            id: "tablawi",
+            nameArabic: "محمد محمود الطبلاوي",
+            nameEnglish: "Mohamed Al-Tablawi",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Mohammad_al_Tablaway_128kbps"
+        ),
+        Reciter(
+            id: "banna",
+            nameArabic: "محمود علي البنا",
+            nameEnglish: "Mahmoud Ali Al-Banna",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "mahmoud_ali_al_banna_32kbps"
+        ),
+        Reciter(
+            id: "mustafa_ismail",
+            nameArabic: "مصطفى إسماعيل",
+            nameEnglish: "Mustafa Ismail",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Mustafa_Ismail_48kbps"
+        ),
+
+        // MARK: - Classical Mujawwad Masters
+        Reciter(
+            id: "abdulbasit_mujawwad",
+            nameArabic: "عبد الباسط عبد الصمد (مجود)",
+            nameEnglish: "Abdul Basit (Mujawwad)",
+            style: .mujawwad,
+            riwayah: .hafs,
+            serverSubdomain: "Abdul_Basit_Mujawwad_128kbps"
+        ),
+        Reciter(
+            id: "minshawi_mujawwad",
+            nameArabic: "محمد صديق المنشاوي (مجود)",
+            nameEnglish: "Mohamed Siddiq Al-Minshawi (Mujawwad)",
+            style: .mujawwad,
+            riwayah: .hafs,
+            serverSubdomain: "Minshawy_Mujawwad_192kbps"
+        ),
+        Reciter(
+            id: "husary_mujawwad",
+            nameArabic: "محمود خليل الحصري (مجود)",
+            nameEnglish: "Mahmoud Khalil Al-Husary (Mujawwad)",
+            style: .mujawwad,
+            riwayah: .hafs,
+            serverSubdomain: "Husary_128kbps_Mujawwad"
+        ),
+
+        // MARK: - Educational & Tajweed Teachers (المصحف المعلم)
+        Reciter(
+            id: "husary_muallim",
+            nameArabic: "محمود خليل الحصري (المصحف المعلم)",
+            nameEnglish: "Mahmoud Khalil Al-Husary (Teacher)",
+            style: .muallim,
+            riwayah: .hafs,
+            serverSubdomain: "Husary_Muallim_128kbps"
+        ),
+        Reciter(
+            id: "minshawi_muallim",
+            nameArabic: "محمد صديق المنشاوي (المصحف المعلم)",
+            nameEnglish: "Mohamed Siddiq Al-Minshawi (Teacher)",
+            style: .muallim,
+            riwayah: .hafs,
+            serverSubdomain: "Minshawy_Teacher_128kbps"
+        ),
+        Reciter(
+            id: "ayman_sowaid",
+            nameArabic: "د. أيمن سويد (إتقان التجويد)",
+            nameEnglish: "Dr. Ayman Sowaid",
+            style: .muallim,
+            riwayah: .hafs,
+            serverSubdomain: "Ayman_Sowaid_64kbps"
+        ),
+
+        // MARK: - Warsh 'an Nafi' (رواية ورش عن نافع)
+        Reciter(
+            id: "yassin_warsh",
+            nameArabic: "ياسين الجزائري (ورش)",
+            nameEnglish: "Yassin Al-Jazaery (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "warsh/warsh_yassin_al_jazaery_64kbps"
+        ),
+        Reciter(
+            id: "kazabri_warsh",
+            nameArabic: "عمر القزابري (ورش)",
+            nameEnglish: "Omar Al-Kazabri (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "Warsh_Omar_AlQazabri"
+        ),
+        Reciter(
+            id: "abdulbasit_warsh",
+            nameArabic: "عبد الباسط عبد الصمد (ورش)",
+            nameEnglish: "Abdul Basit (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "warsh/warsh_Abdul_Basit_128kbps"
+        ),
+        Reciter(
+            id: "ibrahim_dosari_warsh",
+            nameArabic: "إبراهيم الدوسري (ورش)",
+            nameEnglish: "Ibrahim Al-Dosari (Warsh)",
+            style: .murattal,
+            riwayah: .warsh,
+            serverSubdomain: "warsh/warsh_ibrahim_aldosary_128kbps"
         )
     ]
 }
