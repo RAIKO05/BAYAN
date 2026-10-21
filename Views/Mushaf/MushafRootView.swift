@@ -19,14 +19,12 @@ struct MushafRootView: View {
     }
 
     @State private var searchTarget: SearchTarget = .surahs
+    @State private var searchedVerses: [VerseSearchResult] = []
+    @State private var isSearchingVerses: Bool = false
+    @State private var verseSearchTask: Task<Void, Never>? = nil
 
     private var currentTheme: QuranTheme {
         themeManager.currentTheme
-    }
-
-    private var searchedVerses: [VerseSearchResult] {
-        guard !searchQuery.isEmpty else { return [] }
-        return QuranVerseText.searchAllVerses(query: searchQuery)
     }
 
     enum FilterCategory: String, CaseIterable {
@@ -90,6 +88,39 @@ struct MushafRootView: View {
             }
             .navigationDestination(item: $navigateToSurah) { surah in
                 SurahDetailView(surah: surah, initialAyah: navigateToAyah)
+            }
+            .onChange(of: searchQuery) { _, newValue in
+                triggerVerseSearch(query: newValue)
+            }
+            .onChange(of: searchTarget) { _, newTarget in
+                if newTarget == .verses && searchedVerses.isEmpty && !searchQuery.isEmpty {
+                    triggerVerseSearch(query: searchQuery)
+                }
+            }
+        }
+    }
+
+    private func triggerVerseSearch(query: String) {
+        verseSearchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard searchTarget == .verses && trimmed.count >= 2 else {
+            searchedVerses = []
+            isSearchingVerses = false
+            return
+        }
+
+        isSearchingVerses = true
+        verseSearchTask = Task {
+            try? await Task.sleep(nanoseconds: 160_000_000)
+            if Task.isCancelled { return }
+
+            let matches = await Task.detached(priority: .userInitiated) {
+                return QuranVerseText.searchAllVerses(query: trimmed, limit: 60)
+            }.value
+
+            if !Task.isCancelled {
+                self.searchedVerses = matches
+                self.isSearchingVerses = false
             }
         }
     }

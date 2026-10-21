@@ -107,6 +107,12 @@ public struct QiblaView: View {
                 )
                 .presentationDetents([.medium, .large])
             }
+            .onAppear {
+                compassManager.startUpdating()
+            }
+            .onDisappear {
+                compassManager.stopUpdating()
+            }
         }
     }
 
@@ -776,20 +782,36 @@ public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManage
         manager.headingFilter = 1.0
         manager.desiredAccuracy = kCLLocationAccuracyKilometer
         manager.requestWhenInUseAuthorization()
-        if CLLocationManager.headingAvailable() {
-            manager.startUpdatingHeading()
-        }
-        manager.startUpdatingLocation()
         #endif
     }
 
     #if os(iOS)
+    public func startUpdating() {
+        if CLLocationManager.headingAvailable() {
+            locationManager?.startUpdatingHeading()
+        }
+        if userCoordinate == nil {
+            locationManager?.startUpdatingLocation()
+        }
+    }
+
+    public func stopUpdating() {
+        locationManager?.stopUpdatingHeading()
+        locationManager?.stopUpdatingLocation()
+    }
+
+    public func refreshLocation() {
+        locationManager?.startUpdatingLocation()
+    }
+
     public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             if CLLocationManager.headingAvailable() {
                 manager.startUpdatingHeading()
             }
-            manager.startUpdatingLocation()
+            if userCoordinate == nil {
+                manager.startUpdatingLocation()
+            }
         }
     }
 
@@ -805,6 +827,9 @@ public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManage
         DispatchQueue.main.async {
             self.userCoordinate = location.coordinate
         }
+
+        // Once valid coordinates are captured, pause GPS tracking to save battery
+        manager.stopUpdatingLocation()
 
         let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
         defaults.set(location.coordinate.latitude, forKey: "bayan_last_latitude")

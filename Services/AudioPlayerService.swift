@@ -55,6 +55,7 @@ public final class AudioPlayerService: NSObject {
     // Gapless Verse Pre-buffering
     private var preloadedPlayerItem: AVPlayerItem?
     private var preloadedTarget: (surahId: Int, ayah: Int, reciterId: String)?
+    private var wasPlayingBeforeInterruption = false
 
     public override init() {
         super.init()
@@ -64,6 +65,7 @@ public final class AudioPlayerService: NSObject {
         }
         configureAudioSessionForPlayback()
         setupRemoteCommandCenter()
+        setupAudioSessionNotifications()
     }
 
     public func configureAudioSessionForPlayback() {
@@ -338,6 +340,14 @@ public final class AudioPlayerService: NSObject {
         updateNowPlayingInfo()
     }
 
+    public func resume() {
+        guard !isPlaying, player != nil else { return }
+        configureAudioSessionForPlayback()
+        player?.play()
+        isPlaying = true
+        updateNowPlayingInfo()
+    }
+
     public func stop() {
         cleanupTimeObserver()
         statusObservation?.invalidate()
@@ -472,5 +482,66 @@ public final class AudioPlayerService: NSObject {
         #endif
 
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+
+    // MARK: - Audio Session Interruption & Route Change Observers
+    private func setupAudioSessionNotifications() {
+        #if os(iOS)
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let userInfo = notification.userInfo,
+                  let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+
+            switch type {
+            case .began:
+                if self.isPlaying {
+                    self.wasPlayingBeforeInterruption = true
+                    self.pause()
+                }
+            case .ended:
+                if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+                    let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                    if options.contains(.shouldResume) && self.wasPlayingBeforeInterruption {
+                        self.resume()
+                    }
+                }
+                self.wasPlayingBeforeInterruption = false
+            @unknown default:
+                break
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let userInfo = notification.userInfo,
+                  let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+                  let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+
+            if reason == .oldDeviceUnavailable {
+                // Pauses immediately if AirPods / headphones disconnect to avoid blasting phone speakers
+                if self.isPlaying {
+                    self.pause()
+                }
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.preloadedPlayerItem = nil
+            self?.preloadedTarget = nil
+        }
+        #endif
     }
 }

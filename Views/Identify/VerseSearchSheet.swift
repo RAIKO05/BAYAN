@@ -4,6 +4,10 @@ public struct VerseSearchSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var themeManager = AppThemeManager.shared
     @State private var searchText = ""
+    @State private var results: [VerseSearchResult] = []
+    @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>? = nil
+
     public var onSelect: (RecognitionResult) -> Void
 
     public init(onSelect: @escaping (RecognitionResult) -> Void) {
@@ -12,12 +16,6 @@ public struct VerseSearchSheet: View {
 
     private var currentTheme: QuranTheme {
         themeManager.currentTheme
-    }
-
-    private var results: [VerseSearchResult] {
-        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count >= 2 else { return [] }
-        return QuranVerseText.searchAllVerses(query: trimmed, limit: 40)
     }
 
     private let suggestions: [(title: String, query: String)] = [
@@ -49,9 +47,15 @@ public struct VerseSearchSheet: View {
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
 
-                        if !searchText.isEmpty {
+                        if isSearching {
+                            ProgressView()
+                                .tint(BayanTheme.gold)
+                                .scaleEffect(0.7)
+                        } else if !searchText.isEmpty {
                             Button {
                                 searchText = ""
+                                results = []
+                                searchTask?.cancel()
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(.white.opacity(0.4))
@@ -79,6 +83,7 @@ public struct VerseSearchSheet: View {
                                     #if os(iOS)
                                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                     #endif
+                                    executeSearch(query: item.query, immediate: true)
                                 } label: {
                                     HStack(spacing: 5) {
                                         Image(systemName: "sparkles")
@@ -108,7 +113,18 @@ public struct VerseSearchSheet: View {
                         .padding(.top, 6)
 
                     // Results or Instructions List
-                    if results.isEmpty && !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    if isSearching && results.isEmpty {
+                        VStack(spacing: 14) {
+                            Spacer()
+                            ProgressView()
+                                .tint(BayanTheme.gold)
+                                .scaleEffect(1.2)
+                            Text("Searching verses...")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.7))
+                            Spacer()
+                        }
+                    } else if results.isEmpty && !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         VStack(spacing: 12) {
                             Spacer()
                             Image(systemName: "text.magnifyingglass")
@@ -200,6 +216,7 @@ public struct VerseSearchSheet: View {
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
+                        .scrollDismissesKeyboard(.immediately)
                     }
                 }
             }
@@ -211,6 +228,45 @@ public struct VerseSearchSheet: View {
                         dismiss()
                     }
                     .foregroundColor(BayanTheme.gold)
+                }
+            }
+            .onChange(of: searchText) { _, newValue in
+                executeSearch(query: newValue, immediate: false)
+            }
+            .onDisappear {
+                searchTask?.cancel()
+            }
+        }
+    }
+
+    // MARK: - Debounced Asynchronous Background Search
+    // Runs on background priority thread to ensure the UIKit keyboard remains 100% fluid and never hangs
+    private func executeSearch(query: String, immediate: Bool) {
+        searchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard trimmed.count >= 2 else {
+            results = []
+            isSearching = false
+            return
+        }
+
+        isSearching = true
+        searchTask = Task {
+            if !immediate {
+                // 150ms debounce allows rapid typing without unnecessary work
+                try? await Task.sleep(nanoseconds: 150_000_000)
+            }
+            if Task.isCancelled { return }
+
+            let matches = await Task.detached(priority: .userInitiated) {
+                return QuranVerseText.searchAllVerses(query: trimmed, limit: 50)
+            }.value
+
+            if !Task.isCancelled {
+                withAnimation(.easeOut(duration: 0.15)) {
+                    self.results = matches
+                    self.isSearching = false
                 }
             }
         }

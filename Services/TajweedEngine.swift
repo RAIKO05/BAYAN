@@ -21,6 +21,16 @@ public final class TajweedEngine: @unchecked Sendable {
 
     private init() {
         cache.countLimit = 1000 // Cache up to 1,000 verses in memory (~2MB)
+
+        #if canImport(UIKit)
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.cache.removeAllObjects()
+        }
+        #endif
     }
 
     /// Colorizes Arabic Quranic text with standard Tajweed rules using fast cached evaluation.
