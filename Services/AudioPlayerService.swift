@@ -653,8 +653,20 @@ public final class AudioPlayerService: NSObject {
     public func updateNowPlayingInfo() {
         guard let surah = currentSurah else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            #if canImport(ActivityKit)
+            QuranLyricsLiveActivityManager.shared.endActivity()
+            #endif
             return
         }
+
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.startOrUpdate(
+            surah: surah,
+            ayah: currentAyah,
+            reciter: currentReciter,
+            isPlaying: isPlaying
+        )
+        #endif
 
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: "Surah \(surah.nameEnglish) (\(surah.nameArabic))",

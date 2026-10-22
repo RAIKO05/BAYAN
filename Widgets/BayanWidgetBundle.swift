@@ -16,8 +16,9 @@ struct BayanWidgetBundle: WidgetBundle {
         BayanIdentifyWidget()
 
         #if canImport(ActivityKit)
-        // Dynamic Island & Lock Screen Live Activity
+        // Dynamic Island & Lock Screen Live Activities
         BayanPrayerLiveActivity()
+        BayanQuranLyricsLiveActivity()
         #endif
     }
 }

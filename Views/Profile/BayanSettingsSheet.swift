@@ -27,6 +27,16 @@ public struct BayanSettingsSheet: View {
     @AppStorage("bayan_translation_source") private var translationSource: String = "Sahih International"
     @AppStorage("bayan_auto_advance_ayah") private var autoAdvanceAyah: Bool = true
     @AppStorage("bayan_haptics_enabled") private var hapticsEnabled: Bool = true
+    @AppStorage("bayan_live_activity_enabled") private var isLiveActivityEnabled: Bool = true
+    @AppStorage("bayan_live_activity_mode") private var liveActivityMode: String = "lyrics"
+
+    private var liveActivityModeTitle: String {
+        switch liveActivityMode {
+        case "lyricsAndTranslation": return "Lyrics & Translation"
+        case "translationOnly": return "Translation Only"
+        default: return "Lyrics"
+        }
+    }
 
     // UI Local State
     @State private var showingSignInSheet = false
@@ -60,7 +70,10 @@ public struct BayanSettingsSheet: View {
                         // 3. Audio Recitation & Qari Section
                         audioRecitationSection
 
-                        // 4. Prayer Times & Adhan Notifications Section
+                        // 4. Lock Screen & Live Activity Section
+                        liveActivitySection
+
+                        // 5. Prayer Times & Adhan Notifications Section
                         prayerTimesSection
 
                         // 5. Appearance, Themes & Language Section
@@ -486,7 +499,42 @@ public struct BayanSettingsSheet: View {
         }
     }
 
-    // MARK: - 4. Prayer Times & Adhan Notifications Section
+    // MARK: - 4. Lock Screen & Live Activity Section
+    private var liveActivitySection: some View {
+        settingsCard(title: "LOCK SCREEN & LIVE ACTIVITY", icon: "lock.display") {
+            NavigationLink {
+                BayanLiveActivitySettingsView()
+            } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(spotifyGreen.opacity(0.18))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "waveform.badge.magnifyingglass")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(spotifyGreen)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Live Activity (Lock Screen Lyrics)")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text(isLiveActivityEnabled ? "On • \(liveActivityModeTitle)" : "Off")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(isLiveActivityEnabled ? spotifyGreen : .white.opacity(0.5))
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.3))
+                }
+            }
+        }
+    }
+
+    // MARK: - 5. Prayer Times & Adhan Notifications Section
     private var prayerTimesSection: some View {
         settingsCard(title: "PRAYER TIMES & ADHAN", icon: "clock.badge.checkmark.fill") {
             // Calculation Convention
