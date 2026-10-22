@@ -83,6 +83,8 @@
     <false/>
     <key>NSSupportsLiveActivities</key>
     <true/>
+    <key>NSSupportsLiveActivitiesFrequentUpdates</key>
+    <true/>
     
     <!-- Local Network & Bonjour Services for Multi-Platform Casting (AirPlay, Android Google Cast, Windows DLNA) -->
     <key>NSLocalNetworkUsageDescription</key>

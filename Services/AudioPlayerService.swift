@@ -242,6 +242,15 @@ public final class AudioPlayerService: NSObject {
             audioTime: 0.0
         )
 
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.startOrUpdate(
+            surah: surah,
+            ayah: ayah,
+            reciter: activeReciter,
+            isPlaying: true
+        )
+        #endif
+
         updateNowPlayingInfo()
 
         // Asynchronously preload next Ayah in background for seamless gapless playback
@@ -371,6 +380,14 @@ public final class AudioPlayerService: NSObject {
                 player?.play()
                 if playbackRate != 1.0 { player?.rate = playbackRate }
                 isPlaying = true
+                #if canImport(ActivityKit)
+                QuranLyricsLiveActivityManager.shared.startOrUpdate(
+                    surah: surah,
+                    ayah: currentAyah,
+                    reciter: currentReciter,
+                    isPlaying: true
+                )
+                #endif
                 return
             }
 
@@ -381,6 +398,14 @@ public final class AudioPlayerService: NSObject {
                 player?.play()
                 if playbackRate != 1.0 { player?.rate = playbackRate }
                 isPlaying = true
+                #if canImport(ActivityKit)
+                QuranLyricsLiveActivityManager.shared.startOrUpdate(
+                    surah: surah,
+                    ayah: currentAyah,
+                    reciter: currentReciter,
+                    isPlaying: true
+                )
+                #endif
                 return
             } else {
                 // Finished count repeats, reset counter for next Ayah
@@ -389,6 +414,9 @@ public final class AudioPlayerService: NSObject {
                     play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
                 } else {
                     isPlaying = false
+                    #if canImport(ActivityKit)
+                    QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
+                    #endif
                 }
             }
 
@@ -407,6 +435,9 @@ public final class AudioPlayerService: NSObject {
             } else {
                 // Reached the end of the Surah
                 isPlaying = false
+                #if canImport(ActivityKit)
+                QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
+                #endif
             }
         }
     }
@@ -464,6 +495,9 @@ public final class AudioPlayerService: NSObject {
         isSpeakingTranslation = false
         player?.pause()
         isPlaying = false
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
+        #endif
         updateNowPlayingInfo()
     }
 
@@ -475,6 +509,9 @@ public final class AudioPlayerService: NSObject {
             player?.rate = playbackRate
         }
         isPlaying = true
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: true)
+        #endif
         updateNowPlayingInfo()
     }
 
@@ -496,6 +533,9 @@ public final class AudioPlayerService: NSObject {
         isPlaying = false
         currentTime = 0.0
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.endActivity()
+        #endif
     }
 
     // MARK: - Recitation Speed & Playback Rate Controls
