@@ -7,9 +7,15 @@ public struct SurahOrnamentalFrameView: View {
     public let surah: Surah
     public var theme: QuranTheme = .paper
 
+    @State private var playerService = AudioPlayerService.shared
+
     public init(surah: Surah, theme: QuranTheme = .paper) {
         self.surah = surah
         self.theme = theme
+    }
+
+    private var isPlayingThisSurah: Bool {
+        playerService.isPlaying && playerService.currentSurah?.id == surah.id
     }
 
     private var surahTitleArabic: String {
@@ -89,11 +95,88 @@ public struct SurahOrnamentalFrameView: View {
                     Text("\(surah.nameEnglish) • \(surah.nameTranslation)")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(theme.headerSubtitleColor)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, 6)
+
+                    // MARK: - Play Full Surah Button (With No Stops)
+                    HStack(spacing: 10) {
+                        Button {
+                            togglePlayFullSurah()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: isPlayingThisSurah ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 13, weight: .bold))
+
+                                Text(isPlayingThisSurah ? "Pause Recitation" : "Play Full Surah")
+                                    .font(.system(size: 13, weight: .bold))
+
+                                if isPlayingThisSurah {
+                                    HStack(spacing: 3) {
+                                        Text("•")
+                                        Text("Ayah \(playerService.currentAyah)/\(surah.totalAyahs)")
+                                    }
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .opacity(0.85)
+                                }
+                            }
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 8)
+                            .background(
+                                LinearGradient(
+                                    colors: [BayanTheme.gold, BayanTheme.goldSoft],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: BayanTheme.gold.opacity(0.35), radius: 6, y: 2)
+                        }
+                        .buttonStyle(.plain)
+
+                        if playerService.currentSurah?.id == surah.id && playerService.currentAyah > 1 {
+                            Button {
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                #endif
+                                playerService.repeatMode = .off
+                                playerService.play(surah: surah, ayah: 1)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "backward.end.fill")
+                                        .font(.system(size: 10))
+                                    Text("From Ayah 1")
+                                        .font(.system(size: 11, weight: .bold))
+                                }
+                                .foregroundColor(theme.activeCardBorder)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(Color.white.opacity(0.08))
+                                .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.bottom, 12)
                 }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
+    }
+
+    private func togglePlayFullSurah() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        #endif
+
+        if isPlayingThisSurah {
+            playerService.pause()
+        } else if playerService.currentSurah?.id == surah.id {
+            playerService.resume()
+        } else {
+            // Start playing from Ayah 1 with continuous sequential progression (no stops)
+            playerService.repeatMode = .off
+            playerService.play(surah: surah, ayah: 1)
+        }
     }
 }

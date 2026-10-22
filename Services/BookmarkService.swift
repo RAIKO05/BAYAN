@@ -50,6 +50,18 @@ public final class BookmarkService {
         saveBookmarks()
     }
 
+    public func clearAllBookmarks() {
+        bookmarks.removeAll()
+        saveBookmarks()
+    }
+
+    public func exportBookmarksJSON() -> URL? {
+        guard let data = try? JSONEncoder().encode(bookmarks) else { return nil }
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Bayan_Sacred_Bookmarks.json")
+        try? data.write(to: tempURL)
+        return tempURL
+    }
+
     private func saveBookmarks() {
         if let encoded = try? JSONEncoder().encode(bookmarks) {
             UserDefaults.standard.set(encoded, forKey: storageKey)

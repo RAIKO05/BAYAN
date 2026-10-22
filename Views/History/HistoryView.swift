@@ -16,13 +16,11 @@ public struct HistoryView: View {
     @State private var selectedTafsirAyah: Int = 1
 
     // Sheets
+    @State private var showingSettingsSheet = false
     @State private var showingSignInSheet = false
     @State private var showingEditProfileSheet = false
     @State private var showingDiscoverFriendsSheet = false
     @State private var showingLanguageSheet = false
-    @State private var showingThemeSheet = false
-    @State private var showingCloudSyncSheet = false
-    @State private var showingSupportSheet = false
     @State private var showingShareProfileSheet = false
 
     private let spotifyGreen = Color(red: 0.18, green: 0.85, blue: 0.50)
@@ -89,7 +87,7 @@ public struct HistoryView: View {
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    // Discover & Add Friends
+                    // Discover & Add Companions
                     Button {
                         showingDiscoverFriendsSheet = true
                         #if os(iOS)
@@ -101,30 +99,22 @@ public struct HistoryView: View {
                             .foregroundColor(BayanTheme.goldSoft)
                     }
 
-                    // Favorites / Support
+                    // Settings Button
                     Button {
-                        showingSupportSheet = true
+                        showingSettingsSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
                     } label: {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(BayanTheme.goldSoft)
-                    }
-
-                    // iCloud Sync
-                    Button {
-                        showingCloudSyncSheet = true
-                    } label: {
-                        Image(systemName: "icloud.and.arrow.up")
-                            .foregroundColor(BayanTheme.goldSoft)
-                    }
-
-                    // Theme Picker
-                    Button {
-                        showingThemeSheet = true
-                    } label: {
-                        Image(systemName: "paintpalette.fill")
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(BayanTheme.goldSoft)
                     }
                 }
+            }
+            .sheet(isPresented: $showingSettingsSheet) {
+                BayanSettingsSheet()
+                    .presentationDetents([.large])
             }
             .sheet(isPresented: $showingSignInSheet) {
                 BayanSignInSheet()
@@ -145,18 +135,6 @@ public struct HistoryView: View {
             .sheet(isPresented: $showingLanguageSheet) {
                 LanguagePickerSheet()
                     .presentationDetents([.medium])
-            }
-            .sheet(isPresented: $showingThemeSheet) {
-                ThemePickerSheet()
-                    .presentationDetents([.medium, .large])
-            }
-            .sheet(isPresented: $showingCloudSyncSheet) {
-                CloudSyncSheet()
-                    .presentationDetents([.large])
-            }
-            .sheet(isPresented: $showingSupportSheet) {
-                SupportBayanSheet()
-                    .presentationDetents([.large])
             }
             .sheet(isPresented: $showingShareProfileSheet) {
                 ShareSheetView(activityItems: [
@@ -220,6 +198,20 @@ public struct HistoryView: View {
                         .font(.system(size: 13, weight: .medium, design: .monospaced))
                         .foregroundColor(spotifyGreen)
 
+                    if authService.isSignedIn, let user = authService.currentUser {
+                        HStack(spacing: 4) {
+                            Image(systemName: user.provider == .apple ? "apple.logo" : (user.provider == .google ? "globe" : "envelope.fill"))
+                                .font(.system(size: 9))
+                            Text(user.email)
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.white.opacity(0.06))
+                        .clipShape(Capsule())
+                    }
+
                     Text(socialService.profile.bio)
                         .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.70))
@@ -244,91 +236,8 @@ public struct HistoryView: View {
             .background(Color.white.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-            // Account & Sign In Quick Section (Apple, Google/Gmail, Email)
-            if authService.isSignedIn, let user = authService.currentUser {
-                HStack(spacing: 8) {
-                    Image(systemName: user.provider == .apple ? "apple.logo" : (user.provider == .google ? "globe" : "envelope.fill"))
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(spotifyGreen)
-
-                    Text("\(user.provider.rawValue): \(user.email)")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.85))
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    Button("Sign Out") {
-                        authService.signOut()
-                    }
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.white.opacity(0.6))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(Capsule())
-                }
-                .padding(10)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            } else {
-                HStack(spacing: 8) {
-                    // Sign in with Apple
-                    Button {
-                        showingSignInSheet = true
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "apple.logo")
-                                .font(.system(size: 12, weight: .bold))
-                            Text("Apple")
-                                .font(.system(size: 12, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
-                        .background(Color.white.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    }
-
-                    // Sign in with Google / Gmail
-                    Button {
-                        showingSignInSheet = true
-                    } label: {
-                        HStack(spacing: 5) {
-                            Text("G")
-                                .font(.system(size: 12, weight: .black, design: .rounded))
-                                .foregroundColor(Color(red: 0.26, green: 0.52, blue: 0.96))
-                            Text("Google")
-                                .font(.system(size: 12, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
-                        .background(Color.white.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    }
-
-                    // Sign in with Email
-                    Button {
-                        showingSignInSheet = true
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "envelope.fill")
-                                .font(.system(size: 11))
-                            Text("Email")
-                                .font(.system(size: 12, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
-                        .background(Color.white.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    }
-                }
-            }
-
-            // Action Buttons: Edit Profile, Share, Discover
-            HStack(spacing: 10) {
+            // Action Buttons: Edit Profile & Share (Minimalist & Clean)
+            HStack(spacing: 12) {
                 Button {
                     showingEditProfileSheet = true
                     #if os(iOS)
@@ -342,42 +251,27 @@ public struct HistoryView: View {
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 9)
+                    .padding(.vertical, 10)
                     .background(Color.white.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
                 Button {
                     showingShareProfileSheet = true
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share")
-                    }
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 9)
-                    .background(Color.white.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                }
-
-                Button {
-                    showingDiscoverFriendsSheet = true
                     #if os(iOS)
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     #endif
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "person.badge.plus")
-                        Text("Companions")
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share Profile")
                     }
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 9)
-                    .background(spotifyGreen)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .padding(.vertical, 10)
+                    .background(Color.white.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
             }
         }
@@ -390,6 +284,12 @@ public struct HistoryView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(BayanTheme.gold.opacity(0.25), lineWidth: 1)
         )
+        .onLongPressGesture(minimumDuration: 0.4) {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            #endif
+            showingSettingsSheet = true
+        }
     }
 
     private func statItem(title: String, value: String) -> some View {

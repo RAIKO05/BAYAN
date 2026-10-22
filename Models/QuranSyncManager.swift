@@ -55,6 +55,11 @@ public final class QuranSyncManager {
         }
     }
 
+    public func clearRecognitionHistory() {
+        recentRecognitions.removeAll()
+        saveHistory()
+    }
+
     private func saveHistory() {
         if let encoded = try? JSONEncoder().encode(recentRecognitions) {
             UserDefaults.standard.set(encoded, forKey: historyStorageKey)

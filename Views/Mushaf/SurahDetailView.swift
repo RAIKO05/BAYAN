@@ -22,6 +22,8 @@ struct SurahDetailView: View {
     }
 
     @AppStorage("bayan_tajweed_mode") private var isTajweedEnabled: Bool = false
+    @AppStorage("bayan_arabic_font_size") private var arabicFontSize: Double = 26.0
+    @AppStorage("bayan_show_translation") private var showTranslation: Bool = true
     @State private var themeManager = AppThemeManager.shared
 
     private var currentTheme: QuranTheme {
@@ -412,7 +414,7 @@ private struct AyahRow: View {
             // Arabic Verse: Plain or Tajweed Color-Coded
             if isTajweedEnabled {
                 Text(TajweedEngine.shared.colorize(arabicText: ayahArabic))
-                    .font(.quran(size: 26))
+                    .font(.quran(size: CGFloat(arabicFontSize)))
                     .multilineTextAlignment(.trailing)
                     .lineSpacing(12)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -421,7 +423,7 @@ private struct AyahRow: View {
                     }
             } else {
                 Text(ayahArabic)
-                    .font(.quran(size: 26))
+                    .font(.quran(size: CGFloat(arabicFontSize)))
                     .multilineTextAlignment(.trailing)
                     .lineSpacing(12)
                     .foregroundColor(isActive ? theme.activeArabicTextColor : theme.arabicTextColor)
@@ -431,15 +433,17 @@ private struct AyahRow: View {
                     }
             }
 
-            // English Translation (Tappable for Tafsir)
-            Text(ayahEnglish)
-                .font(.system(size: 15, weight: .regular))
-                .foregroundColor(theme.translationTextColor)
-                .lineSpacing(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onTapGesture {
-                    onTafsirTap()
-                }
+            // English Translation (Tappable for Tafsir, optional via settings)
+            if showTranslation && !ayahEnglish.isEmpty {
+                Text(ayahEnglish)
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundColor(theme.translationTextColor)
+                    .lineSpacing(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .onTapGesture {
+                        onTafsirTap()
+                    }
+            }
         }
         .padding(18)
         .background(isActive ? theme.activeCardFill : theme.cardBackground)

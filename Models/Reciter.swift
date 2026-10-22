@@ -49,7 +49,8 @@ public struct Reciter: Identifiable, Codable, Hashable {
         }
 
         if id == "omardiaa" {
-            return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
+            // Authentic Omar Bn DiaaAldeen (عمر بن ضياء الدين) recitation from Archive.org
+            return URL(string: "https://archive.org/download/20240229_20240229_1756/\(surahStr).mp3")
         }
 
         let urlString = "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3"
@@ -69,8 +70,17 @@ public struct Reciter: Identifiable, Codable, Hashable {
         serverSubdomain: "Alafasy_128kbps"
     )
 
-    // Curated standard reciters catalog (36 world-renowned Qura'a)
+    // Curated standard reciters catalog (37 world-renowned Qura'a)
     public static let standardCatalog: [Reciter] = [
+        // MARK: - User Favorite Reciter: Omar Bn DiaaAldeen
+        Reciter(
+            id: "omardiaa",
+            nameArabic: "عمر بن ضياء الدين",
+            nameEnglish: "Omar Bn DiaaAldeen",
+            style: .murattal,
+            riwayah: .hafs,
+            serverSubdomain: "Omar_Diaa_Aldeen"
+        ),
         // MARK: - Most Popular / Al-Haramain Imams
         Reciter(
             id: "alafasy",

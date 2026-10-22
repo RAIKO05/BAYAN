@@ -6,6 +6,7 @@ public struct MainTabView: View {
     @State private var themeManager = AppThemeManager.shared
     @State private var languageManager = AppLanguageManager.shared
     @State private var showingLanguageSheet = false
+    @State private var showingSettingsSheet = false
 
     public enum TabItem: Hashable, CaseIterable {
         case identify
@@ -76,7 +77,7 @@ public struct MainTabView: View {
                 }
 
                 // Image 1: WhatsApp Floating Capsule Tab Bar
-                WhatsAppFloatingTabBar(selectedTab: $selectedTab)
+                WhatsAppFloatingTabBar(selectedTab: $selectedTab, showingSettingsSheet: $showingSettingsSheet)
             }
             .frame(maxWidth: 580)
             .padding(.horizontal, 14)
@@ -101,6 +102,10 @@ public struct MainTabView: View {
         .sheet(isPresented: $showingLanguageSheet) {
             LanguagePickerSheet()
                 .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showingSettingsSheet) {
+            BayanSettingsSheet()
+                .presentationDetents([.large])
         }
     }
 
@@ -169,6 +174,7 @@ public struct MainTabView: View {
 // 4. Circular profile avatar on 5th "You" tab
 public struct WhatsAppFloatingTabBar: View {
     @Binding var selectedTab: MainTabView.TabItem
+    @Binding var showingSettingsSheet: Bool
     @State private var themeManager = AppThemeManager.shared
     @Namespace private var tabNamespace
 
@@ -261,6 +267,31 @@ public struct WhatsAppFloatingTabBar: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.35).onEnded { _ in
+                        if tab == .you {
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                            selectedTab = .you
+                            showingSettingsSheet = true
+                        }
+                    }
+                )
+                .contextMenu {
+                    if tab == .you {
+                        Button {
+                            showingSettingsSheet = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape.fill")
+                        }
+                        Button {
+                            selectedTab = .you
+                        } label: {
+                            Label("View Profile", systemImage: "person.crop.circle")
+                        }
+                    }
+                }
             }
         }
         .padding(.horizontal, 6)

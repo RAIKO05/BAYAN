@@ -168,4 +168,29 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
             print("⚠️ Audio download task failed: \(err)")
         }
     }
+
+    // MARK: - Cache Storage Diagnostics & Cleanup
+    public func totalCacheSizeBytes() -> Int64 {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: baseCacheURL, includingPropertiesForKeys: [.fileSizeKey]) else {
+            return 0
+        }
+        var total: Int64 = 0
+        for file in files {
+            if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                total += Int64(size)
+            }
+        }
+        return total
+    }
+
+    public func clearAllAudioCache() {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: baseCacheURL, includingPropertiesForKeys: nil) else {
+            return
+        }
+        for file in files {
+            try? FileManager.default.removeItem(at: file)
+        }
+        activeDownloads.removeAll()
+        downloadProgress.removeAll()
+    }
 }
