@@ -322,6 +322,9 @@ private struct AyahRow: View {
     let onPlayTap: () -> Void
     var onTafsirTap: () -> Void = {}
 
+    @AppStorage("bayan_arabic_font_size") private var arabicFontSize: Double = 26.0
+    @AppStorage("bayan_show_translation") private var showTranslation: Bool = true
+
     private var ayahArabic: String {
         QuranVerseText.formattedAyah(surahId: surah.id, ayahNumber: ayahNumber)
     }
