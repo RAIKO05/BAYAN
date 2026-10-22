@@ -99,7 +99,7 @@ public final class AppLanguageManager {
             "tab_mushaf": "المصحف",
             "tab_prayers": "الصلوات",
             "tab_adkar": "الأذكار",
-            "tab_history": "السجل",
+            "tab_history": "الملف الشخصي",
 
             // Prayers
             "prayer_fajr": "الفجر",
@@ -150,7 +150,7 @@ public final class AppLanguageManager {
             "tab_mushaf": "Coran",
             "tab_prayers": "Prières",
             "tab_adkar": "Invocations",
-            "tab_history": "Historique",
+            "tab_history": "Profil",
 
             // Prayers
             "prayer_fajr": "Fajr",
@@ -201,7 +201,7 @@ public final class AppLanguageManager {
             "tab_mushaf": "Mushaf",
             "tab_prayers": "Prayers",
             "tab_adkar": "Adkar",
-            "tab_history": "History",
+            "tab_history": "Profile",
 
             // Prayers
             "prayer_fajr": "Fajr",

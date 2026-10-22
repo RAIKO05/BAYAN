@@ -78,6 +78,14 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Islamic Social Profile & Friends Listening Feed (الصحبة الصالحة)**: Transformed the "You" tab into a personal spiritual profile & social media companion feed:
+              - 👤 **Customizable Social Profile**: Personal avatar with customizable Islamic badges (👑 Royal Monogram, 🌙 Crescent, 🕋 Kaaba, 📿 Tasbih, 🕊️ Peace, 🕌 Minaret), display name, username handle (`@mouad_bayan`), bio, followers/following counters, and daily recitation streak (`🔥 14d`).
+              - 🟢 **Live Recitation Broadcast**: Real-time status banner broadcasting what Surah, Ayah & Reciter you are listening to live with active animated equalizers.
+              - 👥 **Spotify-Style Friends Activity Feed**: Live stream of followed friends showing what they're listening to right now, their reflection notes, and their Khatmah progress.
+              - 🎧 **1-Tap "Listen Along"**: Instantly synchronize and listen along with any friend's Surah and reciter in 1 tap.
+              - 🤲 **Interactive Du'a Reactions**: Send encouragement and spiritual reactions (`🤲`, `✨`, `❤️`) with interactive counters and haptic feedback.
+              - 🔍 **Discover & Add Companions**: Search friends by username or follow suggested Muslim scholars and reciters.
+              - 📖 **My Recitations, Bookmarks & Khatmah Tabs**: Seamlessly unified personal recognition history, saved verses, and Khatmah reading stats into the profile.
             - **Universal Cast Button (AirPlay, Android & Windows)**: Dedicated Cast & Connect sheet (`BayanCastSheet`) to stream Quran recitation across all devices:
               - 🍎 **Apple AirPlay & Bluetooth**: 1-tap native AirPlay 2 picker for HomePod, Apple TV, Mac, and AirPods.
               - 🤖 **Android & Google Cast**: Stream to Chromecast, Android TV, Google Nest, and any Android phone/tablet.

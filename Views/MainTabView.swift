@@ -20,7 +20,7 @@ public struct MainTabView: View {
             case .mushaf: return "Mushaf"
             case .qibla: return "Prayers"
             case .adkar: return "Adhkar"
-            case .you: return "You"
+            case .you: return "Profile"
             }
         }
 
