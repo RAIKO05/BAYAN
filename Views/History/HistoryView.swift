@@ -643,7 +643,7 @@ public struct HistoryView: View {
                         if let reciter = item.reciter {
                             HStack(spacing: 4) {
                                 Text("🗣️").font(.caption)
-                                Text(reciter).font(.caption).foregroundColor(spotifyGreen)
+                                Text(reciter.nameEnglish).font(.caption).foregroundColor(spotifyGreen)
                             }
                         }
 
@@ -733,7 +733,7 @@ public struct HistoryView: View {
                                 .font(.title3.weight(.bold))
                                 .foregroundColor(BayanTheme.goldSoft)
                             Spacer()
-                            Text(bookmark.createdAt, format: .dateTime.month().day())
+                            Text(bookmark.dateAdded, format: .dateTime.month().day())
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
