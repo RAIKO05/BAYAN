@@ -144,7 +144,7 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
                   let surahId = Int(parts[1]),
                   let surah = QuranDataService.shared.surah(for: surahId) else { continue }
             let reciterId = String(parts[0])
-            let reciter = Reciter.standardCatalog.first(where: { $0.id == reciterId }) ?? Reciter.alafasy
+            let reciter = Reciter.standardCatalog.first(where: { $0.id == reciterId }) ?? Reciter.standardCatalog[0]
             results.append(DownloadedSurahInfo(
                 surah: surah,
                 reciter: reciter,

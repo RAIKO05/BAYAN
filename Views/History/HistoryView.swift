@@ -440,7 +440,7 @@ public struct HistoryView: View {
                 Spacer()
 
                 Button {
-                    khatmahService.markPageRead()
+                    khatmahService.incrementPage()
                     #if os(iOS)
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     #endif
