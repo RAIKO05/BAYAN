@@ -714,78 +714,21 @@ public struct HistoryView: View {
                 }
             } else {
                 ForEach(syncManager.recentRecognitions) { item in
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text(item.surah.nameArabic)
-                                .font(.title3.weight(.bold))
-                                .foregroundColor(BayanTheme.goldSoft)
-                            Spacer()
-                            Text(item.recognizedAt, format: .dateTime.month().day().hour().minute())
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                    RecitationHistoryCard(
+                        item: item,
+                        onPlay: {
+                            playerService.play(surah: item.surah, ayah: item.startAyah)
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                        },
+                        onTafsir: {
+                            selectedTafsirSurah = item.surah
+                            selectedTafsirAyah = item.startAyah
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
                         }
-
-                        Text("\(item.surah.nameEnglish) • Ayah \(item.startAyah)–\(item.endAyah)")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-
-                        HStack(spacing: 4) {
-                            Text("🗣️").font(.caption)
-                            Text(item.reciter.nameEnglish).font(.caption).foregroundColor(spotifyGreen)
-                        }
-
-                        Text(item.arabicSnippet)
-                            .font(.system(size: 16, design: .serif))
-                            .foregroundColor(themeManager.currentTheme.primaryTextColor)
-                            .multilineTextAlignment(.trailing)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .lineSpacing(6)
-
-                        HStack {
-                            Button {
-                                playerService.play(surah: item.surah, ayah: item.startAyah)
-                                #if os(iOS)
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                #endif
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "play.fill")
-                                    Text("Play Recitation")
-                                }
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.black)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 7)
-                                .background(BayanTheme.gold)
-                                .clipShape(Capsule())
-                            }
-
-                            Button {
-                                selectedTafsirSurah = item.surah
-                                selectedTafsirAyah = item.startAyah
-                                #if os(iOS)
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                #endif
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "book.pages")
-                                    Text("Tafsir")
-                                }
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(BayanTheme.goldSoft)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 7)
-                                .background(Color.white.opacity(0.08))
-                                .clipShape(Capsule())
-                            }
-                        }
-                    }
-                    .padding(16)
-                    .background(Color(red: 0.11, green: 0.12, blue: 0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(BayanTheme.gold.opacity(0.2), lineWidth: 1)
                     )
                 }
             }
@@ -814,83 +757,25 @@ public struct HistoryView: View {
                 }
             } else {
                 ForEach(bookmarkService.bookmarks) { bookmark in
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text(bookmark.surahNameArabic)
-                                .font(.title3.weight(.bold))
-                                .foregroundColor(BayanTheme.goldSoft)
-                            Spacer()
-                            Button {
-                                #if os(iOS)
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                #endif
-                                bookmarkService.removeBookmark(id: bookmark.id)
-                            } label: {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.white.opacity(0.45))
-                                    .padding(6)
-                                    .background(Circle().fill(Color.white.opacity(0.06)))
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        Text("\(bookmark.surahNameEnglish) • Ayah \(bookmark.ayahNumber)")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-
-                        Text(bookmark.arabicText)
-                            .font(.system(size: 16, design: .serif))
-                            .foregroundColor(themeManager.currentTheme.primaryTextColor)
-                            .multilineTextAlignment(.trailing)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .lineSpacing(6)
-
-                        Text(bookmark.translationText)
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-
-                        HStack {
+                    BookmarkItemCard(
+                        bookmark: bookmark,
+                        onDelete: {
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                            bookmarkService.removeBookmark(id: bookmark.id)
+                        },
+                        onPlay: {
                             if let surah = QuranDataService.shared.surah(for: bookmark.surahId) {
-                                Button {
-                                    playerService.play(surah: surah, ayah: bookmark.ayahNumber)
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "play.fill")
-                                        Text("Play")
-                                    }
-                                    .font(.caption.weight(.bold))
-                                    .foregroundColor(.black)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 7)
-                                    .background(BayanTheme.gold)
-                                    .clipShape(Capsule())
-                                }
-
-                                Button {
-                                    selectedTafsirSurah = surah
-                                    selectedTafsirAyah = bookmark.ayahNumber
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "book.pages")
-                                        Text("Tafsir")
-                                    }
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(BayanTheme.goldSoft)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 7)
-                                    .background(Color.white.opacity(0.08))
-                                    .clipShape(Capsule())
-                                }
+                                playerService.play(surah: surah, ayah: bookmark.ayahNumber)
+                            }
+                        },
+                        onTafsir: {
+                            if let surah = QuranDataService.shared.surah(for: bookmark.surahId) {
+                                selectedTafsirSurah = surah
+                                selectedTafsirAyah = bookmark.ayahNumber
                             }
                         }
-                    }
-                    .padding(16)
-                    .background(Color(red: 0.11, green: 0.12, blue: 0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(BayanTheme.gold.opacity(0.2), lineWidth: 1)
                     )
                 }
             }
@@ -999,4 +884,157 @@ private struct ShareSheetView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// MARK: - Standalone Recitation History Card
+private struct RecitationHistoryCard: View {
+    let item: RecognitionResult
+    let onPlay: () -> Void
+    let onTafsir: () -> Void
+
+    private let spotifyGreen = Color(red: 0.18, green: 0.85, blue: 0.50)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(item.surah.nameArabic)
+                    .font(.title3.weight(.bold))
+                    .foregroundColor(BayanTheme.goldSoft)
+                Spacer()
+                Text(item.recognizedAt, format: .dateTime.month().day().hour().minute())
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Text("\(item.surah.nameEnglish) • Ayah \(item.startAyah)–\(item.endAyah)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white)
+
+            HStack(spacing: 4) {
+                Text("🗣️").font(.caption)
+                Text(item.reciter.nameEnglish).font(.caption).foregroundColor(spotifyGreen)
+            }
+
+            Text(item.arabicSnippet)
+                .font(.system(size: 16, design: .serif))
+                .foregroundColor(.white.opacity(0.95))
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .lineSpacing(6)
+
+            HStack {
+                Button(action: onPlay) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "play.fill")
+                        Text("Play Recitation")
+                    }
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(BayanTheme.gold)
+                    .clipShape(Capsule())
+                }
+
+                Button(action: onTafsir) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "book.pages")
+                        Text("Tafsir")
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(BayanTheme.goldSoft)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(red: 0.11, green: 0.12, blue: 0.15))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(BayanTheme.gold.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Standalone Bookmark Item Card
+private struct BookmarkItemCard: View {
+    let bookmark: AyahBookmark
+    let onDelete: () -> Void
+    let onPlay: () -> Void
+    let onTafsir: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(bookmark.surahNameArabic)
+                    .font(.title3.weight(.bold))
+                    .foregroundColor(BayanTheme.goldSoft)
+                Spacer()
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 13))
+                        .foregroundColor(.white.opacity(0.45))
+                        .padding(6)
+                        .background(Circle().fill(Color.white.opacity(0.06)))
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text("\(bookmark.surahNameEnglish) • Ayah \(bookmark.ayahNumber)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white)
+
+            Text(bookmark.arabicText)
+                .font(.system(size: 16, design: .serif))
+                .foregroundColor(.white.opacity(0.95))
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .lineSpacing(6)
+
+            if !bookmark.translationText.isEmpty {
+                Text(bookmark.translationText)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+
+            HStack {
+                Button(action: onPlay) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "play.fill")
+                        Text("Play")
+                    }
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(BayanTheme.gold)
+                    .clipShape(Capsule())
+                }
+
+                Button(action: onTafsir) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "book.pages")
+                        Text("Tafsir")
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(BayanTheme.goldSoft)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(red: 0.11, green: 0.12, blue: 0.15))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(BayanTheme.gold.opacity(0.2), lineWidth: 1)
+        )
+    }
 }
