@@ -48,12 +48,12 @@ public struct BayanNowPlayingSheet: View {
 
     public var body: some View {
         ZStack {
-            // Dynamic Mood Atmosphere Background (matching album artwork)
+            // Dynamic Mood Atmosphere Background (Matching Spotify Midnight Indigo/Obsidian Canvas)
             LinearGradient(
                 colors: [
-                    Color(red: 0.16, green: 0.11, blue: 0.06),
-                    Color(red: 0.08, green: 0.08, blue: 0.10),
-                    Color(red: 0.04, green: 0.04, blue: 0.05)
+                    Color(red: 0.08, green: 0.11, blue: 0.18),
+                    Color(red: 0.05, green: 0.06, blue: 0.10),
+                    Color(red: 0.03, green: 0.03, blue: 0.05)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -61,35 +61,48 @@ public struct BayanNowPlayingSheet: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // MARK: - 1. Top Navigation Bar
-                HStack {
-                    // Chevron Down to collapse
+                // MARK: - 1. Top Navigation Bar (Spotify Glass Header Style)
+                HStack(alignment: .center) {
+                    // Circular Translucent Glass Chevron Button
                     Button {
                         dismiss()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
                     } label: {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
+                        ZStack {
+                            Circle()
+                                .fill(Color(red: 0.22, green: 0.25, blue: 0.35).opacity(0.65))
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                                )
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.white)
+                        }
                     }
+                    .buttonStyle(.plain)
 
                     Spacer()
 
-                    // Header Context
+                    // Header Context (Centered Title)
                     VStack(spacing: 2) {
                         Text("PLAYING FROM SURAH")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 9.5, weight: .bold))
                             .tracking(1.2)
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.white.opacity(0.60))
 
                         Text("Surah \(currentSurah.nameEnglish) (\(currentSurah.nameArabic))")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 13.5, weight: .bold))
                             .foregroundColor(.white)
+                            .lineLimit(1)
                     }
 
                     Spacer()
 
-                    // More Options Button
+                    // Circular Translucent Glass More Options Button
                     Menu {
                         Button {
                             showingTafsirSheet = true
@@ -113,14 +126,23 @@ public struct BayanNowPlayingSheet: View {
                             Label("Copy Ayah Text", systemImage: "doc.on.doc")
                         }
                     } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
+                        ZStack {
+                            Circle()
+                                .fill(Color(red: 0.22, green: 0.25, blue: 0.35).opacity(0.65))
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                                )
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 12)
+                .padding(.top, 6)
 
                 // MARK: - 2. Upper Card: Cover Art, Title & Green Checkmark
                 HStack(spacing: 14) {
@@ -504,6 +526,17 @@ public struct BayanNowPlayingSheet: View {
             SleepTimerPickerSheet()
                 .presentationDetents([.medium])
         }
+        .gesture(
+            DragGesture(minimumDistance: 25)
+                .onEnded { value in
+                    if value.translation.height > 90 {
+                        dismiss()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    }
+                }
+        )
     }
 
     // MARK: - Synchronized Lyrics View (Quran Verses)

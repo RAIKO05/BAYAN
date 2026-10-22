@@ -4,6 +4,8 @@ struct SurahDetailView: View {
     let surah: Surah
     var initialAyah: Int = 1
 
+    @Environment(\.dismiss) private var dismiss
+
     @State private var playerService = AudioPlayerService.shared
     @State private var syncManager = QuranSyncManager.shared
     @State private var downloadService = QuranAudioDownloadService.shared
@@ -206,15 +208,58 @@ struct SurahDetailView: View {
                 }
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(
+            currentTheme.isDark ? Color(red: 0.08, green: 0.09, blue: 0.12).opacity(0.94) : currentTheme.backgroundColor.opacity(0.94),
+            for: .navigationBar
+        )
         .toolbar {
+            // MARK: - Spotify-Style Circular Glass Back Button
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color(red: 0.20, green: 0.23, blue: 0.32).opacity(0.65))
+                            .frame(width: 36, height: 36)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
+            // MARK: - Centered Pinned Surah Header Title
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 2) {
+                    Text("Surah \(surah.nameEnglish)")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white.opacity(0.9))
+                    Text(surah.nameArabic)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(currentTheme.toolbarAccentColor)
+                }
+            }
+
+            // MARK: - Trailing Actions Inside Spotify-Style Glass Capsule
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     // Theme Appearance Picker Button
                     Button {
                         showingThemeSheet = true
                     } label: {
                         Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 13))
                             .foregroundColor(currentTheme.toolbarAccentColor)
                     }
 
@@ -225,11 +270,12 @@ struct SurahDetailView: View {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         #endif
                     } label: {
-                        HStack(spacing: 3) {
+                        HStack(spacing: 2) {
                             Image(systemName: playerService.repeatMode.iconName)
+                                .font(.system(size: 13))
                             if playerService.repeatMode.isRepeating {
                                 Text(playerService.repeatMode.title)
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(.system(size: 10, weight: .bold))
                             }
                         }
                         .foregroundColor(playerService.repeatMode.isRepeating ? currentTheme.toolbarAccentColor : currentTheme.toolbarItemColor)
@@ -240,7 +286,7 @@ struct SurahDetailView: View {
                         showingReciterSheet = true
                     } label: {
                         Text("🗣️")
-                            .font(.system(size: 16))
+                            .font(.system(size: 14))
                     }
 
                     // Favorite Button
@@ -248,9 +294,17 @@ struct SurahDetailView: View {
                         syncManager.toggleFavorite(surahId: surah.id)
                     } label: {
                         Image(systemName: syncManager.favoriteSurahIds.contains(surah.id) ? "heart.fill" : "heart")
+                            .font(.system(size: 13))
                             .foregroundColor(currentTheme.toolbarAccentColor)
                     }
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(Color(red: 0.20, green: 0.23, blue: 0.32).opacity(0.55))
+                        .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 0.8))
+                )
             }
         }
         .sheet(isPresented: $showingThemeSheet) {

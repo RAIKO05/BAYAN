@@ -140,6 +140,13 @@ public final class AudioPlayerService: NSObject {
     }
 
     public func play(surah: Surah, ayah: Int = 1, reciter: Reciter? = nil) {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async {
+                self.play(surah: surah, ayah: ayah, reciter: reciter)
+            }
+            return
+        }
+
         let activeReciter = reciter ?? self.currentReciter
         self.currentSurah = surah
         self.currentAyah = ayah
@@ -161,7 +168,6 @@ public final class AudioPlayerService: NSObject {
         }
 
         configureAudioSessionForPlayback()
-        cleanupTimeObserver()
         statusObservation?.invalidate()
         statusObservation = nil
 
@@ -171,8 +177,6 @@ public final class AudioPlayerService: NSObject {
             speechSynthesizer?.stopSpeaking(at: .immediate)
         }
         isSpeakingTranslation = false
-
-        player?.pause()
 
         let playerItem: AVPlayerItem
         if let preloaded = preloadedPlayerItem,
@@ -184,13 +188,22 @@ public final class AudioPlayerService: NSObject {
         } else {
             playerItem = AVPlayerItem(url: url)
         }
-        playerItem.preferredForwardBufferDuration = 10.0
+        playerItem.preferredForwardBufferDuration = 5.0
         playerItem.audioTimePitchAlgorithm = .timeDomain
 
-        let newPlayer = AVPlayer(playerItem: playerItem)
-        newPlayer.automaticallyWaitsToMinimizeStalling = true
-        newPlayer.volume = 1.0
-        self.player = newPlayer
+        // Continuous zero-stop item replacement on the persistent AVPlayer
+        if let existingPlayer = self.player {
+            existingPlayer.replaceCurrentItem(with: playerItem)
+            existingPlayer.playImmediately(atRate: playbackRate)
+        } else {
+            cleanupTimeObserver()
+            let newPlayer = AVPlayer(playerItem: playerItem)
+            newPlayer.automaticallyWaitsToMinimizeStalling = false
+            newPlayer.volume = 1.0
+            self.player = newPlayer
+            setupTimeObserver()
+            newPlayer.playImmediately(atRate: playbackRate)
+        }
 
         // Observe player item status to catch duration and errors
         statusObservation = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
@@ -207,8 +220,6 @@ public final class AudioPlayerService: NSObject {
             }
         }
 
-        setupTimeObserver()
-
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
         NotificationCenter.default.addObserver(
             self,
@@ -217,10 +228,6 @@ public final class AudioPlayerService: NSObject {
             object: playerItem
         )
 
-        newPlayer.play()
-        if playbackRate != 1.0 {
-            newPlayer.rate = playbackRate
-        }
         self.isPlaying = true
 
         if case .repeatAyah(let count) = repeatMode {
@@ -318,31 +325,33 @@ public final class AudioPlayerService: NSObject {
     }
 
     @objc private func playerItemDidFinishPlaying() {
-        guard let surah = currentSurah else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let surah = self.currentSurah else { return }
 
-        // 1. Bedtime Sleep Timer: End of Current Ayah
-        if sleepTimerOption == .endOfAyah {
-            Task { @MainActor [weak self] in
-                await self?.fadeVolumeAndPause()
-            }
-            return
-        }
-
-        // 2. Dual Audio Mode: Speak English Translation Before Advancing
-        if isDualAudioEnabled {
-            let translation = QuranVerseText.translation(surahId: surah.id, ayahNumber: currentAyah)
-            let clean = translation.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !clean.isEmpty {
-                speakTranslation(clean) { [weak self] in
-                    guard let self = self, let activeSurah = self.currentSurah else { return }
-                    self.advanceAfterCurrentAyah(surah: activeSurah)
+            // 1. Bedtime Sleep Timer: End of Current Ayah
+            if self.sleepTimerOption == .endOfAyah {
+                Task { @MainActor [weak self] in
+                    await self?.fadeVolumeAndPause()
                 }
                 return
             }
-        }
 
-        // 3. Normal Sequential Progression or Repeat Mode
-        advanceAfterCurrentAyah(surah: surah)
+            // 2. Dual Audio Mode: Speak English Translation Before Advancing
+            if self.isDualAudioEnabled {
+                let translation = QuranVerseText.translation(surahId: surah.id, ayahNumber: self.currentAyah)
+                let clean = translation.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !clean.isEmpty {
+                    self.speakTranslation(clean) { [weak self] in
+                        guard let self = self, let activeSurah = self.currentSurah else { return }
+                        self.advanceAfterCurrentAyah(surah: activeSurah)
+                    }
+                    return
+                }
+            }
+
+            // 3. Normal Sequential Progression or Repeat Mode (Seamless Zero-Stop)
+            self.advanceAfterCurrentAyah(surah: surah)
+        }
     }
 
     public func advanceAfterCurrentAyah(surah: Surah) {

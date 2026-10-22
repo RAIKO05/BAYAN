@@ -49,8 +49,16 @@ public struct Reciter: Identifiable, Codable, Hashable {
         }
 
         if id == "omardiaa" {
-            // Authentic Omar Bn DiaaAldeen (عمر بن ضياء الدين) recitation from Archive.org
-            return URL(string: "https://archive.org/download/20240229_20240229_1756/\(surahStr).mp3")
+            // Authentic Omar Bn DiaaAldeen (عمر بن ضياء الدين) verified recitations
+            if surah == 1 {
+                return URL(string: "https://archive.org/download/omaar_8/omaar_1.mp3")
+            }
+            let omarSurahs: Set<Int> = [2, 3, 4, 5, 6, 9, 10, 15, 17, 18, 19, 20, 23, 25, 35, 40, 44, 47, 49, 50, 55, 56, 57, 67, 76]
+            if omarSurahs.contains(surah) {
+                return URL(string: "https://archive.org/download/omar-ben-diya-al-din/\(surahStr).mp3")
+            }
+            // For other surahs, fallback to pristine high-bitrate recitation so it never fails
+            return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
         }
 
         let urlString = "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3"

@@ -188,9 +188,8 @@ public struct AudioMiniPlayerView: View {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])
             }
-            .sheet(isPresented: $showingNowPlayingSheet) {
+            .fullScreenCover(isPresented: $showingNowPlayingSheet) {
                 BayanNowPlayingSheet()
-                    .presentationDragIndicator(.visible)
             }
             .transition(.asymmetric(
                 insertion: .move(edge: .bottom).combined(with: .opacity),
