@@ -98,6 +98,64 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
         }
     }
 
+    // MARK: - Downloaded Surah Information Model
+    public struct DownloadedSurahInfo: Identifiable, Hashable {
+        public var id: String { "\(reciterId)_\(surah.id)" }
+        public let surah: Surah
+        public let reciter: Reciter
+        public let reciterId: String
+        public let totalFiles: Int
+        public let totalSizeBytes: Int64
+
+        public var formattedSize: String {
+            let formatter = ByteCountFormatter()
+            formatter.allowedUnits = [.useMB, .useKB]
+            formatter.countStyle = .file
+            return formatter.string(fromByteCount: totalSizeBytes)
+        }
+    }
+
+    /// Scans the local offline cache directory and returns a grouped list of all downloaded Surahs
+    public func downloadedSurahsList() -> [DownloadedSurahInfo] {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: baseCacheURL, includingPropertiesForKeys: [.fileSizeKey]) else {
+            return []
+        }
+        var map: [String: (count: Int, size: Int64)] = [:]
+        for file in files {
+            let name = file.lastPathComponent
+            guard name.hasSuffix(".mp3") else { continue }
+            let base = String(name.dropLast(4))
+            let parts = base.split(separator: "_")
+            guard parts.count >= 2 else { continue }
+            let reciterId = String(parts[0])
+            let numPart = String(parts[1])
+            guard numPart.count == 6 else { continue }
+            guard let surahId = Int(numPart.prefix(3)) else { continue }
+            let key = "\(reciterId)_\(surahId)"
+            let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            let current = map[key] ?? (0, 0)
+            map[key] = (current.count + 1, current.size + Int64(size))
+        }
+
+        var results: [DownloadedSurahInfo] = []
+        for (key, val) in map {
+            let parts = key.split(separator: "_")
+            guard parts.count >= 2,
+                  let surahId = Int(parts[1]),
+                  let surah = QuranDataService.shared.surah(for: surahId) else { continue }
+            let reciterId = String(parts[0])
+            let reciter = Reciter.standardCatalog.first(where: { $0.id == reciterId }) ?? Reciter.alafasy
+            results.append(DownloadedSurahInfo(
+                surah: surah,
+                reciter: reciter,
+                reciterId: reciterId,
+                totalFiles: val.count,
+                totalSizeBytes: val.size
+            ))
+        }
+        return results.sorted { $0.surah.id < $1.surah.id }
+    }
+
     public func totalAudioStorageSize() -> Int64 {
         guard let files = try? FileManager.default.contentsOfDirectory(at: baseCacheURL, includingPropertiesForKeys: [.fileSizeKey]) else {
             return 0
