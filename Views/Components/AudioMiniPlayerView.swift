@@ -46,35 +46,7 @@ public struct AudioMiniPlayerView: View {
                         showingNowPlayingSheet = true
                         onTapExpand()
                     } label: {
-                        ZStack {
-                            // Rounded Square Artwork Frame
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(red: 0.08, green: 0.16, blue: 0.14),
-                                            Color(red: 0.02, green: 0.05, blue: 0.07)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 42, height: 42)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .stroke(BayanTheme.gold.opacity(0.35), lineWidth: 1)
-                                )
-
-                            // Calligraphic Emblem / Surah Number
-                            VStack(spacing: 1) {
-                                Image(systemName: "book.pages.fill")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(BayanTheme.gold)
-                                Text("\(surah.id)")
-                                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                                    .foregroundColor(BayanTheme.goldSoft)
-                            }
-                        }
+                        BayanArtworkView(surah: surah, size: 42, cornerRadius: 8)
                     }
                     .buttonStyle(.plain)
 

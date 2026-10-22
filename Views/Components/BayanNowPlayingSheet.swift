@@ -125,34 +125,7 @@ public struct BayanNowPlayingSheet: View {
                 // MARK: - 2. Upper Card: Cover Art, Title & Green Checkmark
                 HStack(spacing: 14) {
                     // Thumbnail Artwork
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.22, green: 0.16, blue: 0.08),
-                                        Color(red: 0.08, green: 0.06, blue: 0.03)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 50, height: 50)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .stroke(BayanTheme.gold.opacity(0.4), lineWidth: 1)
-                            )
-
-                        VStack(spacing: 1) {
-                            Text("القرآن")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(BayanTheme.gold)
-                            Text("\(currentSurah.id)")
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                                .foregroundColor(BayanTheme.goldSoft)
-                        }
-                    }
-                    .shadow(color: Color.black.opacity(0.35), radius: 6, y: 3)
+                    BayanArtworkView(surah: currentSurah, size: 50, cornerRadius: 10)
 
                     // Title & Artist
                     VStack(alignment: .leading, spacing: 4) {
@@ -612,53 +585,8 @@ public struct BayanNowPlayingSheet: View {
         VStack(spacing: 24) {
             Spacer()
 
-            ZStack {
-                // Outer Ambient Glow
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.30, green: 0.20, blue: 0.08),
-                                Color(red: 0.10, green: 0.08, blue: 0.04)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 280, height: 280)
-                    .shadow(color: Color.black.opacity(0.6), radius: 24, y: 12)
-
-                // Gold Filigree Border
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                BayanTheme.gold,
-                                BayanTheme.gold.opacity(0.3),
-                                Color.clear
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 2
-                    )
-                    .frame(width: 280, height: 280)
-
-                // Illuminated Central Motifs
-                VStack(spacing: 12) {
-                    Image(systemName: "book.pages.fill")
-                        .font(.system(size: 64, weight: .bold))
-                        .foregroundColor(BayanTheme.gold)
-
-                    Text(currentSurah.nameArabic)
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(.white)
-
-                    Text(currentSurah.revelationType.arabicTitle + " • " + "\(currentSurah.totalAyahs) آية")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(BayanTheme.goldSoft)
-                }
-            }
+            // System & App Unified Sacred Artwork
+            BayanArtworkView(surah: currentSurah, size: 285, cornerRadius: 26)
 
             Spacer()
         }
