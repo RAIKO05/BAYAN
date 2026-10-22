@@ -262,9 +262,8 @@ private struct ReciterRow: View {
                             .foregroundColor(BayanTheme.gold)
                             .symbolEffect(.variableColor.iterative.reversing, isActive: true)
                     } else {
-                        Image(systemName: "person.wave.2.fill")
-                            .font(.subheadline)
-                            .foregroundColor(isSelected ? BayanTheme.gold : .white.opacity(0.75))
+                        Text("🗣️")
+                            .font(.system(size: 20))
                     }
                 }
 

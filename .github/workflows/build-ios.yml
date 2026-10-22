@@ -78,6 +78,12 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Universal Cast Button (AirPlay, Android & Windows)**: Dedicated Cast & Connect sheet (`BayanCastSheet`) to stream Quran recitation across all devices:
+              - 🍎 **Apple AirPlay & Bluetooth**: 1-tap native AirPlay 2 picker for HomePod, Apple TV, Mac, and AirPods.
+              - 🤖 **Android & Google Cast**: Stream to Chromecast, Android TV, Google Nest, and any Android phone/tablet.
+              - 🪟 **Windows PC & DLNA**: Cast directly to Windows 10/11 Media Player, Smart TVs, and DLNA renderers with remote UPnP play commands.
+              - 🌐 **Instant Web Cast & QR Code**: Embedded local Wi-Fi HTTP streamer serving an HTML5 player with live synchronized Arabic verses and English translation.
+            - **Reciter Side View Emoji (🗣️)**: Updated reciter iconography to authentic reciter side view emoji across the mini player, full-screen player, and Qura'a selection sheets.
             - **iPad & iPadOS Universal Compatibility**: Full native iPad tablet layout with support for iPadOS Split View, Slide Over, and all 4 orientations (Portrait, Upside Down, Landscape Left/Right).
             - **Adaptive Multi-Column Grid System**: Responsive layout intelligently shifts from single-column on iPhone to balanced 2-3 column grid layouts on iPad for Surah catalog, verse search results, and Hisn al-Muslim Adhkar cards.
             - **Native Apple Silicon Mac Support**: Run Bayan on macOS Sonoma & Sequoia via Designed for iPad with desktop keyboard navigation, audio recitation, and large-display clarity.

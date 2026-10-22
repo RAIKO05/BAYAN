@@ -19,6 +19,8 @@ public struct BayanNowPlayingSheet: View {
     @State private var showingReciterSheet: Bool = false
     @State private var showingTafsirSheet: Bool = false
     @State private var showingSleepTimerSheet: Bool = false
+    @State private var showingCastSheet: Bool = false
+    @State private var castService = BayanCastService.shared
     @State private var isDraggingScrubber: Bool = false
     @State private var dragPosition: Double = 0.0
 
@@ -153,16 +155,31 @@ public struct BayanNowPlayingSheet: View {
                     .shadow(color: Color.black.opacity(0.35), radius: 6, y: 3)
 
                     // Title & Artist
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Surah \(currentSurah.nameEnglish) • Ayah \(playerService.currentAyah)")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
 
-                        Text(playerService.currentReciter.nameEnglish)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.white.opacity(0.70))
-                            .lineLimit(1)
+                        Button {
+                            showingReciterSheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text("🗣️")
+                                    .font(.system(size: 12))
+                                Text(playerService.currentReciter.nameEnglish)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.80))
+                                    .lineLimit(1)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.40))
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     Spacer()
@@ -446,43 +463,61 @@ public struct BayanNowPlayingSheet: View {
 
                     Spacer()
 
-                    // Connected Device / Reciter Output
+                    // Universal Cast & Device Output (AirPlay, Android & Windows DLNA)
+                    Button {
+                        showingCastSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 7) {
+                            Image(systemName: castService.isCasting ? castService.activeDeviceIcon : "tv.and.mediabox")
+                                .font(.system(size: 15, weight: .semibold))
+                            Text(castService.isCasting ? castService.connectedDeviceName : "Cast / AirPlay")
+                                .font(.system(size: 12, weight: .semibold))
+                                .lineLimit(1)
+                            if castService.isCasting {
+                                Circle()
+                                    .fill(spotifyGreen)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        .foregroundColor(spotifyGreen)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(spotifyGreen.opacity(0.14))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(spotifyGreen.opacity(0.35), lineWidth: 1)
+                        )
+                    }
+
+                    Spacer()
+
+                    // Reciter Quick Selector
                     Button {
                         showingReciterSheet = true
                         #if os(iOS)
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
                     } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "tv.and.mediabox")
-                                .font(.system(size: 15, weight: .semibold))
-                            Text(playerService.currentReciter.nameEnglish)
-                                .font(.system(size: 12, weight: .medium))
-                                .lineLimit(1)
+                        HStack(spacing: 4) {
+                            Text("🗣️")
+                                .font(.system(size: 15))
                         }
-                        .foregroundColor(spotifyGreen)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(spotifyGreen.opacity(0.12))
-                        .clipShape(Capsule())
-                    }
-
-                    Spacer()
-
-                    // Queue / Surah Index
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "list.bullet")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.55))
-                            .frame(width: 40, height: 40)
+                        .frame(width: 40, height: 40)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(Circle())
                     }
                 }
                 .padding(.horizontal, 22)
                 .padding(.bottom, 16)
             }
             .frame(maxWidth: 720)
+        }
+        .sheet(isPresented: $showingCastSheet) {
+            BayanCastSheet()
+                .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showingReciterSheet) {
             ReciterPickerSheet(selectedReciter: $playerService.currentReciter)

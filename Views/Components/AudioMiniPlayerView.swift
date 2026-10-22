@@ -11,6 +11,8 @@ import SwiftUI
 public struct AudioMiniPlayerView: View {
     @State private var playerService = AudioPlayerService.shared
     @State private var bookmarkService = BookmarkService.shared
+    @State private var castService = BayanCastService.shared
+    @State private var showingCastSheet = false
     @State private var showingReciterSheet = false
     @State private var showingNowPlayingSheet = false
     var onTapExpand: () -> Void
@@ -91,8 +93,8 @@ public struct AudioMiniPlayerView: View {
 
                             // Line 2: Connected Audio Device / Reciter in Spotify Green
                             HStack(spacing: 5) {
-                                Image(systemName: "headphones")
-                                    .font(.system(size: 10, weight: .semibold))
+                                Text("🗣️")
+                                    .font(.system(size: 11))
 
                                 Text(playerService.currentReciter.nameEnglish)
                                     .font(.system(size: 11.5, weight: .medium))
@@ -108,17 +110,26 @@ public struct AudioMiniPlayerView: View {
 
                     // MARK: - Right: Controls Strip
                     HStack(spacing: 14) {
-                        // 1. Audio Output / Device Picker Icon (Spotify style screen+speaker icon)
+                        // 1. Universal Cast Button (AirPlay, Android & Windows DLNA)
                         Button {
-                            showingReciterSheet = true
+                            showingCastSheet = true
                             #if os(iOS)
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             #endif
                         } label: {
-                            Image(systemName: "tv.and.mediabox")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(spotifyGreen)
-                                .frame(width: 28, height: 28)
+                            ZStack {
+                                Image(systemName: castService.isCasting ? castService.activeDeviceIcon : "tv.and.mediabox")
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(castService.isCasting ? spotifyGreen : spotifyGreen.opacity(0.85))
+
+                                if castService.isCasting {
+                                    Circle()
+                                        .fill(spotifyGreen)
+                                        .frame(width: 5, height: 5)
+                                        .offset(x: 7, y: -7)
+                                }
+                            }
+                            .frame(width: 28, height: 28)
                         }
                         .buttonStyle(.plain)
 
@@ -197,6 +208,10 @@ public struct AudioMiniPlayerView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 7)
+            .sheet(isPresented: $showingCastSheet) {
+                BayanCastSheet()
+                    .presentationDetents([.medium, .large])
+            }
             .sheet(isPresented: $showingReciterSheet) {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])

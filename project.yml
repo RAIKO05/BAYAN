@@ -27,6 +27,9 @@ targets:
       - target: BayanWidgets
       - sdk: ShazamKit.framework
       - sdk: AVFoundation.framework
+      - sdk: AVKit.framework
+      - sdk: Network.framework
+      - sdk: CoreImage.framework
       - sdk: MediaPlayer.framework
       - sdk: AppIntents.framework
       - sdk: CoreLocation.framework

@@ -411,8 +411,8 @@ struct MushafRootView: View {
             showingReciterPicker = true
         } label: {
             HStack {
-                Image(systemName: "person.wave.2.fill")
-                    .foregroundColor(BayanTheme.gold)
+                Text("🗣️")
+                    .font(.subheadline)
                 Text(playerService.currentReciter.nameEnglish)
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
