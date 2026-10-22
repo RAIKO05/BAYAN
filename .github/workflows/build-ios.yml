@@ -60,14 +60,18 @@ jobs:
           mkdir -p build/Payload
           cp -R build/DerivedData/Build/Products/Release-iphoneos/Bayan.app build/Payload/
           cd build
-          zip -qr Bayan.ipa Payload
-          echo "✅ Bayan.ipa successfully packaged!"
+          VERSION_IPA="Bayan_v1.1.${{ github.run_number }}.ipa"
+          zip -qr "$VERSION_IPA" Payload
+          cp "$VERSION_IPA" Bayan.ipa
+          echo "✅ $VERSION_IPA and Bayan.ipa successfully packaged!"
 
       - name: 🚀 Upload Bayan.ipa Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Bayan-iOS-App
-          path: build/Bayan.ipa
+          name: Bayan-iOS-v1.1.${{ github.run_number }}
+          path: |
+            build/Bayan_v1.1.${{ github.run_number }}.ipa
+            build/Bayan.ipa
           retention-days: 14
 
       - name: 🏷️ Publish Direct IPA to GitHub Releases
@@ -128,8 +132,10 @@ jobs:
             - **Authentic Uthmanic Quran Calligraphy**: Bundled `Amiri Quran` / King Fahd Complex font with complete diacritics, ornate cartouche frames, and authentic floral end-of-ayah medallions.
 
             ### 📱 Direct IPA Download
-            Download `Bayan.ipa` directly below to install via TrollStore, AltStore, or Sideloadly.
-          files: build/Bayan.ipa
+            Download **`Bayan_v1.1.${{ github.run_number }}.ipa`** (or `Bayan.ipa`) directly below in Assets to install via TrollStore, AltStore, LiveContainer, or Sideloadly.
+          files: |
+            build/Bayan_v1.1.${{ github.run_number }}.ipa
+            build/Bayan.ipa
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
