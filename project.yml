@@ -30,6 +30,7 @@ targets:
       - sdk: AVKit.framework
       - sdk: Network.framework
       - sdk: CoreImage.framework
+      - sdk: AuthenticationServices.framework
       - sdk: MediaPlayer.framework
       - sdk: AppIntents.framework
       - sdk: CoreLocation.framework

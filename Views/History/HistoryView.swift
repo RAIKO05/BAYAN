@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Islamic Social Profile & Friends Listening Activity View ("You" Tab)
 public struct HistoryView: View {
     @State private var socialService = BayanSocialService.shared
+    @State private var authService = BayanAuthService.shared
     @State private var syncManager = QuranSyncManager.shared
     @State private var playerService = AudioPlayerService.shared
     @State private var bookmarkService = BookmarkService.shared
@@ -15,6 +16,7 @@ public struct HistoryView: View {
     @State private var selectedTafsirAyah: Int = 1
 
     // Sheets
+    @State private var showingSignInSheet = false
     @State private var showingEditProfileSheet = false
     @State private var showingDiscoverFriendsSheet = false
     @State private var showingLanguageSheet = false
@@ -123,6 +125,10 @@ public struct HistoryView: View {
                             .foregroundColor(BayanTheme.goldSoft)
                     }
                 }
+            }
+            .sheet(isPresented: $showingSignInSheet) {
+                BayanSignInSheet()
+                    .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showingEditProfileSheet) {
                 EditProfileSheet()
@@ -237,6 +243,89 @@ public struct HistoryView: View {
             .padding(.vertical, 8)
             .background(Color.white.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            // Account & Sign In Quick Section (Apple, Google/Gmail, Email)
+            if authService.isSignedIn, let user = authService.currentUser {
+                HStack(spacing: 8) {
+                    Image(systemName: user.provider == .apple ? "apple.logo" : (user.provider == .google ? "globe" : "envelope.fill"))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(spotifyGreen)
+
+                    Text("\(user.provider.rawValue): \(user.email)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.85))
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Button("Sign Out") {
+                        authService.signOut()
+                    }
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+                .padding(10)
+                .background(Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                HStack(spacing: 8) {
+                    // Sign in with Apple
+                    Button {
+                        showingSignInSheet = true
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("Apple")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+
+                    // Sign in with Google / Gmail
+                    Button {
+                        showingSignInSheet = true
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text("G")
+                                .font(.system(size: 12, weight: .black, design: .rounded))
+                                .foregroundColor(Color(red: 0.26, green: 0.52, blue: 0.96))
+                            Text("Google")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+
+                    // Sign in with Email
+                    Button {
+                        showingSignInSheet = true
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "envelope.fill")
+                                .font(.system(size: 11))
+                            Text("Email")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                }
+            }
 
             // Action Buttons: Edit Profile, Share, Discover
             HStack(spacing: 10) {
@@ -640,15 +729,13 @@ public struct HistoryView: View {
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.white)
 
-                        if let reciter = item.reciter {
-                            HStack(spacing: 4) {
-                                Text("🗣️").font(.caption)
-                                Text(reciter.nameEnglish).font(.caption).foregroundColor(spotifyGreen)
-                            }
+                        HStack(spacing: 4) {
+                            Text("🗣️").font(.caption)
+                            Text(item.reciter.nameEnglish).font(.caption).foregroundColor(spotifyGreen)
                         }
 
-                        Text(item.arabicText)
-                            .font(.quran(size: 16))
+                        Text(item.arabicSnippet)
+                            .font(.system(size: 16, design: .serif))
                             .foregroundColor(themeManager.currentTheme.primaryTextColor)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -733,9 +820,19 @@ public struct HistoryView: View {
                                 .font(.title3.weight(.bold))
                                 .foregroundColor(BayanTheme.goldSoft)
                             Spacer()
-                            Text(bookmark.dateAdded, format: .dateTime.month().day())
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                            Button {
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                                bookmarkService.removeBookmark(id: bookmark.id)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.45))
+                                    .padding(6)
+                                    .background(Circle().fill(Color.white.opacity(0.06)))
+                            }
+                            .buttonStyle(.plain)
                         }
 
                         Text("\(bookmark.surahNameEnglish) • Ayah \(bookmark.ayahNumber)")
@@ -743,7 +840,7 @@ public struct HistoryView: View {
                             .foregroundColor(.white)
 
                         Text(bookmark.arabicText)
-                            .font(.quran(size: 16))
+                            .font(.system(size: 16, design: .serif))
                             .foregroundColor(themeManager.currentTheme.primaryTextColor)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)

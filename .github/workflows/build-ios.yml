@@ -78,6 +78,11 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Sign In with Apple, Google (Gmail) & Email**: Complete authentication & account sync suite:
+              -  **Sign in with Apple**: Native 1-tap Apple ID authentication with private relay.
+              - 🌐 **Sign in with Google / Gmail**: Instant sign-in with Gmail address to link Android and web activity.
+              - ✉️ **Continue with Email**: Direct email and name registration with instant profile sync.
+              - 🔄 **Account Status & Cloud Sync**: Display connected provider, active email, and 1-tap sign-out directly from your profile.
             - **Islamic Social Profile & Friends Listening Feed (الصحبة الصالحة)**: Transformed the "You" tab into a personal spiritual profile & social media companion feed:
               - 👤 **Customizable Social Profile**: Personal avatar with customizable Islamic badges (👑 Royal Monogram, 🌙 Crescent, 🕋 Kaaba, 📿 Tasbih, 🕊️ Peace, 🕌 Minaret), display name, username handle (`@mouad_bayan`), bio, followers/following counters, and daily recitation streak (`🔥 14d`).
               - 🟢 **Live Recitation Broadcast**: Real-time status banner broadcasting what Surah, Ayah & Reciter you are listening to live with active animated equalizers.
