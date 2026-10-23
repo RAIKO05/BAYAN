@@ -140,7 +140,7 @@ public struct BayanIdentifyWidgetView: View {
 
 // MARK: - Widget Configuration
 public struct BayanIdentifyWidget: Widget {
-    public static let kind: String = "tools.rea.bayan.widget.identify"
+    public static let kind: String = "com.bayan.app.widget.identify"
 
     public init() {}
 

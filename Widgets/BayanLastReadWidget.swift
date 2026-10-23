@@ -28,7 +28,7 @@ public struct LastReadTimelineProvider: TimelineProvider {
     }
 
     public func getTimeline(in context: Context, completion: @escaping (Timeline<LastReadEntry>) -> Void) {
-        let defaults = UserDefaults(suiteName: "group.tools.rea.bayan") ?? UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.com.bayan.app") ?? UserDefaults(suiteName: "group.tools.rea.bayan") ?? UserDefaults.standard
         let surahEnglish = defaults.string(forKey: "widget_last_surah_english") ?? "Al-Kahf"
         let surahArabic = defaults.string(forKey: "widget_last_surah_arabic") ?? "الكهف"
         let ayah = defaults.integer(forKey: "bayan_last_ayah_id") == 0 ? 1 : defaults.integer(forKey: "bayan_last_ayah_id")
@@ -169,7 +169,7 @@ public struct BayanLastReadWidgetView: View {
 
 // MARK: - Widget Definition
 public struct BayanLastReadWidget: Widget {
-    public static let kind: String = "tools.rea.bayan.widget.lastread"
+    public static let kind: String = "com.bayan.app.widget.lastread"
 
     public init() {}
 

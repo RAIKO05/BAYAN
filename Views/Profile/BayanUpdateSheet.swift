@@ -232,6 +232,6 @@ public struct BayanUpdateSheet: View {
             .replacingOccurrences(of: "### ", with: "• ")
             .replacingOccurrences(of: "## ", with: "")
             .replacingOccurrences(of: "**", with: "")
-        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 }

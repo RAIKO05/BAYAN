@@ -10,7 +10,7 @@ public struct GetQiblaIntent: AppIntent {
     public init() {}
 
     public func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
-        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.com.bayan.app") ?? UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
         let savedLat = defaults.double(forKey: "bayan_last_latitude")
         let savedLng = defaults.double(forKey: "bayan_last_longitude")
         let lat = savedLat != 0.0 ? savedLat : 33.5731

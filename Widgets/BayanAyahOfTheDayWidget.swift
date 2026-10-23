@@ -413,7 +413,7 @@ public struct BayanAyahOfTheDayWidgetView: View {
 
 // MARK: - Widget Configuration
 public struct BayanAyahOfTheDayWidget: Widget {
-    public static let kind: String = "tools.rea.bayan.widget.ayahoftheday"
+    public static let kind: String = "com.bayan.app.widget.ayahoftheday"
 
     public init() {}
 

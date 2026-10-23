@@ -342,7 +342,7 @@ public struct BayanPrayerTimesWidgetView: View {
 
 // MARK: - Widget Definition
 public struct BayanPrayerTimesWidget: Widget {
-    public static let kind: String = "tools.rea.bayan.widget.prayertimes"
+    public static let kind: String = "com.bayan.app.widget.prayertimes"
 
     public init() {}
 

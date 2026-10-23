@@ -21,7 +21,7 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
 
     private override init() {
         super.init()
-        let config = URLSessionConfiguration.background(withIdentifier: "tools.rea.Bayan.AudioDownloader")
+        let config = URLSessionConfiguration.background(withIdentifier: "com.bayan.app.AudioDownloader")
         config.isDiscretionary = false
         config.sessionSendsLaunchEvents = true
         self.urlSession = URLSession(configuration: config, delegate: self, delegateQueue: .main)

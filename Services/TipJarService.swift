@@ -42,23 +42,23 @@ public final class TipJarService {
 
     // Standard Apple In-App Purchase Product IDs
     public static let productIdentifiers = [
-        "tools.rea.Bayan.tip.seed",
-        "tools.rea.Bayan.tip.generous",
-        "tools.rea.Bayan.tip.patron",
-        "tools.rea.Bayan.tip.waqf"
+        "com.bayan.app.tip.seed",
+        "com.bayan.app.tip.generous",
+        "com.bayan.app.tip.patron",
+        "com.bayan.app.tip.waqf"
     ]
 
     // Built-in offline catalog (ensures instant UI even before App Store Connect configuration)
     public let defaultCatalog: [TipProduct] = [
         TipProduct(
-            id: "tools.rea.Bayan.tip.seed",
+            id: "com.bayan.app.tip.seed",
             title: "Seed of Goodness",
             subtitle: "Keep Bayan 100% ad-free & assist server hosting",
             priceString: "$1.99",
             iconEmoji: "🌱"
         ),
         TipProduct(
-            id: "tools.rea.Bayan.tip.generous",
+            id: "com.bayan.app.tip.generous",
             title: "Generous Supporter",
             subtitle: "Support authentic audio recitations & maintenance",
             priceString: "$4.99",
@@ -66,14 +66,14 @@ public final class TipJarService {
             isPopular: true
         ),
         TipProduct(
-            id: "tools.rea.Bayan.tip.patron",
+            id: "com.bayan.app.tip.patron",
             title: "Patron of the Quran",
             subtitle: "Help develop new features, translations & Tafsir",
             priceString: "$9.99",
             iconEmoji: "🌳"
         ),
         TipProduct(
-            id: "tools.rea.Bayan.tip.waqf",
+            id: "com.bayan.app.tip.waqf",
             title: "Benefactor Waqf",
             subtitle: "Sponsor continuous development & worldwide reach",
             priceString: "$19.99",

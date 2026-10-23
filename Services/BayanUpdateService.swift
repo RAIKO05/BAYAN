@@ -58,7 +58,7 @@ public final class BayanUpdateService: @unchecked Sendable {
 
     // Dynamic Installed Version & Build
     public var currentVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.80"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.81"
     }
 
     public var currentBuild: Int {
@@ -66,12 +66,12 @@ public final class BayanUpdateService: @unchecked Sendable {
            let buildInt = Int(buildStr) {
             return buildInt
         }
-        // Fallback: extract last component from CFBundleShortVersionString (e.g. 1.1.80 -> 80)
+        // Fallback: extract last component from CFBundleShortVersionString (e.g. 1.1.81 -> 81)
         let parts = currentVersion.split(separator: ".")
         if parts.count >= 3, let last = Int(parts[2]) {
             return last
         }
-        return 80
+        return 81
     }
 
     private init() {
@@ -102,11 +102,11 @@ public final class BayanUpdateService: @unchecked Sendable {
                 throw NSError(domain: "BayanUpdate", code: status, userInfo: [NSLocalizedDescriptionKey: "GitHub returned status code \(status)"])
             }
 
-            let release = try JSONDecoder().decode(GitHubReleaseResponse.self, data: data)
+            let release = try JSONDecoder().decode(GitHubReleaseResponse.self, from: data)
 
             // Extract Version & Build
             // tag_name is usually "v1.1.80" or "v1.1.81"
-            let tagClean = release.tagName.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "v", with: "")
+            let tagClean = release.tagName.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).replacingOccurrences(of: "v", with: "")
             self.latestVersion = tagClean
             self.releaseTitle = release.name ?? "Bayan v\(tagClean)"
             self.releaseNotes = release.body ?? ""

@@ -8,7 +8,7 @@ This handbook provides step-by-step instructions for submitting **Bayan** to **A
 
 ### App Information
 * **Primary Language**: English (U.S.) or Arabic
-* **Bundle ID**: `tools.rea.Bayan`
+* **Bundle ID**: `com.bayan.app`
 * **SKU**: `BAYAN-IOS-01`
 * **App Name**: `Bayan: Quran & Prayer Times`
 * **Subtitle**: `Audio Identifier, Mushaf & Qibla`

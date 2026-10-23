@@ -197,7 +197,7 @@ public struct MainTabView: View {
 
     private func refreshDailyAdhanNotifications() {
         guard AdhanNotificationService.shared.isNotificationsEnabled else { return }
-        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.com.bayan.app") ?? UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
         let lat = defaults.double(forKey: "bayan_last_latitude") != 0.0 ? defaults.double(forKey: "bayan_last_latitude") : 33.5731
         let lng = defaults.double(forKey: "bayan_last_longitude") != 0.0 ? defaults.double(forKey: "bayan_last_longitude") : -7.5898
         let result = PrayerCalculationService.shared.calculate(for: Date(), lat: lat, lng: lng)
@@ -205,7 +205,7 @@ public struct MainTabView: View {
     }
 
     private func checkSiriLaunchFlags() {
-        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.com.bayan.app") ?? UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
         if defaults.bool(forKey: "bayan_trigger_identify_on_launch") {
             defaults.set(false, forKey: "bayan_trigger_identify_on_launch")
             selectedTab = .identify

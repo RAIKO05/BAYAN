@@ -10,7 +10,7 @@ public struct RecognizeQuranIntent: AppIntent {
     public init() {}
 
     public func perform() async throws -> some IntentResult {
-        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.com.bayan.app") ?? UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
         defaults.set(true, forKey: "bayan_trigger_identify_on_launch")
         return .result()
     }
