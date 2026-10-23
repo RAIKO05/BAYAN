@@ -30,6 +30,27 @@ jobs:
       - name: 🛠 Install XcodeGen
         run: brew install xcodegen
 
+      - name: 🔢 Auto-Bump Build & Marketing Version
+        run: |
+          RUN_NUM="${{ github.run_number }}"
+          echo "Bumping Bayan version to 1.1.${RUN_NUM} (Build ${RUN_NUM})"
+
+          # 1. Update Config/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.1.${RUN_NUM}" Config/Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.1.${RUN_NUM}" Config/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${RUN_NUM}" Config/Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${RUN_NUM}" Config/Info.plist
+
+          # 2. Update Config/Widgets-Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.1.${RUN_NUM}" Config/Widgets-Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 1.1.${RUN_NUM}" Config/Widgets-Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${RUN_NUM}" Config/Widgets-Info.plist || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${RUN_NUM}" Config/Widgets-Info.plist
+
+          # 3. Update project.yml targets MARKETING_VERSION & CURRENT_PROJECT_VERSION
+          sed -i '' "s/MARKETING_VERSION: \".*\"/MARKETING_VERSION: \"1.1.${RUN_NUM}\"/g" project.yml
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"${RUN_NUM}\"/g" project.yml
+
+          echo "Verified Version Stamping:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Config/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Config/Info.plist
+
       - name: 📱 Generate Xcode Project
         run: |
           xcodegen generate
@@ -57,13 +78,18 @@ jobs:
 
       - name: 📦 Package into IPA
         run: |
+          RUN_NUM="${{ github.run_number }}"
+          # Guarantee compiled app Info.plist contains the exact run number
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.1.${RUN_NUM}" build/DerivedData/Build/Products/Release-iphoneos/Bayan.app/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${RUN_NUM}" build/DerivedData/Build/Products/Release-iphoneos/Bayan.app/Info.plist || true
+
           mkdir -p build/Payload
           cp -R build/DerivedData/Build/Products/Release-iphoneos/Bayan.app build/Payload/
           cd build
-          VERSION_IPA="Bayan_v1.1.${{ github.run_number }}.ipa"
+          VERSION_IPA="Bayan_v1.1.${RUN_NUM}.ipa"
           zip -qr "$VERSION_IPA" Payload
           cp "$VERSION_IPA" Bayan.ipa
-          echo "✅ $VERSION_IPA and Bayan.ipa successfully packaged!"
+          echo "✅ $VERSION_IPA and Bayan.ipa successfully packaged with version 1.1.${RUN_NUM} (Build ${RUN_NUM})!"
 
       - name: 🚀 Upload Bayan.ipa Artifact
         uses: actions/upload-artifact@v4
@@ -82,6 +108,10 @@ jobs:
           name: "Bayan iOS v1.1.${{ github.run_number }}"
           body: |
             ### 🕌 Bayan v1.1 Update Highlights
+            - **Auto-Version Stamping & In-App Update Notice**:
+              - 🔄 **Automated CI Build Stamping**: Every GitHub commit now automatically stamps `1.1.<run_number>` and Build `<run_number>` directly into Info.plist and project settings.
+              - 🔔 **Instant New Release Alerts**: In-app notice dynamically alerts users the moment a newer build is published on GitHub Releases.
+              - ⚡ **1-Tap Direct IPA Update**: Dedicated update button triggers instant download of `Bayan_v1.1.<run_number>.ipa` for seamless installation with TrollStore, AltStore, LiveContainer, or Sideloadly.
             - **Sign In with Apple, Google (Gmail) & Email**: Complete authentication & account sync suite:
               -  **Sign in with Apple**: Native 1-tap Apple ID authentication with private relay.
               - 🌐 **Sign in with Google / Gmail**: Instant sign-in with Gmail address to link Android and web activity.

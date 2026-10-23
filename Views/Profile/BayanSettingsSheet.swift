@@ -49,6 +49,8 @@ public struct BayanSettingsSheet: View {
     @State private var exportShareURL: URL? = nil
     @State private var cacheSizeBytes: Int64 = 0
     @State private var cacheClearedNotice = false
+    @State private var updateService = BayanUpdateService.shared
+    @State private var showingUpdateSheet = false
 
     private let spotifyGreen = Color(red: 0.18, green: 0.85, blue: 0.50)
 
@@ -152,6 +154,10 @@ public struct BayanSettingsSheet: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will delete all offline downloaded recitation audio files to free up disk space.")
+            }
+            .sheet(isPresented: $showingUpdateSheet) {
+                BayanUpdateSheet()
+                    .presentationDetents([.medium, .large])
             }
         }
     }
@@ -870,13 +876,13 @@ public struct BayanSettingsSheet: View {
     // MARK: - 8. About & Waqf Section
     private var aboutSection: some View {
         settingsCard(title: "ABOUT BAYAN", icon: "info.circle.fill") {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("البيان • Bayan for iOS")
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
-                        Text("Version 1.1.71 (Build 71) • Waqf Fi Sabilillah")
+                        Text("Version \(updateService.currentVersion) (Build \(updateService.currentBuild)) • Waqf Fi Sabilillah")
                             .font(.system(size: 12))
                             .foregroundColor(BayanTheme.goldSoft)
                     }
@@ -886,9 +892,125 @@ public struct BayanSettingsSheet: View {
                         .foregroundColor(BayanTheme.gold)
                 }
 
+                // MARK: - Dynamic Update Banner if Newer Release Available
+                if updateService.isUpdateAvailable {
+                    Button {
+                        showingUpdateSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(spotifyGreen.opacity(0.2))
+                                    .frame(width: 36, height: 36)
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(spotifyGreen)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text("New Update Available!")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(.white)
+                                    Text("v\(updateService.latestVersion)")
+                                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                                        .foregroundColor(BayanTheme.gold)
+                                }
+                                Text("Build \(updateService.latestBuild) • Tap to view & update")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+
+                            Spacer()
+
+                            Button {
+                                updateService.openDownload()
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                #endif
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.down.circle.fill")
+                                    Text("Update")
+                                }
+                                .font(.system(size: 11.5, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(spotifyGreen)
+                                .clipShape(Capsule())
+                            }
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color(red: 0.12, green: 0.20, blue: 0.15))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .stroke(spotifyGreen.opacity(0.5), lineWidth: 1)
+                                )
+                        )
+                    }
+                }
+
                 Text("Developed with reverence as an ongoing charity (صدقة جارية) for the Muslim Ummah. Free from commercial advertisements forever.")
                     .font(.system(size: 12))
                     .foregroundColor(.white.opacity(0.65))
+
+                // MARK: - Check for Updates Control
+                HStack {
+                    Button {
+                        Task {
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                            await updateService.checkForUpdates(silent: false)
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if updateService.isChecking {
+                                ProgressView()
+                                    .scaleEffect(0.65)
+                                    .tint(BayanTheme.gold)
+                                Text("Checking GitHub...")
+                            } else {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                Text("Check for Updates")
+                            }
+                        }
+                        .font(.system(size: 11.5, weight: .semibold))
+                        .foregroundColor(BayanTheme.goldSoft)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.white.opacity(0.06))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    if !updateService.isChecking {
+                        if updateService.isUpdateAvailable {
+                            HStack(spacing: 4) {
+                                Circle().fill(spotifyGreen).frame(width: 6, height: 6)
+                                Text("Update Ready")
+                                    .foregroundColor(spotifyGreen)
+                            }
+                            .font(.system(size: 11, weight: .bold))
+                        } else if updateService.lastCheckedDate != nil {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(spotifyGreen)
+                                Text("Up to date")
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                            .font(.system(size: 11, weight: .medium))
+                        }
+                    }
+                }
+                .padding(.top, 2)
 
                 HStack(spacing: 12) {
                     Button {

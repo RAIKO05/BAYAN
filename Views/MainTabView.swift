@@ -5,8 +5,10 @@ public struct MainTabView: View {
     @State private var playerService = AudioPlayerService.shared
     @State private var themeManager = AppThemeManager.shared
     @State private var languageManager = AppLanguageManager.shared
+    @State private var updateService = BayanUpdateService.shared
     @State private var showingLanguageSheet = false
     @State private var showingSettingsSheet = false
+    @State private var showingUpdateSheet = false
 
     public enum TabItem: Hashable, CaseIterable {
         case identify
@@ -85,16 +87,34 @@ public struct MainTabView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedTab)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.isPlaying)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playerService.currentSurah == nil)
+
+            // Top Floating Update Notice (When GitHub Releases publishes a newer build)
+            if updateService.isUpdateAvailable && !updateService.hasDismissedNotice {
+                VStack {
+                    topUpdatePill
+                    Spacer()
+                }
+                .padding(.top, 46)
+                .padding(.horizontal, 14)
+                .zIndex(999)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .environment(\.layoutDirection, languageManager.currentLanguage.layoutDirection)
         .onAppear {
             checkSiriLaunchFlags()
             refreshDailyAdhanNotifications()
+            Task {
+                await updateService.checkForUpdates(silent: true)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             checkSiriLaunchFlags()
             refreshDailyAdhanNotifications()
+            Task {
+                await updateService.checkForUpdates(silent: true)
+            }
         }
         .onOpenURL { url in
             handleDeepLink(url: url)
@@ -107,6 +127,72 @@ public struct MainTabView: View {
             BayanSettingsSheet()
                 .presentationDetents([.large])
         }
+        .sheet(isPresented: $showingUpdateSheet) {
+            BayanUpdateSheet()
+                .presentationDetents([.medium, .large])
+        }
+    }
+
+    // MARK: - Top Floating Update Notice Pill
+    private var topUpdatePill: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(BayanTheme.gold)
+
+            Text("Bayan v\(updateService.latestVersion) Ready")
+                .font(.system(size: 12.5, weight: .bold))
+                .foregroundColor(.white)
+
+            Spacer()
+
+            Button {
+                updateService.openDownload()
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.down.circle.fill")
+                    Text("Update")
+                }
+                .font(.system(size: 11.5, weight: .bold))
+                .foregroundColor(.black)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 4)
+                .background(Color(red: 0.18, green: 0.85, blue: 0.50))
+                .clipShape(Capsule())
+            }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    updateService.dismissNotice()
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white.opacity(0.5))
+                    .padding(5)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(Color(red: 0.08, green: 0.12, blue: 0.10).opacity(0.95))
+        )
+        .overlay(
+            Capsule()
+                .stroke(
+                    LinearGradient(
+                        colors: [BayanTheme.gold.opacity(0.7), Color(red: 0.18, green: 0.85, blue: 0.50).opacity(0.5)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: Color.black.opacity(0.4), radius: 10, y: 5)
     }
 
     private func refreshDailyAdhanNotifications() {

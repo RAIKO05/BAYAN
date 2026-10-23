@@ -28,6 +28,8 @@ public struct HistoryView: View {
     @State private var showingClearHistoryAlert = false
     @State private var selectedTafsirSurah: Surah? = nil
     @State private var selectedTafsirAyah: Int = 1
+    @State private var updateService = BayanUpdateService.shared
+    @State private var showingUpdateSheet = false
 
     @AppStorage("bayan_live_activity_enabled") private var isLiveActivityEnabled: Bool = true
 
@@ -45,6 +47,11 @@ public struct HistoryView: View {
                     VStack(spacing: 16) {
                         // MARK: - 1. Minimalist User Identity & Quick Settings Header
                         userHeaderCard
+
+                        // MARK: - 1b. In-App Release Update Alert Card (When new build published on GitHub)
+                        if updateService.isUpdateAvailable && !updateService.hasDismissedNotice {
+                            updateAlertCard
+                        }
 
                         // MARK: - 2. Continue Reading / Listening (1-Tap Resume)
                         continueReadingCard
@@ -143,6 +150,10 @@ public struct HistoryView: View {
             }
             .sheet(item: $selectedTafsirSurah) { surah in
                 AyahTafsirSheet(surah: surah, ayahNumber: selectedTafsirAyah)
+                    .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showingUpdateSheet) {
+                BayanUpdateSheet()
                     .presentationDetents([.medium, .large])
             }
             .alert("Clear Audio Cache", isPresented: $showingClearCacheAlert) {
@@ -266,6 +277,122 @@ public struct HistoryView: View {
             #endif
             showingSettingsSheet = true
         }
+    }
+
+    // MARK: - In-App Release Update Alert Card
+    private var updateAlertCard: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [BayanTheme.gold.opacity(0.3), spotifyGreen.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                        .overlay(Circle().stroke(spotifyGreen.opacity(0.5), lineWidth: 1.5))
+
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(BayanTheme.gold)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text("New Bayan Update Ready!")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+
+                        Text("v\(updateService.latestVersion)")
+                            .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                            .foregroundColor(spotifyGreen)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(spotifyGreen.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
+
+                    Text("Build \(updateService.latestBuild) • A fresh build is live on GitHub Releases.")
+                        .font(.system(size: 11.5))
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        updateService.dismissNotice()
+                    }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white.opacity(0.5))
+                        .padding(8)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(Circle())
+                }
+            }
+
+            HStack(spacing: 10) {
+                Button {
+                    updateService.openDownload()
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.down.circle.fill")
+                        Text("Update Now (.ipa)")
+                    }
+                    .font(.system(size: 12.5, weight: .bold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 38)
+                    .background(
+                        LinearGradient(
+                            colors: [BayanTheme.gold, spotifyGreen],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+
+                Button {
+                    showingUpdateSheet = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "info.circle")
+                        Text("Details")
+                    }
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(width: 90, height: 38)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(red: 0.08, green: 0.14, blue: 0.11).opacity(0.95))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [BayanTheme.gold.opacity(0.6), spotifyGreen.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
     }
 
     // MARK: - 2. Continue Reading / Listening (1-Tap Resume)
