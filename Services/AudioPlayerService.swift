@@ -42,16 +42,16 @@ public final class AudioPlayerService: NSObject {
     // MARK: - Verse Audio Repeat / Memorization (Hifz Mode & A-B Loop)
     public enum RepeatMode: Equatable {
         case off
-        case repeatAyah(count: Int) // 3x, 5x, 10x, or Int.max (continuous loop)
         case repeatSurah
+        case repeatAyah(count: Int) // 1x continuous loop (Int.max) or specific count (3x, 5x, 10x)
         case repeatAB(startAyah: Int, endAyah: Int, count: Int) // A-B Range Memorization Loop
 
         public var title: String {
             switch self {
             case .off: return "Off"
-            case .repeatAyah(let count):
-                return count == Int.max ? "Loop" : "\(count)x"
             case .repeatSurah: return "Surah"
+            case .repeatAyah(let count):
+                return count == Int.max ? "1" : "\(count)x"
             case .repeatAB(let a, let b, let count):
                 return count == Int.max ? "\(a)-\(b) ∞" : "\(a)-\(b) \(count)x"
             }
@@ -60,9 +60,8 @@ public final class AudioPlayerService: NSObject {
         public var iconName: String {
             switch self {
             case .off: return "repeat"
-            case .repeatAyah(let count):
-                return count == Int.max ? "repeat.1.circle.fill" : "repeat.circle.fill"
             case .repeatSurah: return "repeat.circle.fill"
+            case .repeatAyah: return "repeat.1.circle.fill"
             case .repeatAB: return "repeat.1.ar"
             }
         }
@@ -217,7 +216,7 @@ public final class AudioPlayerService: NSObject {
         if let existing = self.player {
             existing.removeAllItems()
             existing.insert(firstItem, after: nil)
-            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 2)
+            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 1)
             existing.play()
             if playbackRate != 1.0 {
                 existing.rate = playbackRate
@@ -228,7 +227,7 @@ public final class AudioPlayerService: NSObject {
             newPlayer.automaticallyWaitsToMinimizeStalling = true
             newPlayer.volume = 1.0
             self.player = newPlayer
-            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 2)
+            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 1)
             setupTimeObserver()
             setupPlayerObservations(newPlayer)
             newPlayer.play()
@@ -275,7 +274,19 @@ public final class AudioPlayerService: NSObject {
         return QuranVersePlayerItem(url: url, surah: surah, ayah: ayah, reciter: reciter)
     }
 
-    private func enqueueUpcomingAyahs(startingAfter ayah: Int, in surah: Surah, reciter: Reciter, count: Int = 3) {
+    private func isItemAlreadyEnqueued(surahId: Int, ayah: Int) -> Bool {
+        guard let items = player?.items() else { return false }
+        for item in items {
+            if let verseItem = item as? QuranVersePlayerItem {
+                if verseItem.surah.id == surahId && verseItem.ayah == ayah {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private func enqueueUpcomingAyahs(startingAfter ayah: Int, in surah: Surah, reciter: Reciter, count: Int = 1) {
         guard let p = self.player else { return }
 
         // Whole-surah reciters stream a single continuous surah audio file
@@ -283,38 +294,60 @@ public final class AudioPlayerService: NSObject {
             return
         }
 
-        // If repeating single Ayah, queue identical verse
-        if case .repeatAyah = repeatMode {
-            if remainingAyahRepeats > 1 {
-                if let repeatItem = makePlayerItem(surah: surah, ayah: currentAyah, reciter: reciter) {
-                    p.insert(repeatItem, after: nil)
-                    return
+        // 1. Single Ayah Repeat Mode
+        if case .repeatAyah(let loopCount) = repeatMode {
+            if loopCount == Int.max || remainingAyahRepeats > 1 {
+                if let repeatItem = makePlayerItem(surah: surah, ayah: ayah, reciter: reciter) {
+                    if !isItemAlreadyEnqueued(surahId: surah.id, ayah: ayah) {
+                        p.insert(repeatItem, after: nil)
+                    }
                 }
+                return
             }
         }
 
-        // If in A-B Memorization Loop
+        // 2. A-B Memorization Loop Mode
         if case .repeatAB(let start, let end, let loopCount) = repeatMode {
             if ayah < end {
                 let nextAyah = ayah + 1
                 if let item = makePlayerItem(surah: surah, ayah: nextAyah, reciter: reciter) {
-                    p.insert(item, after: nil)
+                    if !isItemAlreadyEnqueued(surahId: surah.id, ayah: nextAyah) {
+                        p.insert(item, after: nil)
+                    }
                 }
             } else if ayah >= end {
                 if loopCount == Int.max || abCurrentIteration < loopCount {
                     if let loopItem = makePlayerItem(surah: surah, ayah: start, reciter: reciter) {
-                        p.insert(loopItem, after: nil)
+                        if !isItemAlreadyEnqueued(surahId: surah.id, ayah: start) {
+                            p.insert(loopItem, after: nil)
+                        }
                     }
                 }
             }
             return
         }
 
-        for offset in 1...count {
-            let nextAyah = ayah + offset
-            guard nextAyah <= surah.totalAyahs else { break }
+        // 3. Normal Sequential Progression
+        if ayah < surah.totalAyahs {
+            let nextAyah = ayah + 1
             if let item = makePlayerItem(surah: surah, ayah: nextAyah, reciter: reciter) {
-                p.insert(item, after: nil)
+                if !isItemAlreadyEnqueued(surahId: surah.id, ayah: nextAyah) {
+                    p.insert(item, after: nil)
+                }
+            }
+        } else if repeatMode == .repeatSurah {
+            // Repeat Surah: Loop back to Ayah 1
+            if let loopItem = makePlayerItem(surah: surah, ayah: 1, reciter: reciter) {
+                if !isItemAlreadyEnqueued(surahId: surah.id, ayah: 1) {
+                    p.insert(loopItem, after: nil)
+                }
+            }
+        } else if surah.id < 114, let nextSurah = QuranDataService.shared.surah(for: surah.id + 1) {
+            // Continuous Surah Autoplay ("Album Mode"): Queue first Ayah of next Surah!
+            if let nextItem = makePlayerItem(surah: nextSurah, ayah: 1, reciter: reciter) {
+                if !isItemAlreadyEnqueued(surahId: nextSurah.id, ayah: 1) {
+                    p.insert(nextItem, after: nil)
+                }
             }
         }
     }
@@ -369,7 +402,20 @@ public final class AudioPlayerService: NSObject {
             }
         }
 
-        // 3. Update Current Verse State
+        // 3. Repeat Mode Accounting: Handle repeatAyah counter
+        if case .repeatAyah(let count) = repeatMode {
+            if item.ayah == currentAyah {
+                if remainingAyahRepeats > 1 {
+                    self.remainingAyahRepeats -= 1
+                } else {
+                    self.remainingAyahRepeats = count
+                }
+            } else {
+                self.remainingAyahRepeats = count
+            }
+        }
+
+        // 4. A-B Loop Iteration Accounting
         if case .repeatAB(let start, let end, _) = repeatMode {
             if item.ayah == start && currentAyah == end {
                 self.abCurrentIteration += 1
@@ -410,48 +456,18 @@ public final class AudioPlayerService: NSObject {
 
         updateNowPlayingInfo()
 
-        // 4. Lookahead Queue: Ensure the next verse is pre-buffered for 100% gapless transition
-        if item.reciter.id == "omardiaa" || item.reciter.id == "kazabri_warsh" {
-            return
-        }
-
-        // Handle A-B range loop queuing
-        if case .repeatAB(let start, let end, let loopCount) = repeatMode {
-            if item.ayah < end {
-                let upcomingAyah = item.ayah + 1
-                if let upcomingItem = makePlayerItem(surah: item.surah, ayah: upcomingAyah, reciter: item.reciter) {
-                    player?.insert(upcomingItem, after: nil)
-                }
-            } else if item.ayah >= end {
-                if loopCount == Int.max || abCurrentIteration < loopCount {
-                    if let loopItem = makePlayerItem(surah: item.surah, ayah: start, reciter: item.reciter) {
-                        player?.insert(loopItem, after: nil)
-                    }
-                }
-            }
-            return
-        }
-
-        if item.ayah < item.surah.totalAyahs {
-            let upcomingAyah = item.ayah + 1
-            if let upcomingItem = makePlayerItem(surah: item.surah, ayah: upcomingAyah, reciter: item.reciter) {
-                player?.insert(upcomingItem, after: nil)
-            }
-        } else if repeatMode == .repeatSurah {
-            if let loopItem = makePlayerItem(surah: item.surah, ayah: 1, reciter: item.reciter) {
-                player?.insert(loopItem, after: nil)
-            }
-        } else if item.surah.id < 114, let nextSurah = QuranDataService.shared.surah(for: item.surah.id + 1) {
-            // Continuous Surah Autoplay ("Album Mode"): Queue first Ayah of next Surah!
-            if let nextSurahItem = makePlayerItem(surah: nextSurah, ayah: 1, reciter: item.reciter) {
-                player?.insert(nextSurahItem, after: nil)
-            }
-        }
+        // 5. Lookahead Queue: Enqueue exactly ONE upcoming verse with duplicate protection
+        enqueueUpcomingAyahs(startingAfter: item.ayah, in: item.surah, reciter: item.reciter, count: 1)
     }
 
     private func handleQueueDidEnd() {
         guard let surah = currentSurah else {
             isPlaying = false
+            return
+        }
+
+        if case .repeatAyah = repeatMode {
+            play(surah: surah, ayah: currentAyah, reciter: currentReciter)
             return
         }
 
@@ -573,22 +589,16 @@ public final class AudioPlayerService: NSObject {
         }
     }
 
-    // MARK: - Cycle Repeat Mode for Memorization (Hifz)
+    // MARK: - Cycle Repeat Mode (Standard Apple Music / Spotify Pattern)
     public func cycleRepeatMode() {
         switch repeatMode {
         case .off:
-            repeatMode = .repeatAyah(count: 3)
-            remainingAyahRepeats = 3
-        case .repeatAyah(let count) where count == 3:
-            repeatMode = .repeatAyah(count: 5)
-            remainingAyahRepeats = 5
-        case .repeatAyah(let count) where count == 5:
-            repeatMode = .repeatAyah(count: Int.max)
-            remainingAyahRepeats = Int.max
-        case .repeatAyah:
             repeatMode = .repeatSurah
             remainingAyahRepeats = 0
         case .repeatSurah:
+            repeatMode = .repeatAyah(count: Int.max)
+            remainingAyahRepeats = Int.max
+        case .repeatAyah:
             repeatMode = .off
             remainingAyahRepeats = 0
         case .repeatAB:
