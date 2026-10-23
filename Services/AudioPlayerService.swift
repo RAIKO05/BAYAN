@@ -39,11 +39,12 @@ public final class AudioPlayerService: NSObject {
     public var currentTime: Double = 0.0
     public var duration: Double = 1.0
 
-    // MARK: - Verse Audio Repeat / Memorization (Hifz Mode)
+    // MARK: - Verse Audio Repeat / Memorization (Hifz Mode & A-B Loop)
     public enum RepeatMode: Equatable {
         case off
         case repeatAyah(count: Int) // 3x, 5x, 10x, or Int.max (continuous loop)
         case repeatSurah
+        case repeatAB(startAyah: Int, endAyah: Int, count: Int) // A-B Range Memorization Loop
 
         public var title: String {
             switch self {
@@ -51,6 +52,8 @@ public final class AudioPlayerService: NSObject {
             case .repeatAyah(let count):
                 return count == Int.max ? "Loop" : "\(count)x"
             case .repeatSurah: return "Surah"
+            case .repeatAB(let a, let b, let count):
+                return count == Int.max ? "\(a)-\(b) ∞" : "\(a)-\(b) \(count)x"
             }
         }
 
@@ -60,6 +63,7 @@ public final class AudioPlayerService: NSObject {
             case .repeatAyah(let count):
                 return count == Int.max ? "repeat.1.circle.fill" : "repeat.circle.fill"
             case .repeatSurah: return "repeat.circle.fill"
+            case .repeatAB: return "repeat.1.ar"
             }
         }
 
@@ -70,6 +74,17 @@ public final class AudioPlayerService: NSObject {
 
     public var repeatMode: RepeatMode = .off
     public var remainingAyahRepeats: Int = 0
+
+    // A-B Loop Range State
+    public var abStartAyah: Int = 1
+    public var abEndAyah: Int = 1
+    public var abRepeatCount: Int = 3
+    public var abCurrentIteration: Int = 1
+
+    public var isABLoopActive: Bool {
+        if case .repeatAB = repeatMode { return true }
+        return false
+    }
 
     // MARK: - Recitation Speed & Pitch Preservation
     public var playbackRate: Float = 1.0
@@ -191,6 +206,14 @@ public final class AudioPlayerService: NSObject {
             return
         }
 
+        // Trigger smart lookahead pre-caching for upcoming Ayahs in the background
+        QuranAudioCacheManager.shared.prefetchUpcomingAyahs(
+            reciter: activeReciter,
+            surah: surah,
+            currentAyah: ayah,
+            count: 5
+        )
+
         if let existing = self.player {
             existing.removeAllItems()
             existing.insert(firstItem, after: nil)
@@ -243,12 +266,16 @@ public final class AudioPlayerService: NSObject {
     }
 
     private func makePlayerItem(surah: Surah, ayah: Int, reciter: Reciter) -> QuranVersePlayerItem? {
-        let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah)
-        guard let url = localUrl ?? reciter.audioUrl(surah: surah.id, ayah: ayah) else { return nil }
+        // 1. Check permanent offline downloads
+        let permanentUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah)
+        // 2. Check ephemeral smart stream lookahead cache
+        let cachedUrl = QuranAudioCacheManager.shared.cachedAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah)
+
+        guard let url = permanentUrl ?? cachedUrl ?? reciter.audioUrl(surah: surah.id, ayah: ayah) else { return nil }
         return QuranVersePlayerItem(url: url, surah: surah, ayah: ayah, reciter: reciter)
     }
 
-    private func enqueueUpcomingAyahs(startingAfter ayah: Int, in surah: Surah, reciter: Reciter, count: Int = 2) {
+    private func enqueueUpcomingAyahs(startingAfter ayah: Int, in surah: Surah, reciter: Reciter, count: Int = 3) {
         guard let p = self.player else { return }
 
         // Whole-surah reciters stream a single continuous surah audio file
@@ -264,6 +291,23 @@ public final class AudioPlayerService: NSObject {
                     return
                 }
             }
+        }
+
+        // If in A-B Memorization Loop
+        if case .repeatAB(let start, let end, let loopCount) = repeatMode {
+            if ayah < end {
+                let nextAyah = ayah + 1
+                if let item = makePlayerItem(surah: surah, ayah: nextAyah, reciter: reciter) {
+                    p.insert(item, after: nil)
+                }
+            } else if ayah >= end {
+                if loopCount == Int.max || abCurrentIteration < loopCount {
+                    if let loopItem = makePlayerItem(surah: surah, ayah: start, reciter: reciter) {
+                        p.insert(loopItem, after: nil)
+                    }
+                }
+            }
+            return
         }
 
         for offset in 1...count {
@@ -326,12 +370,26 @@ public final class AudioPlayerService: NSObject {
         }
 
         // 3. Update Current Verse State
+        if case .repeatAB(let start, let end, _) = repeatMode {
+            if item.ayah == start && currentAyah == end {
+                self.abCurrentIteration += 1
+            }
+        }
+
         self.currentSurah = item.surah
         self.currentAyah = item.ayah
         self.currentReciter = item.reciter
         self.currentTime = 0.0
 
         observeItem(item)
+
+        // Silently pre-cache next 5 upcoming Ayahs to local disk cache
+        QuranAudioCacheManager.shared.prefetchUpcomingAyahs(
+            reciter: item.reciter,
+            surah: item.surah,
+            currentAyah: item.ayah,
+            count: 5
+        )
 
         QuranSyncManager.shared.updateLastRead(
             surahId: item.surah.id,
@@ -357,6 +415,23 @@ public final class AudioPlayerService: NSObject {
             return
         }
 
+        // Handle A-B range loop queuing
+        if case .repeatAB(let start, let end, let loopCount) = repeatMode {
+            if item.ayah < end {
+                let upcomingAyah = item.ayah + 1
+                if let upcomingItem = makePlayerItem(surah: item.surah, ayah: upcomingAyah, reciter: item.reciter) {
+                    player?.insert(upcomingItem, after: nil)
+                }
+            } else if item.ayah >= end {
+                if loopCount == Int.max || abCurrentIteration < loopCount {
+                    if let loopItem = makePlayerItem(surah: item.surah, ayah: start, reciter: item.reciter) {
+                        player?.insert(loopItem, after: nil)
+                    }
+                }
+            }
+            return
+        }
+
         if item.ayah < item.surah.totalAyahs {
             let upcomingAyah = item.ayah + 1
             if let upcomingItem = makePlayerItem(surah: item.surah, ayah: upcomingAyah, reciter: item.reciter) {
@@ -378,6 +453,14 @@ public final class AudioPlayerService: NSObject {
         guard let surah = currentSurah else {
             isPlaying = false
             return
+        }
+
+        if case .repeatAB(let start, _, let loopCount) = repeatMode {
+            if loopCount == Int.max || abCurrentIteration < loopCount {
+                self.abCurrentIteration += 1
+                play(surah: surah, ayah: start, reciter: currentReciter)
+                return
+            }
         }
 
         if repeatMode == .repeatSurah {
@@ -508,6 +591,9 @@ public final class AudioPlayerService: NSObject {
         case .repeatSurah:
             repeatMode = .off
             remainingAyahRepeats = 0
+        case .repeatAB:
+            repeatMode = .off
+            remainingAyahRepeats = 0
         }
     }
 
@@ -518,6 +604,28 @@ public final class AudioPlayerService: NSObject {
         } else {
             remainingAyahRepeats = 0
         }
+    }
+
+    // MARK: - A-B Loop Memorization Engine
+    public func enableABLoop(startAyah: Int, endAyah: Int, count: Int = 3) {
+        let safeStart = max(1, min(startAyah, endAyah))
+        let safeEnd = max(startAyah, endAyah)
+        self.abStartAyah = safeStart
+        self.abEndAyah = safeEnd
+        self.abRepeatCount = count
+        self.abCurrentIteration = 1
+        self.repeatMode = .repeatAB(startAyah: safeStart, endAyah: safeEnd, count: count)
+
+        if let surah = currentSurah {
+            if currentAyah < safeStart || currentAyah > safeEnd {
+                play(surah: surah, ayah: safeStart, reciter: currentReciter)
+            }
+        }
+    }
+
+    public func disableABLoop() {
+        self.repeatMode = .off
+        self.abCurrentIteration = 1
     }
 
     public func togglePlayPause() {

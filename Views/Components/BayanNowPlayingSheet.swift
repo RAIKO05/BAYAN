@@ -360,6 +360,32 @@ public struct BayanNowPlayingSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 10)
 
+                // MARK: - 4c. Active A-B Memorization Loop Indicator
+                if playerService.isABLoopActive {
+                    HStack(spacing: 6) {
+                        Image(systemName: "repeat.1.ar")
+                            .font(.system(size: 11, weight: .bold))
+                        Text("A-B Loop: Ayah \(playerService.abStartAyah)-\(playerService.abEndAyah) • Pass \(playerService.abCurrentIteration)/\(playerService.abRepeatCount == Int.max ? "∞" : "\(playerService.abRepeatCount)")")
+                            .font(.system(size: 11, weight: .bold))
+                        Spacer()
+                        Button("Stop") {
+                            playerService.disableABLoop()
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        }
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.red.opacity(0.9))
+                    }
+                    .foregroundColor(spotifyGreen)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(spotifyGreen.opacity(0.12))
+                    .clipShape(Capsule())
+                    .padding(.horizontal, 24)
+                    .padding(.top, 4)
+                }
+
                 // MARK: - 5. Playback Controls Row
                 HStack(spacing: 0) {
                     // Repeat / Hifz Memorization Loop Toggle

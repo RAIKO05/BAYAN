@@ -14,7 +14,9 @@ struct SurahDetailView: View {
     @State private var showingThemeSheet = false
     @State private var showingTajweedLegend = false
     @State private var showingHifzCompanion = false
+    @State private var showingABLoopSheet = false
     @State private var selectedTafsirAyah: Int? = nil
+    @State private var selectedWordsAyah: Int? = nil
 
     private var effectiveActiveAyah: Int {
         if playerService.currentSurah?.id == surah.id {
@@ -105,6 +107,23 @@ struct SurahDetailView: View {
                                 .clipShape(Capsule())
                             }
 
+                            // A-B Memorization Loop Button
+                            Button {
+                                showingABLoopSheet = true
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "repeat.1.ar")
+                                        .font(.caption2)
+                                    Text(playerService.isABLoopActive ? "Loop \(playerService.abStartAyah)-\(playerService.abEndAyah)" : "A-B Loop")
+                                        .font(.caption2.weight(.bold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(playerService.isABLoopActive ? currentTheme.toolbarAccentColor.opacity(0.22) : Color.white.opacity(0.06))
+                                .foregroundColor(playerService.isABLoopActive ? currentTheme.toolbarAccentColor : .white.opacity(0.85))
+                                .clipShape(Capsule())
+                            }
+
                             // Offline Audio Download Button
                             Button {
                                 handleDownloadTap()
@@ -166,6 +185,12 @@ struct SurahDetailView: View {
                                     },
                                     onTafsirTap: {
                                         selectedTafsirAyah = ayahNum
+                                        #if os(iOS)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        #endif
+                                    },
+                                    onWordsTap: {
+                                        selectedWordsAyah = ayahNum
                                         #if os(iOS)
                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                         #endif
@@ -336,12 +361,25 @@ struct SurahDetailView: View {
         .sheet(isPresented: $showingHifzCompanion) {
             HifzCompanionView(surah: surah, initialAyah: effectiveActiveAyah)
         }
+        .sheet(isPresented: $showingABLoopSheet) {
+            ABLoopSheet(surah: surah, initialAyah: effectiveActiveAyah)
+                .presentationDetents([.medium, .large])
+        }
         .sheet(isPresented: Binding(
             get: { selectedTafsirAyah != nil },
             set: { if !$0 { selectedTafsirAyah = nil } }
         )) {
             if let ayah = selectedTafsirAyah {
                 AyahTafsirSheet(surah: surah, ayahNumber: ayah)
+                    .presentationDetents([.medium, .large])
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { selectedWordsAyah != nil },
+            set: { if !$0 { selectedWordsAyah = nil } }
+        )) {
+            if let ayah = selectedWordsAyah {
+                WordByWordSheet(surah: surah, ayahNumber: ayah)
                     .presentationDetents([.medium, .large])
             }
         }
@@ -375,6 +413,7 @@ private struct AyahRow: View {
     let isActive: Bool
     let onPlayTap: () -> Void
     var onTafsirTap: () -> Void = {}
+    var onWordsTap: () -> Void = {}
 
     @AppStorage("bayan_arabic_font_size") private var arabicFontSize: Double = 26.0
     @AppStorage("bayan_show_translation") private var showTranslation: Bool = true
@@ -450,6 +489,21 @@ private struct AyahRow: View {
                         .font(.system(size: 20))
                         .foregroundColor(isActive ? theme.activeCardBorder : theme.toolbarItemColor.opacity(0.7))
                         .frame(width: 28, height: 28)
+                }
+
+                // Words / Vocabulary Explorer
+                Button(action: onWordsTap) {
+                    HStack(spacing: 3) {
+                        Image(systemName: "character.book.closed")
+                            .font(.system(size: 11))
+                        Text("Words")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundColor(theme.toolbarAccentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(theme.isDark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
+                    .clipShape(Capsule())
                 }
 
                 // Tafsir & Reflection Button
