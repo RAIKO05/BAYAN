@@ -228,7 +228,7 @@ public struct HijriDayDetailSheet: View {
 
                 Spacer()
 
-                Text(prayerResult.conventionName)
+                Text(PrayerSettingsManager.shared.convention.title)
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.5))
             }
