@@ -238,6 +238,10 @@ public final class AudioPlayerService: NSObject {
 
         observeItem(firstItem)
 
+        if AmbientSoundscapeService.shared.syncWithRecitation && AmbientSoundscapeService.shared.currentSoundscape != .off {
+            AmbientSoundscapeService.shared.resume()
+        }
+
         self.isPlaying = true
 
         if case .repeatAyah(let count) = repeatMode {
@@ -663,6 +667,9 @@ public final class AudioPlayerService: NSObject {
         }
         isSpeakingTranslation = false
         player?.pause()
+        if AmbientSoundscapeService.shared.syncWithRecitation {
+            AmbientSoundscapeService.shared.pause()
+        }
         isPlaying = false
         #if canImport(ActivityKit)
         QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
@@ -676,6 +683,9 @@ public final class AudioPlayerService: NSObject {
         player?.play()
         if playbackRate != 1.0 {
             player?.rate = playbackRate
+        }
+        if AmbientSoundscapeService.shared.syncWithRecitation && AmbientSoundscapeService.shared.currentSoundscape != .off {
+            AmbientSoundscapeService.shared.resume()
         }
         isPlaying = true
         #if canImport(ActivityKit)

@@ -9,6 +9,8 @@ struct MushafRootView: View {
     @State private var selectedFilter: FilterCategory = .all
     @State private var showingReciterPicker = false
     @State private var showingThemeSheet = false
+    @State private var showingReadAndUnderstand = false
+    @State private var showingAudioFeaturesHub = false
     @State private var navigateToSurah: Surah?
     @State private var navigateToAyah: Int = 1
     @State private var themeManager = AppThemeManager.shared
@@ -85,6 +87,13 @@ struct MushafRootView: View {
                 }
                 .background(currentTheme.backgroundColor.ignoresSafeArea())
                 .presentationDetents([.fraction(0.42), .medium])
+            }
+            .sheet(isPresented: $showingReadAndUnderstand) {
+                ReadAndUnderstandModalView()
+            }
+            .sheet(isPresented: $showingAudioFeaturesHub) {
+                AudioFeaturesHubSheet()
+                    .presentationDetents([.medium, .large])
             }
             .navigationDestination(item: $navigateToSurah) { surah in
                 SurahDetailView(surah: surah, initialAyah: navigateToAyah)
@@ -447,6 +456,66 @@ struct MushafRootView: View {
             .liquidGlass(cornerRadius: 18)
             .padding(.horizontal, 18)
         }
+
+        // Read & Understand Quran + Audio Features Hub Quick Launchers
+        HStack(spacing: 12) {
+            Button {
+                showingReadAndUnderstand = true
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "book.pages.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(BayanTheme.gold)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Read & Understand")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        Text("Synchronized Study")
+                            .font(.system(size: 9.5))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .liquidGlass(cornerRadius: 16)
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                showingAudioFeaturesHub = true
+                #if os(iOS)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(Color(red: 0.20, green: 0.85, blue: 0.95))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Audio Features")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        Text("6 Core Pillars")
+                            .font(.system(size: 9.5))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .liquidGlass(cornerRadius: 16)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 18)
     }
 
     // MARK: - Empty Search State

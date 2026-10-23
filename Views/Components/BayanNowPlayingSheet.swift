@@ -20,6 +20,9 @@ public struct BayanNowPlayingSheet: View {
     @State private var showingTafsirSheet: Bool = false
     @State private var showingSleepTimerSheet: Bool = false
     @State private var showingCastSheet: Bool = false
+    @State private var showingReadAndUnderstand: Bool = false
+    @State private var showingAudioFeaturesHub: Bool = false
+    @State private var soundscapeService = AmbientSoundscapeService.shared
     @State private var castService = BayanCastService.shared
     @State private var isDraggingScrubber: Bool = false
     @State private var dragPosition: Double = 0.0
@@ -104,6 +107,18 @@ public struct BayanNowPlayingSheet: View {
 
                     // Circular Translucent Glass More Options Button
                     Menu {
+                        Button {
+                            showingReadAndUnderstand = true
+                        } label: {
+                            Label("Read & Understand Mode", systemImage: "book.pages.fill")
+                        }
+
+                        Button {
+                            showingAudioFeaturesHub = true
+                        } label: {
+                            Label("Audio Features Hub (6 Pillars)", systemImage: "sparkles")
+                        }
+
                         Button {
                             showingTafsirSheet = true
                         } label: {
@@ -354,6 +369,28 @@ public struct BayanNowPlayingSheet: View {
 
                     Spacer()
 
+                    // Ambient Soundscapes Mixer Button
+                    Button {
+                        soundscapeService.toggle()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(soundscapeService.currentSoundscape.emoji)
+                                .font(.system(size: 11))
+                            Text(soundscapeService.currentSoundscape == .off ? "Soundscape" : soundscapeService.currentSoundscape.title)
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundColor(soundscapeService.currentSoundscape != .off ? Color(red: 0.20, green: 0.85, blue: 0.95) : .white.opacity(0.65))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background(soundscapeService.currentSoundscape != .off ? Color(red: 0.15, green: 0.45, blue: 0.65).opacity(0.35) : Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
                     // Bedtime Sleep Timer Button with Countdown
                     Button {
                         showingSleepTimerSheet = true
@@ -511,6 +548,31 @@ public struct BayanNowPlayingSheet: View {
 
                     Spacer()
 
+                    // Read & Understand Quran Mode
+                    Button {
+                        showingReadAndUnderstand = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "character.book.closed.fill")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("Read & Understand")
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundColor(BayanTheme.gold)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 6)
+                        .background(BayanTheme.gold.opacity(0.16))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(BayanTheme.gold.opacity(0.35), lineWidth: 0.8)
+                        )
+                    }
+
+                    Spacer()
+
                     // Universal Cast & Device Output (AirPlay, Android & Windows DLNA)
                     Button {
                         showingCastSheet = true
@@ -578,6 +640,13 @@ public struct BayanNowPlayingSheet: View {
         .sheet(isPresented: $showingSleepTimerSheet) {
             SleepTimerPickerSheet()
                 .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showingReadAndUnderstand) {
+            ReadAndUnderstandModalView()
+        }
+        .sheet(isPresented: $showingAudioFeaturesHub) {
+            AudioFeaturesHubSheet()
+                .presentationDetents([.medium, .large])
         }
         .gesture(
             DragGesture(minimumDistance: 25)

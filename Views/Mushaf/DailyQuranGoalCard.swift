@@ -8,6 +8,7 @@ import SwiftUI
 public struct DailyQuranGoalCard: View {
     @State private var goalManager = QuranListeningGoalManager.shared
     @State private var playerService = AudioPlayerService.shared
+    @State private var showingStatsSheet: Bool = false
     var onContinueListening: () -> Void
 
     public init(onContinueListening: @escaping () -> Void = {}) {
@@ -31,18 +32,40 @@ public struct DailyQuranGoalCard: View {
 
                 Spacer()
 
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.orange)
-                    Text("\(goalManager.streakDays) day streak")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white.opacity(0.85))
+                HStack(spacing: 8) {
+                    Button {
+                        showingStatsSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chart.bar.xaxis")
+                                .font(.system(size: 11))
+                            Text("Stats")
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundColor(Color(red: 0.35, green: 0.65, blue: 1.0))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Color(red: 0.35, green: 0.65, blue: 1.0).opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.orange)
+                        Text("\(goalManager.streakDays) day streak")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.orange.opacity(0.15))
+                    .clipShape(Capsule())
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.15))
-                .clipShape(Capsule())
             }
             .padding(.horizontal, 4)
 
@@ -229,6 +252,10 @@ public struct DailyQuranGoalCard: View {
                         )
                 )
             }
+        }
+        .sheet(isPresented: $showingStatsSheet) {
+            ListeningStatsSheet()
+                .presentationDetents([.medium, .large])
         }
     }
 }
