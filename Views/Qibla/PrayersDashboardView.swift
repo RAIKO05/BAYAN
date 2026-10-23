@@ -11,6 +11,7 @@ public struct PrayersDashboardView: View {
     @State private var themeManager = AppThemeManager.shared
     @State private var prayerSettings = PrayerSettingsManager.shared
     @State private var showingSettingsSheet = false
+    @State private var showingCalendarSheet = false
     @State private var lastTriggeredPrayerKey: String = ""
 
     // Location coordinates (defaults to Casablanca, Morocco, or passed from location manager)
@@ -71,6 +72,23 @@ public struct PrayersDashboardView: View {
             )
             .presentationDetents([.fraction(0.72), .large])
         }
+        .sheet(isPresented: $showingCalendarSheet) {
+            NavigationStack {
+                HijriCalendarView(latitude: latitude, longitude: longitude)
+                    .navigationTitle("Hijri Calendar")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") {
+                                showingCalendarSheet = false
+                            }
+                            .foregroundColor(BayanTheme.gold)
+                            .font(.system(size: 14, weight: .bold))
+                        }
+                    }
+            }
+            .presentationDetents([.large])
+        }
         .onAppear {
             refreshCompletedState()
         }
@@ -116,6 +134,22 @@ public struct PrayersDashboardView: View {
                         .frame(width: 34, height: 34)
                         .background(themeManager.currentTheme.cardBorder.opacity(0.4))
                         .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showingCalendarSheet = true
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(themeManager.currentTheme.prayerActiveAccent)
+                        .frame(width: 34, height: 34)
+                        .background(themeManager.currentTheme.prayerActiveAccent.opacity(0.15))
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(themeManager.currentTheme.prayerActiveAccent.opacity(0.3), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
 

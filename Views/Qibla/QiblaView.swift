@@ -13,6 +13,7 @@ public struct QiblaView: View {
 
     public enum QiblaTabMode: String, CaseIterable {
         case prayers = "Prayers"
+        case calendar = "Calendar"
         case compass = "Compass"
     }
  
@@ -75,13 +76,20 @@ public struct QiblaView: View {
                         .padding(.bottom, 8)
 
                     Group {
-                        if selectedMode == .prayers {
+                        switch selectedMode {
+                        case .prayers:
                             PrayersDashboardView(latitude: activeLatitude, longitude: activeLongitude)
                                 .transition(.asymmetric(
                                     insertion: .opacity.combined(with: .scale(scale: 0.98)),
                                     removal: .opacity
                                 ))
-                        } else {
+                        case .calendar:
+                            HijriCalendarView(latitude: activeLatitude, longitude: activeLongitude)
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                                    removal: .opacity
+                                ))
+                        case .compass:
                             compassScrollView
                                 .transition(.asymmetric(
                                     insertion: .opacity.combined(with: .scale(scale: 0.98)),
@@ -116,57 +124,42 @@ public struct QiblaView: View {
         }
     }
 
-    // MARK: - Mode Switcher Pill
+    // MARK: - Mode Switcher Pill (Prayers, Hijri Calendar, Qibla Compass)
     private var modeSwitcherPill: some View {
-        HStack(spacing: 4) {
-            Button {
-                #if os(iOS)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #endif
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    selectedMode = .prayers
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock.badge.checkmark.fill")
-                        .font(.system(size: 13))
-                    Text("Prayers")
-                        .font(.system(size: 13, weight: .bold))
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 7)
-                .background(selectedMode == .prayers ? themeManager.currentTheme.prayerActiveAccent : Color.clear)
-                .foregroundColor(selectedMode == .prayers ? (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white) : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                #if os(iOS)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #endif
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    selectedMode = .compass
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "safari.fill")
-                        .font(.system(size: 13))
-                    Text("Compass")
-                        .font(.system(size: 13, weight: .bold))
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 7)
-                .background(selectedMode == .compass ? themeManager.currentTheme.prayerActiveAccent : Color.clear)
-                .foregroundColor(selectedMode == .compass ? (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white) : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
+        HStack(spacing: 3) {
+            modePillButton(mode: .prayers, title: "Prayers", icon: "clock.badge.checkmark.fill")
+            modePillButton(mode: .calendar, title: "Calendar", icon: "moon.stars.fill")
+            modePillButton(mode: .compass, title: "Compass", icon: "safari.fill")
         }
-        .padding(4)
+        .padding(3)
         .background(themeManager.currentTheme.isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
         .clipShape(Capsule())
         .overlay(Capsule().stroke(themeManager.currentTheme.isDark ? Color.white.opacity(0.12) : Color.black.opacity(0.08), lineWidth: 1))
+    }
+
+    private func modePillButton(mode: QiblaTabMode, title: String, icon: String) -> some View {
+        let isSelected = selectedMode == mode
+        return Button {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #endif
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                selectedMode = mode
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 11))
+                Text(title)
+                    .font(.system(size: 12, weight: .bold))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isSelected ? themeManager.currentTheme.prayerActiveAccent : Color.clear)
+            .foregroundColor(isSelected ? (themeManager.currentTheme.isDark ? BayanTheme.obsidian : .white) : (themeManager.currentTheme.isDark ? .white.opacity(0.7) : Color(red: 0.35, green: 0.40, blue: 0.48)))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Compass Content View
