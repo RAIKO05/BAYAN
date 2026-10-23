@@ -36,6 +36,15 @@ public enum AudioQualityProfile: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    public var badge: String {
+        switch self {
+        case .hiResMaster: return "Hi-Res"
+        case .dolbySpatial: return "Spatial"
+        case .warmHiFi: return "Hi-Fi"
+        case .studioNeutral: return "Studio"
+        }
+    }
+
     public var iconName: String {
         switch self {
         case .hiResMaster: return "sparkles"
