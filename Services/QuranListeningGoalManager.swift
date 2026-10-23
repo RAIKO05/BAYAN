@@ -79,9 +79,10 @@ public final class QuranListeningGoalManager {
         self.todaySeconds = UserDefaults.standard.double(forKey: kTodaySeconds)
         let storedTotal = UserDefaults.standard.double(forKey: kTotalSeconds)
         self.totalSeconds = storedTotal > 0 ? storedTotal : 45 * 60.0 // Default 45 mins baseline
-        self.streakDays = max(1, UserDefaults.standard.integer(forKey: kStreakDays))
+        let streak = max(1, UserDefaults.standard.integer(forKey: kStreakDays))
+        self.streakDays = streak
         let storedLongest = UserDefaults.standard.integer(forKey: kLongestStreak)
-        self.longestStreakDays = max(storedLongest, streakDays)
+        self.longestStreakDays = max(storedLongest, streak)
         self.isDailyReminderEnabled = UserDefaults.standard.bool(forKey: kDailyReminderEnabled)
 
         let savedTimeInterval = UserDefaults.standard.double(forKey: kDailyReminderTime)
