@@ -413,8 +413,7 @@ struct MushafRootView: View {
                 if !playerService.isPlaying {
                     playerService.resume()
                 }
-            } else {
-                let firstSurah = dataService.surahs.first ?? dataService.surah(for: 1)!
+            } else if let firstSurah = dataService.surah(for: 1) {
                 playerService.play(surah: firstSurah, ayah: 1, reciter: playerService.currentReciter)
             }
         }
