@@ -4,7 +4,30 @@ import MediaPlayer
 #if canImport(UIKit)
 import UIKit
 #endif
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
+// MARK: - Quran Verse Queue Player Item
+/// Custom AVPlayerItem tracking exact Surah, Ayah, and Reciter identity
+/// enabling seamless, zero-gap hardware transitions via AVQueuePlayer.
+public final class QuranVersePlayerItem: AVPlayerItem {
+    public let surah: Surah
+    public let ayah: Int
+    public let reciter: Reciter
+
+    public init(url: URL, surah: Surah, ayah: Int, reciter: Reciter) {
+        self.surah = surah
+        self.ayah = ayah
+        self.reciter = reciter
+        let asset = AVURLAsset(url: url)
+        super.init(asset: asset, automaticallyLoadedAssetKeys: ["duration", "playable"])
+        self.preferredForwardBufferDuration = 10.0
+        self.audioTimePitchAlgorithm = .timeDomain
+    }
+}
+
+// MARK: - High-Fidelity Gapless Quran Recitation Audio Service
 @Observable
 public final class AudioPlayerService: NSObject {
     public static let shared = AudioPlayerService()
@@ -103,13 +126,13 @@ public final class AudioPlayerService: NSObject {
     @ObservationIgnored private var speechSynthesizer: AVSpeechSynthesizer?
     @ObservationIgnored private var speechWatchdogTask: Task<Void, Never>?
 
-    private var player: AVPlayer?
+    // MARK: - Core Audio Engine (AVQueuePlayer for Zero-Gap Playback)
+    private var player: AVQueuePlayer?
     private var timeObserverToken: Any?
+    private var currentItemObservation: NSKeyValueObservation?
+    private var timeControlStatusObservation: NSKeyValueObservation?
     private var statusObservation: NSKeyValueObservation?
 
-    // Gapless Verse Pre-buffering
-    private var preloadedPlayerItem: AVPlayerItem?
-    private var preloadedTarget: (surahId: Int, ayah: Int, reciterId: String)?
     private var wasPlayingBeforeInterruption = false
 
     public override init() {
@@ -139,6 +162,7 @@ public final class AudioPlayerService: NSObject {
         }
     }
 
+    // MARK: - Continuous Recitation Playback Engine (Gapless AVQueuePlayer)
     public func play(surah: Surah, ayah: Int = 1, reciter: Reciter? = nil) {
         if !Thread.isMainThread {
             DispatchQueue.main.async {
@@ -152,24 +176,8 @@ public final class AudioPlayerService: NSObject {
         self.currentAyah = ayah
         self.currentReciter = activeReciter
 
-        // Prefer offline downloaded audio cache if available
-        let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: activeReciter.id, surah: surah.id, ayah: ayah)
-        let playbackUrl = localUrl ?? activeReciter.audioUrl(surah: surah.id, ayah: ayah)
-
-        guard let url = playbackUrl else {
-            print("❌ Invalid audio URL for Surah \(surah.id), Ayah \(ayah)")
-            return
-        }
-
-        if localUrl != nil {
-            print("💾 Playing from offline local cache: \(url.lastPathComponent)")
-        } else {
-            print("▶️ Streaming Quran recitation: \(url)")
-        }
-
         configureAudioSessionForPlayback()
-        statusObservation?.invalidate()
-        statusObservation = nil
+        cleanupCurrentItemObservations()
 
         speechWatchdogTask?.cancel()
         speechWatchdogTask = nil
@@ -178,55 +186,35 @@ public final class AudioPlayerService: NSObject {
         }
         isSpeakingTranslation = false
 
-        let playerItem: AVPlayerItem
-        if let preloaded = preloadedPlayerItem,
-           let target = preloadedTarget,
-           target.surahId == surah.id && target.ayah == ayah && target.reciterId == activeReciter.id {
-            playerItem = preloaded
-            preloadedPlayerItem = nil
-            preloadedTarget = nil
-        } else {
-            playerItem = AVPlayerItem(url: url)
+        guard let firstItem = makePlayerItem(surah: surah, ayah: ayah, reciter: activeReciter) else {
+            print("❌ Invalid audio URL for Surah \(surah.id), Ayah \(ayah)")
+            return
         }
-        playerItem.preferredForwardBufferDuration = 5.0
-        playerItem.audioTimePitchAlgorithm = .timeDomain
 
-        // Continuous zero-stop item replacement on the persistent AVPlayer
-        if let existingPlayer = self.player {
-            existingPlayer.replaceCurrentItem(with: playerItem)
-            existingPlayer.playImmediately(atRate: playbackRate)
+        if let existing = self.player {
+            existing.removeAllItems()
+            existing.insert(firstItem, after: nil)
+            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 2)
+            existing.play()
+            if playbackRate != 1.0 {
+                existing.rate = playbackRate
+            }
         } else {
             cleanupTimeObserver()
-            let newPlayer = AVPlayer(playerItem: playerItem)
-            newPlayer.automaticallyWaitsToMinimizeStalling = false
+            let newPlayer = AVQueuePlayer(items: [firstItem])
+            newPlayer.automaticallyWaitsToMinimizeStalling = true
             newPlayer.volume = 1.0
             self.player = newPlayer
+            enqueueUpcomingAyahs(startingAfter: ayah, in: surah, reciter: activeReciter, count: 2)
             setupTimeObserver()
-            newPlayer.playImmediately(atRate: playbackRate)
-        }
-
-        // Observe player item status to catch duration and errors
-        statusObservation = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
-            guard let self = self else { return }
-            if item.status == .readyToPlay {
-                let itemDuration = item.duration.seconds
-                if itemDuration.isFinite && !itemDuration.isNaN && itemDuration > 0 {
-                    DispatchQueue.main.async {
-                        self.duration = itemDuration
-                    }
-                }
-            } else if item.status == .failed {
-                print("❌ AVPlayerItem failed: \(String(describing: item.error))")
+            setupPlayerObservations(newPlayer)
+            newPlayer.play()
+            if playbackRate != 1.0 {
+                newPlayer.rate = playbackRate
             }
         }
 
-        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(playerItemDidFinishPlaying),
-            name: .AVPlayerItemDidPlayToEndTime,
-            object: playerItem
-        )
+        observeItem(firstItem)
 
         self.isPlaying = true
 
@@ -252,32 +240,197 @@ public final class AudioPlayerService: NSObject {
         #endif
 
         updateNowPlayingInfo()
-
-        // Asynchronously preload next Ayah in background for seamless gapless playback
-        preloadNextAyahAsync(surah: surah, nextAyah: ayah + 1, reciter: activeReciter)
     }
 
-    private func preloadNextAyahAsync(surah: Surah, nextAyah: Int, reciter: Reciter) {
-        guard nextAyah <= surah.totalAyahs else {
-            preloadedPlayerItem = nil
-            preloadedTarget = nil
+    private func makePlayerItem(surah: Surah, ayah: Int, reciter: Reciter) -> QuranVersePlayerItem? {
+        let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah)
+        guard let url = localUrl ?? reciter.audioUrl(surah: surah.id, ayah: ayah) else { return nil }
+        return QuranVersePlayerItem(url: url, surah: surah, ayah: ayah, reciter: reciter)
+    }
+
+    private func enqueueUpcomingAyahs(startingAfter ayah: Int, in surah: Surah, reciter: Reciter, count: Int = 2) {
+        guard let p = self.player else { return }
+
+        // Whole-surah reciters stream a single continuous surah audio file
+        if reciter.id == "omardiaa" || reciter.id == "kazabri_warsh" {
             return
         }
 
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let self = self else { return }
-            let localUrl = QuranAudioDownloadService.shared.localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: nextAyah)
-            guard let nextUrl = localUrl ?? reciter.audioUrl(surah: surah.id, ayah: nextAyah) else { return }
-
-            let item = AVPlayerItem(url: nextUrl)
-            item.preferredForwardBufferDuration = 10.0
-            item.audioTimePitchAlgorithm = .timeDomain
-
-            DispatchQueue.main.async {
-                self.preloadedPlayerItem = item
-                self.preloadedTarget = (surah.id, nextAyah, reciter.id)
+        // If repeating single Ayah, queue identical verse
+        if case .repeatAyah = repeatMode {
+            if remainingAyahRepeats > 1 {
+                if let repeatItem = makePlayerItem(surah: surah, ayah: currentAyah, reciter: reciter) {
+                    p.insert(repeatItem, after: nil)
+                    return
+                }
             }
         }
+
+        for offset in 1...count {
+            let nextAyah = ayah + offset
+            guard nextAyah <= surah.totalAyahs else { break }
+            if let item = makePlayerItem(surah: surah, ayah: nextAyah, reciter: reciter) {
+                p.insert(item, after: nil)
+            }
+        }
+    }
+
+    private func setupPlayerObservations(_ qPlayer: AVQueuePlayer) {
+        currentItemObservation?.invalidate()
+        currentItemObservation = qPlayer.observe(\.currentItem, options: [.new]) { [weak self] player, _ in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if let nextItem = player.currentItem as? QuranVersePlayerItem {
+                    self.handleVerseItemTransition(to: nextItem)
+                } else if player.items().isEmpty {
+                    self.handleQueueDidEnd()
+                }
+            }
+        }
+
+        timeControlStatusObservation?.invalidate()
+        timeControlStatusObservation = qPlayer.observe(\.timeControlStatus, options: [.new]) { [weak self] player, _ in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                // Buffer Underrun Stall Watchdog: If playback should be active, immediately resume once buffered
+                if self.isPlaying && player.timeControlStatus == .paused && player.currentItem?.status == .readyToPlay {
+                    player.play()
+                    if self.playbackRate != 1.0 {
+                        player.rate = self.playbackRate
+                    }
+                }
+            }
+        }
+    }
+
+    private func handleVerseItemTransition(to item: QuranVersePlayerItem) {
+        // 1. Bedtime Sleep Timer: End of Current Ayah Check
+        if sleepTimerOption == .endOfAyah {
+            Task { @MainActor [weak self] in
+                await self?.fadeVolumeAndPause()
+            }
+            return
+        }
+
+        // 2. Dual Audio Mode: Speak English Translation Before Continuing
+        if isDualAudioEnabled {
+            let previousAyah = currentAyah
+            let translation = QuranVerseText.translation(surahId: item.surah.id, ayahNumber: previousAyah)
+            let clean = translation.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !clean.isEmpty {
+                player?.pause()
+                speakTranslation(clean) { [weak self] in
+                    self?.player?.play()
+                }
+            }
+        }
+
+        // 3. Update Current Verse State
+        self.currentSurah = item.surah
+        self.currentAyah = item.ayah
+        self.currentReciter = item.reciter
+        self.currentTime = 0.0
+
+        observeItem(item)
+
+        QuranSyncManager.shared.updateLastRead(
+            surahId: item.surah.id,
+            ayahId: item.ayah,
+            page: item.surah.startPage,
+            qariId: item.reciter.id,
+            audioTime: 0.0
+        )
+
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.startOrUpdate(
+            surah: item.surah,
+            ayah: item.ayah,
+            reciter: item.reciter,
+            isPlaying: true
+        )
+        #endif
+
+        updateNowPlayingInfo()
+
+        // 4. Lookahead Queue: Ensure the next verse is pre-buffered for 100% gapless transition
+        if item.reciter.id == "omardiaa" || item.reciter.id == "kazabri_warsh" {
+            return
+        }
+
+        if item.ayah < item.surah.totalAyahs {
+            let upcomingAyah = item.ayah + 1
+            if let upcomingItem = makePlayerItem(surah: item.surah, ayah: upcomingAyah, reciter: item.reciter) {
+                player?.insert(upcomingItem, after: nil)
+            }
+        } else if repeatMode == .repeatSurah {
+            if let loopItem = makePlayerItem(surah: item.surah, ayah: 1, reciter: item.reciter) {
+                player?.insert(loopItem, after: nil)
+            }
+        } else if item.surah.id < 114, let nextSurah = QuranDataService.shared.surah(for: item.surah.id + 1) {
+            // Continuous Surah Autoplay ("Album Mode"): Queue first Ayah of next Surah!
+            if let nextSurahItem = makePlayerItem(surah: nextSurah, ayah: 1, reciter: item.reciter) {
+                player?.insert(nextSurahItem, after: nil)
+            }
+        }
+    }
+
+    private func handleQueueDidEnd() {
+        guard let surah = currentSurah else {
+            isPlaying = false
+            return
+        }
+
+        if repeatMode == .repeatSurah {
+            play(surah: surah, ayah: 1, reciter: currentReciter)
+            return
+        }
+
+        if surah.id < 114, let nextSurah = QuranDataService.shared.surah(for: surah.id + 1) {
+            print("➡️ Seamlessly transitioning to next Surah: \(nextSurah.nameEnglish)")
+            play(surah: nextSurah, ayah: 1, reciter: currentReciter)
+            return
+        }
+
+        // Reached end of Quran
+        isPlaying = false
+        #if canImport(ActivityKit)
+        QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
+        #endif
+        updateNowPlayingInfo()
+    }
+
+    private func observeItem(_ item: AVPlayerItem) {
+        statusObservation?.invalidate()
+        statusObservation = item.observe(\.status, options: [.new]) { [weak self] playerItem, _ in
+            guard let self = self else { return }
+            if playerItem.status == .readyToPlay {
+                let itemDuration = playerItem.duration.seconds
+                if itemDuration.isFinite && !itemDuration.isNaN && itemDuration > 0 {
+                    DispatchQueue.main.async {
+                        self.duration = itemDuration
+                    }
+                }
+                // Watchdog: If marked playing, ensure player is actively decoding audio
+                if self.isPlaying {
+                    DispatchQueue.main.async {
+                        self.player?.play()
+                        if self.playbackRate != 1.0 {
+                            self.player?.rate = self.playbackRate
+                        }
+                    }
+                }
+            } else if playerItem.status == .failed {
+                print("❌ AVPlayerItem failed: \(String(describing: playerItem.error))")
+                DispatchQueue.main.async {
+                    self.player?.advanceToNextItem()
+                }
+            }
+        }
+    }
+
+    private func cleanupCurrentItemObservations() {
+        statusObservation?.invalidate()
+        statusObservation = nil
     }
 
     private func setupTimeObserver() {
@@ -321,6 +474,8 @@ public final class AudioPlayerService: NSObject {
         guard let surah = currentSurah else { return }
         if currentAyah < surah.totalAyahs {
             play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
+        } else if surah.id < 114, let nextSurah = QuranDataService.shared.surah(for: surah.id + 1) {
+            play(surah: nextSurah, ayah: 1, reciter: currentReciter)
         }
     }
 
@@ -328,117 +483,10 @@ public final class AudioPlayerService: NSObject {
         guard let surah = currentSurah else { return }
         if currentAyah > 1 {
             play(surah: surah, ayah: currentAyah - 1, reciter: currentReciter)
+        } else if surah.id > 1, let prevSurah = QuranDataService.shared.surah(for: surah.id - 1) {
+            play(surah: prevSurah, ayah: prevSurah.totalAyahs, reciter: currentReciter)
         } else {
             seek(to: 0)
-        }
-    }
-
-    @objc private func playerItemDidFinishPlaying() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, let surah = self.currentSurah else { return }
-
-            // 1. Bedtime Sleep Timer: End of Current Ayah
-            if self.sleepTimerOption == .endOfAyah {
-                Task { @MainActor [weak self] in
-                    await self?.fadeVolumeAndPause()
-                }
-                return
-            }
-
-            // 2. Dual Audio Mode: Speak English Translation Before Advancing
-            if self.isDualAudioEnabled {
-                let translation = QuranVerseText.translation(surahId: surah.id, ayahNumber: self.currentAyah)
-                let clean = translation.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !clean.isEmpty {
-                    self.speakTranslation(clean) { [weak self] in
-                        guard let self = self, let activeSurah = self.currentSurah else { return }
-                        self.advanceAfterCurrentAyah(surah: activeSurah)
-                    }
-                    return
-                }
-            }
-
-            // 3. Normal Sequential Progression or Repeat Mode (Seamless Zero-Stop)
-            self.advanceAfterCurrentAyah(surah: surah)
-        }
-    }
-
-    public func advanceAfterCurrentAyah(surah: Surah) {
-        // Bedtime Sleep Timer: End of Surah Check
-        if sleepTimerOption == .endOfSurah && currentAyah >= surah.totalAyahs {
-            Task { @MainActor [weak self] in
-                await self?.fadeVolumeAndPause()
-            }
-            return
-        }
-
-        switch repeatMode {
-        case .repeatAyah(let count):
-            if count == Int.max {
-                // Continuous infinite loop of this single Ayah
-                seek(to: 0)
-                player?.play()
-                if playbackRate != 1.0 { player?.rate = playbackRate }
-                isPlaying = true
-                #if canImport(ActivityKit)
-                QuranLyricsLiveActivityManager.shared.startOrUpdate(
-                    surah: surah,
-                    ayah: currentAyah,
-                    reciter: currentReciter,
-                    isPlaying: true
-                )
-                #endif
-                return
-            }
-
-            if remainingAyahRepeats > 1 {
-                // Decrement and repeat same Ayah
-                remainingAyahRepeats -= 1
-                seek(to: 0)
-                player?.play()
-                if playbackRate != 1.0 { player?.rate = playbackRate }
-                isPlaying = true
-                #if canImport(ActivityKit)
-                QuranLyricsLiveActivityManager.shared.startOrUpdate(
-                    surah: surah,
-                    ayah: currentAyah,
-                    reciter: currentReciter,
-                    isPlaying: true
-                )
-                #endif
-                return
-            } else {
-                // Finished count repeats, reset counter for next Ayah
-                remainingAyahRepeats = count
-                if currentAyah < surah.totalAyahs {
-                    play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
-                } else {
-                    isPlaying = false
-                    #if canImport(ActivityKit)
-                    QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
-                    #endif
-                }
-            }
-
-        case .repeatSurah:
-            if currentAyah < surah.totalAyahs {
-                play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
-            } else {
-                // Loop back to Ayah 1 of the Surah
-                play(surah: surah, ayah: 1, reciter: currentReciter)
-            }
-
-        case .off:
-            if currentAyah < surah.totalAyahs {
-                // Auto-advance sequentially to the next Ayah
-                play(surah: surah, ayah: currentAyah + 1, reciter: currentReciter)
-            } else {
-                // Reached the end of the Surah
-                isPlaying = false
-                #if canImport(ActivityKit)
-                QuranLyricsLiveActivityManager.shared.updatePlaybackState(isPlaying: false)
-                #endif
-            }
         }
     }
 
@@ -476,13 +524,7 @@ public final class AudioPlayerService: NSObject {
         if isPlaying {
             pause()
         } else {
-            configureAudioSessionForPlayback()
-            player?.play()
-            if playbackRate != 1.0 {
-                player?.rate = playbackRate
-            }
-            isPlaying = true
-            updateNowPlayingInfo()
+            resume()
         }
     }
 
@@ -502,7 +544,7 @@ public final class AudioPlayerService: NSObject {
     }
 
     public func resume() {
-        guard !isPlaying, player != nil else { return }
+        guard !isPlaying else { return }
         configureAudioSessionForPlayback()
         player?.play()
         if playbackRate != 1.0 {
@@ -527,9 +569,13 @@ public final class AudioPlayerService: NSObject {
         sleepTimerOption = .off
         sleepTimerRemainingSeconds = 0
         cleanupTimeObserver()
-        statusObservation?.invalidate()
-        statusObservation = nil
+        cleanupCurrentItemObservations()
+        currentItemObservation?.invalidate()
+        currentItemObservation = nil
+        timeControlStatusObservation?.invalidate()
+        timeControlStatusObservation = nil
         player?.pause()
+        player?.removeAllItems()
         isPlaying = false
         currentTime = 0.0
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
@@ -623,20 +669,18 @@ public final class AudioPlayerService: NSObject {
 
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US") ?? AVSpeechSynthesisVoice(language: "en-GB")
-        utterance.rate = 0.48 // Dignified, serene, easy-to-follow pace
+        utterance.rate = 0.48 // Dignified, serene pace
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0
 
         isSpeakingTranslation = true
         speechSynthesizer?.speak(utterance)
 
-        // Safety Watchdog: If AVSpeechSynthesizer fails to fire didFinish within reasonable time, advance anyway
         let wordCount = text.split(separator: " ").count
         let timeoutSeconds = max(4.0, Double(wordCount) * 0.45 + 3.0)
         speechWatchdogTask = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(timeoutSeconds * 1_000_000_000))
             guard let self = self, !Task.isCancelled, self.isSpeakingTranslation else { return }
-            print("⏱️ Translation speech watchdog advancing")
             self.isSpeakingTranslation = false
             fallback()
         }
@@ -823,20 +867,10 @@ public final class AudioPlayerService: NSObject {
                   let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
 
             if reason == .oldDeviceUnavailable {
-                // Pauses immediately if AirPods / headphones disconnect to avoid blasting phone speakers
                 if self.isPlaying {
                     self.pause()
                 }
             }
-        }
-
-        NotificationCenter.default.addObserver(
-            forName: UIApplication.didReceiveMemoryWarningNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.preloadedPlayerItem = nil
-            self?.preloadedTarget = nil
         }
         #endif
     }
@@ -850,8 +884,7 @@ extension AudioPlayerService: AVSpeechSynthesizerDelegate {
             self.speechWatchdogTask?.cancel()
             self.speechWatchdogTask = nil
             self.isSpeakingTranslation = false
-            guard let surah = self.currentSurah else { return }
-            self.advanceAfterCurrentAyah(surah: surah)
+            self.player?.play()
         }
     }
 
