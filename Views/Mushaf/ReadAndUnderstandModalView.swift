@@ -15,6 +15,7 @@ public struct ReadAndUnderstandModalView: View {
     @State private var translationService = QuranTranslationService.shared
     @State private var soundscapeService = AmbientSoundscapeService.shared
     @State private var bookmarkService = BookmarkService.shared
+    @State private var downloadService = QuranAudioDownloadService.shared
     @State private var showingWordByWord: Bool = false
     @State private var showingFullTafsir: Bool = false
     @State private var showingReciterPicker: Bool = false
@@ -31,6 +32,10 @@ public struct ReadAndUnderstandModalView: View {
 
     private var isBookmarked: Bool {
         bookmarkService.isBookmarked(surahId: currentSurah.id, ayahNumber: playerService.currentAyah)
+    }
+
+    private var downloadStatus: QuranAudioDownloadService.DownloadStatus {
+        downloadService.downloadStatus(reciterId: playerService.currentReciter.id, surah: currentSurah)
     }
 
     private var safeDuration: Double {
@@ -91,6 +96,15 @@ public struct ReadAndUnderstandModalView: View {
             .sheet(isPresented: $showingReciterPicker) {
                 ReciterPickerSheet(selectedReciter: $playerService.currentReciter)
                     .presentationDetents([.medium, .large])
+            }
+            .onAppear {
+                translationService.ensureSurahLoaded(surahId: currentSurah.id, language: translationService.selectedLanguage)
+            }
+            .onChange(of: translationService.selectedLanguage) { _, newLang in
+                translationService.ensureSurahLoaded(surahId: currentSurah.id, language: newLang)
+            }
+            .onChange(of: currentSurah.id) { _, newSurahId in
+                translationService.ensureSurahLoaded(surahId: newSurahId, language: translationService.selectedLanguage)
             }
         }
     }
@@ -569,8 +583,10 @@ public struct ReadAndUnderstandModalView: View {
                     }
                 }
 
-                // Bookmark & Share Actions
+                // Offline Download, Bookmark & Share Actions
                 HStack(spacing: 12) {
+                    downloadButton
+
                     Button {
                         toggleBookmark()
                     } label: {
@@ -596,6 +612,55 @@ public struct ReadAndUnderstandModalView: View {
             Color(red: 0.05, green: 0.06, blue: 0.10)
                 .ignoresSafeArea(edges: .bottom)
         )
+    }
+
+    @ViewBuilder
+    private var downloadButton: some View {
+        Button {
+            handleDownloadTap()
+        } label: {
+            ZStack {
+                switch downloadStatus {
+                case .downloaded:
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(spotifyGreen)
+                case .downloading(let progress):
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.20), lineWidth: 2.0)
+                        Circle()
+                            .trim(from: 0, to: CGFloat(max(0.08, progress)))
+                            .stroke(spotifyGreen, style: StrokeStyle(lineWidth: 2.0, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Image(systemName: "stop.fill")
+                            .font(.system(size: 6, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 18, height: 18)
+                case .notDownloaded:
+                    Image(systemName: "arrow.down.circle")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white.opacity(0.65))
+                }
+            }
+            .frame(width: 24, height: 24)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleDownloadTap() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        #endif
+        switch downloadStatus {
+        case .downloaded:
+            downloadService.deleteDownloadedSurah(currentSurah, reciterId: playerService.currentReciter.id)
+        case .downloading:
+            downloadService.deleteDownloadedSurah(currentSurah, reciterId: playerService.currentReciter.id)
+        case .notDownloaded:
+            downloadService.downloadSurah(currentSurah, reciter: playerService.currentReciter)
+        }
     }
 
     private func toggleBookmark() {

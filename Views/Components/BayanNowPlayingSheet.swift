@@ -22,8 +22,10 @@ public struct BayanNowPlayingSheet: View {
     @State private var showingCastSheet: Bool = false
     @State private var showingReadAndUnderstand: Bool = false
     @State private var showingAudioFeaturesHub: Bool = false
+    @State private var showingAudioQualitySheet: Bool = false
     @State private var soundscapeService = AmbientSoundscapeService.shared
     @State private var castService = BayanCastService.shared
+    @State private var downloadService = QuranAudioDownloadService.shared
     @State private var isDraggingScrubber: Bool = false
     @State private var dragPosition: Double = 0.0
 
@@ -36,6 +38,10 @@ public struct BayanNowPlayingSheet: View {
 
     private var isBookmarked: Bool {
         bookmarkService.isBookmarked(surahId: currentSurah.id, ayahNumber: playerService.currentAyah)
+    }
+
+    private var downloadStatus: QuranAudioDownloadService.DownloadStatus {
+        downloadService.downloadStatus(reciterId: playerService.currentReciter.id, surah: currentSurah)
     }
 
     private var safeDuration: Double {
@@ -111,6 +117,12 @@ public struct BayanNowPlayingSheet: View {
                             showingReadAndUnderstand = true
                         } label: {
                             Label("Read & Understand Mode", systemImage: "book.pages.fill")
+                        }
+
+                        Button {
+                            showingAudioQualitySheet = true
+                        } label: {
+                            Label("Audio Master Quality (Hi-Res / Dolby)", systemImage: "waveform.badge.magnifyingglass")
                         }
 
                         Button {
@@ -221,26 +233,30 @@ public struct BayanNowPlayingSheet: View {
 
                     Spacer()
 
-                    // Saved Checkmark Badge in Spotify Green
-                    Button {
-                        toggleBookmark()
-                    } label: {
-                        ZStack {
-                            if isBookmarked {
-                                Circle()
-                                    .fill(spotifyGreen)
-                                    .frame(width: 26, height: 26)
+                    HStack(spacing: 12) {
+                        downloadButton
 
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 13, weight: .black))
-                                    .foregroundColor(.black)
-                            } else {
-                                Image(systemName: "plus.circle")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.white.opacity(0.7))
+                        // Saved Checkmark Badge in Spotify Green
+                        Button {
+                            toggleBookmark()
+                        } label: {
+                            ZStack {
+                                if isBookmarked {
+                                    Circle()
+                                        .fill(spotifyGreen)
+                                        .frame(width: 26, height: 26)
+
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 13, weight: .black))
+                                        .foregroundColor(.black)
+                                } else {
+                                    Image(systemName: "plus.circle")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.white.opacity(0.7))
+                                }
                             }
+                            .frame(width: 32, height: 32)
                         }
-                        .frame(width: 32, height: 32)
                     }
                 }
                 .padding(.horizontal, 22)
@@ -338,6 +354,31 @@ public struct BayanNowPlayingSheet: View {
                         .padding(.vertical, 5)
                         .background(playerService.playbackRate != 1.0 ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
                         .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    // Hi-Res Audio Quality Profile Selector (24-bit Lossless Studio Master / Dolby 3D Spatial)
+                    Button {
+                        showingAudioQualitySheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 10, weight: .bold))
+                            Text(playerService.audioQualityProfile.badge)
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        }
+                        .foregroundColor(BayanTheme.gold)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background(BayanTheme.gold.opacity(0.16))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(BayanTheme.gold.opacity(0.35), lineWidth: 0.8)
+                        )
                     }
 
                     Spacer()
@@ -573,34 +614,37 @@ public struct BayanNowPlayingSheet: View {
 
                     Spacer()
 
-                    // Universal Cast & Device Output (AirPlay, Android & Windows DLNA)
+                    // Minimalist Universal Cast & Audio Sharing Button (AirPlay / Google Cast / DLNA)
                     Button {
                         showingCastSheet = true
                         #if os(iOS)
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
                     } label: {
-                        HStack(spacing: 7) {
-                            Image(systemName: castService.isCasting ? castService.activeDeviceIcon : "tv.and.mediabox")
-                                .font(.system(size: 15, weight: .semibold))
-                            Text(castService.isCasting ? castService.connectedDeviceName : "Cast / AirPlay")
-                                .font(.system(size: 12, weight: .semibold))
-                                .lineLimit(1)
+                        ZStack(alignment: .topTrailing) {
+                            Circle()
+                                .fill(castService.isCasting ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Circle()
+                                        .stroke(castService.isCasting ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                                )
+
+                            Image(systemName: castService.isCasting ? castService.activeDeviceIcon : "airplayaudio")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(castService.isCasting ? spotifyGreen : .white.opacity(0.75))
+                                .frame(width: 40, height: 40)
+
                             if castService.isCasting {
                                 Circle()
                                     .fill(spotifyGreen)
-                                    .frame(width: 6, height: 6)
+                                    .frame(width: 7, height: 7)
+                                    .offset(x: -4, y: 4)
                             }
                         }
-                        .foregroundColor(spotifyGreen)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(spotifyGreen.opacity(0.14))
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule().stroke(spotifyGreen.opacity(0.35), lineWidth: 1)
-                        )
+                        .frame(width: 40, height: 40)
                     }
+                    .buttonStyle(.plain)
 
                     Spacer()
 
@@ -646,6 +690,10 @@ public struct BayanNowPlayingSheet: View {
         }
         .sheet(isPresented: $showingAudioFeaturesHub) {
             AudioFeaturesHubSheet()
+                .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showingAudioQualitySheet) {
+            AudioQualitySheet()
                 .presentationDetents([.medium, .large])
         }
         .gesture(
@@ -744,6 +792,59 @@ public struct BayanNowPlayingSheet: View {
             BayanArtworkView(surah: currentSurah, size: 285, cornerRadius: 26)
 
             Spacer()
+        }
+    }
+
+    // MARK: - Offline Audio Download Button & Handler
+    @ViewBuilder
+    private var downloadButton: some View {
+        Button {
+            handleDownloadTap()
+        } label: {
+            ZStack {
+                switch downloadStatus {
+                case .downloaded:
+                    Circle()
+                        .fill(spotifyGreen.opacity(0.18))
+                        .frame(width: 30, height: 30)
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(spotifyGreen)
+                case .downloading(let progress):
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.20), lineWidth: 2.2)
+                        Circle()
+                            .trim(from: 0, to: CGFloat(max(0.08, progress)))
+                            .stroke(spotifyGreen, style: StrokeStyle(lineWidth: 2.2, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Image(systemName: "stop.fill")
+                            .font(.system(size: 7, weight: .black))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 22, height: 22)
+                case .notDownloaded:
+                    Image(systemName: "arrow.down.circle")
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundColor(.white.opacity(0.70))
+                }
+            }
+            .frame(width: 32, height: 32)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleDownloadTap() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        #endif
+        switch downloadStatus {
+        case .downloaded:
+            downloadService.deleteDownloadedSurah(currentSurah, reciterId: playerService.currentReciter.id)
+        case .downloading:
+            downloadService.deleteDownloadedSurah(currentSurah, reciterId: playerService.currentReciter.id)
+        case .notDownloaded:
+            downloadService.downloadSurah(currentSurah, reciter: playerService.currentReciter)
         }
     }
 

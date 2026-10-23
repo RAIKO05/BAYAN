@@ -42,6 +42,19 @@ public final class QuranSyncManager {
         }
     }
 
+    public func lastStoppedAyah(for surahId: Int) -> Int {
+        let key = "bayan_last_ayah_surah_\(surahId)"
+        let val = UserDefaults.standard.integer(forKey: key)
+        if val > 0 { return val }
+        if lastSurahId == surahId && lastAyahId > 1 { return lastAyahId }
+        return 1
+    }
+
+    public func setLastStoppedAyah(_ ayah: Int, for surahId: Int) {
+        let key = "bayan_last_ayah_surah_\(surahId)"
+        UserDefaults.standard.set(ayah, forKey: key)
+    }
+
     public func addRecognition(_ result: RecognitionResult) {
         recentRecognitions.insert(result, at: 0)
         saveHistory()

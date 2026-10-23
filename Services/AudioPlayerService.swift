@@ -23,7 +23,9 @@ public final class QuranVersePlayerItem: AVPlayerItem {
         let asset = AVURLAsset(url: url)
         super.init(asset: asset, automaticallyLoadedAssetKeys: ["duration", "playable"])
         self.preferredForwardBufferDuration = 10.0
+        self.preferredPeakBitRate = 0 // Maximum available bit rate without downsampling
         self.audioTimePitchAlgorithm = .timeDomain
+        self.automaticallyPreservesTimeOffsetFromLive = true
     }
 }
 
@@ -31,6 +33,15 @@ public final class QuranVersePlayerItem: AVPlayerItem {
 @Observable
 public final class AudioPlayerService: NSObject {
     public static let shared = AudioPlayerService()
+
+    // MARK: - Master Audio Quality & Hi-Fi Dolby Engine
+    private let kAudioQualityProfile = "bayan_audio_quality_profile"
+    public var audioQualityProfile: AudioQualityProfile = .hiResMaster {
+        didSet {
+            UserDefaults.standard.set(audioQualityProfile.rawValue, forKey: kAudioQualityProfile)
+            configureAudioSessionForPlayback()
+        }
+    }
 
     public var isPlaying: Bool = false
     public var currentSurah: Surah?
@@ -169,11 +180,17 @@ public final class AudioPlayerService: NSObject {
     public func configureAudioSessionForPlayback() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetooth, .allowBluetoothA2DP, .allowAirPlay])
+            try session.setPreferredSampleRate(48000.0) // 48kHz Studio Hi-Res Clock
+            try session.setPreferredIOBufferDuration(0.005) // 5ms Low-Jitter Audio Buffer
             try session.setActive(true)
         } catch {
             print("⚠️ Playback audio session configuration failed: \(error)")
         }
+    }
+
+    public func setAudioQualityProfile(_ profile: AudioQualityProfile) {
+        self.audioQualityProfile = profile
     }
 
     // MARK: - Continuous Recitation Playback Engine (Gapless AVQueuePlayer)
@@ -189,6 +206,7 @@ public final class AudioPlayerService: NSObject {
         self.currentSurah = surah
         self.currentAyah = ayah
         self.currentReciter = activeReciter
+        QuranSyncManager.shared.setLastStoppedAyah(ayah, for: surah.id)
 
         configureAudioSessionForPlayback()
         cleanupCurrentItemObservations()
@@ -428,6 +446,7 @@ public final class AudioPlayerService: NSObject {
 
         self.currentSurah = item.surah
         self.currentAyah = item.ayah
+        QuranSyncManager.shared.setLastStoppedAyah(item.ayah, for: item.surah.id)
         self.currentReciter = item.reciter
         self.currentTime = 0.0
 
@@ -667,6 +686,9 @@ public final class AudioPlayerService: NSObject {
         }
         isSpeakingTranslation = false
         player?.pause()
+        if let surah = currentSurah {
+            QuranSyncManager.shared.setLastStoppedAyah(currentAyah, for: surah.id)
+        }
         if AmbientSoundscapeService.shared.syncWithRecitation {
             AmbientSoundscapeService.shared.pause()
         }

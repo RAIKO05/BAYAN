@@ -38,11 +38,8 @@ public struct MainTabView: View {
         }
 
         public var badgeText: String? {
-            switch self {
-            case .mushaf: return "1"
-            case .adkar: return "9"
-            default: return nil
-            }
+            // No fake/stuck badges — only return real, active notifications if needed
+            return nil
         }
     }
 

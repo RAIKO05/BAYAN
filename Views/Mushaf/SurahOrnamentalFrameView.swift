@@ -30,6 +30,17 @@ public struct SurahOrnamentalFrameView: View {
         "آيَاتُهَا \(QuranVerseText.toArabicIndic(surah.totalAyahs))"
     }
 
+    private var lastSavedAyah: Int {
+        if playerService.currentSurah?.id == surah.id {
+            return playerService.currentAyah
+        }
+        return QuranSyncManager.shared.lastStoppedAyah(for: surah.id)
+    }
+
+    private var hasResumePoint: Bool {
+        lastSavedAyah > 1
+    }
+
     public var body: some View {
         VStack(spacing: 8) {
             ZStack {
@@ -97,7 +108,7 @@ public struct SurahOrnamentalFrameView: View {
                         .foregroundColor(theme.headerSubtitleColor)
                         .padding(.bottom, 6)
 
-                    // MARK: - Play Full Surah Button (With No Stops)
+                    // MARK: - Play / Continue Recitation Buttons
                     HStack(spacing: 10) {
                         Button {
                             togglePlayFullSurah()
@@ -106,16 +117,27 @@ public struct SurahOrnamentalFrameView: View {
                                 Image(systemName: isPlayingThisSurah ? "pause.fill" : "play.fill")
                                     .font(.system(size: 13, weight: .bold))
 
-                                Text(isPlayingThisSurah ? "Pause Recitation" : "Play Full Surah")
-                                    .font(.system(size: 13, weight: .bold))
-
                                 if isPlayingThisSurah {
+                                    Text("Pause Recitation")
+                                        .font(.system(size: 13, weight: .bold))
                                     HStack(spacing: 3) {
                                         Text("•")
                                         Text("Ayah \(playerService.currentAyah)/\(surah.totalAyahs)")
                                     }
                                     .font(.system(size: 11, weight: .semibold))
                                     .opacity(0.85)
+                                } else if hasResumePoint {
+                                    Text("Continue Recitation")
+                                        .font(.system(size: 13, weight: .bold))
+                                    HStack(spacing: 3) {
+                                        Text("•")
+                                        Text("Ayah \(lastSavedAyah)/\(surah.totalAyahs)")
+                                    }
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .opacity(0.85)
+                                } else {
+                                    Text("Play Full Surah")
+                                        .font(.system(size: 13, weight: .bold))
                                 }
                             }
                             .foregroundColor(.black)
@@ -133,7 +155,8 @@ public struct SurahOrnamentalFrameView: View {
                         }
                         .buttonStyle(.plain)
 
-                        if playerService.currentSurah?.id == surah.id && playerService.currentAyah > 1 {
+                        // "From Ayah 1" Restart Button (Shown when playing or when there is a resume point)
+                        if (isPlayingThisSurah && playerService.currentAyah > 1) || (!isPlayingThisSurah && hasResumePoint) {
                             Button {
                                 #if os(iOS)
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -174,9 +197,10 @@ public struct SurahOrnamentalFrameView: View {
         } else if playerService.currentSurah?.id == surah.id {
             playerService.resume()
         } else {
-            // Start playing from Ayah 1 with continuous sequential progression (no stops)
+            // Start playing from last saved Ayah (or Ayah 1) with continuous sequential progression
+            let targetAyah = max(1, lastSavedAyah)
             playerService.repeatMode = .off
-            playerService.play(surah: surah, ayah: 1)
+            playerService.play(surah: surah, ayah: targetAyah)
         }
     }
 }
