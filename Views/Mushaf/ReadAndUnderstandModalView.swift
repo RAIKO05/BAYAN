@@ -526,7 +526,7 @@ public struct ReadAndUnderstandModalView: View {
                                 .font(.system(size: 12, weight: .bold))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
-                            Text(playerService.currentReciter.riwayah)
+                            Text(playerService.currentReciter.riwayah.rawValue)
                                 .font(.system(size: 10))
                                 .foregroundColor(BayanTheme.goldSoft)
                                 .lineLimit(1)

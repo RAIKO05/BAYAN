@@ -319,7 +319,7 @@ public struct ListeningStatsSheet: View {
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.white)
 
-                            Text("\(item.reciter.riwayah) • \(item.minutes) min listened")
+                            Text("\(item.reciter.riwayah.rawValue) • \(item.minutes) min listened")
                                 .font(.system(size: 11))
                                 .foregroundColor(BayanTheme.goldSoft)
                         }
