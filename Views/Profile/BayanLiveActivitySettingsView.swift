@@ -147,9 +147,12 @@ public struct BayanLiveActivitySettingsView: View {
 
                                 Spacer()
 
-                                HStack(spacing: 4) {
-                                    Text("🗣️")
-                                        .font(.system(size: 10))
+                                HStack(spacing: 5) {
+                                    ReciterAvatarView(
+                                        reciter: Reciter.standardCatalog.first(where: { $0.id == "maher" }) ?? Reciter.standardCatalog[0],
+                                        size: 14,
+                                        showBorder: false
+                                    )
                                     Text("Maher Al-Muaiqly")
                                         .font(.system(size: 11, weight: .medium))
                                         .foregroundColor(.white.opacity(0.65))

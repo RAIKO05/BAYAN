@@ -407,25 +407,44 @@ struct MushafRootView: View {
             .padding(.horizontal, 18)
         }
 
+        // Daily Quran Goal & Top Reciter Card (Replace Music With Quran)
+        DailyQuranGoalCard {
+            if let _ = playerService.currentSurah {
+                if !playerService.isPlaying {
+                    playerService.resume()
+                }
+            } else {
+                let firstSurah = dataService.surahs.first ?? dataService.surah(for: 1)!
+                playerService.play(surah: firstSurah, ayah: 1, reciter: playerService.currentReciter)
+            }
+        }
+        .padding(.horizontal, 18)
+
         Button {
             showingReciterPicker = true
         } label: {
-            HStack {
-                Text("🗣️")
-                    .font(.subheadline)
-                Text(playerService.currentReciter.nameEnglish)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
+            HStack(spacing: 12) {
+                ReciterAvatarView(reciter: playerService.currentReciter, size: 36, isSelected: true, borderWidth: 1.5)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(playerService.currentReciter.nameEnglish)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                    Text(playerService.currentReciter.nameArabic)
+                        .font(.caption2)
+                        .foregroundColor(BayanTheme.goldSoft)
+                }
+
                 Spacer()
                 Text("Change Qari")
-                    .font(.caption)
+                    .font(.caption.weight(.semibold))
                     .foregroundColor(BayanTheme.goldSoft)
                 Image(systemName: "chevron.right")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .liquidGlass(cornerRadius: 18)
             .padding(.horizontal, 18)
         }

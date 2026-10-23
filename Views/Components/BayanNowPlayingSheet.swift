@@ -146,11 +146,37 @@ public struct BayanNowPlayingSheet: View {
 
                 // MARK: - 2. Upper Card: Cover Art, Title & Green Checkmark
                 HStack(spacing: 14) {
-                    // Thumbnail Artwork
-                    BayanArtworkView(surah: currentSurah, size: 50, cornerRadius: 10)
+                    // Reciter Portrait Button
+                    Button {
+                        showingReciterSheet = true
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        ZStack(alignment: .bottomTrailing) {
+                            ReciterAvatarView(
+                                reciter: playerService.currentReciter,
+                                size: 50,
+                                isSelected: true,
+                                borderWidth: 2.0,
+                                hasGlow: true
+                            )
+
+                            Circle()
+                                .fill(BayanTheme.gold)
+                                .frame(width: 16, height: 16)
+                                .overlay(
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundColor(.black)
+                                )
+                                .offset(x: 2, y: 2)
+                        }
+                    }
+                    .buttonStyle(.plain)
 
                     // Title & Artist
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Surah \(currentSurah.nameEnglish) • Ayah \(playerService.currentAyah)")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
@@ -163,12 +189,13 @@ public struct BayanNowPlayingSheet: View {
                             #endif
                         } label: {
                             HStack(spacing: 5) {
-                                Text("🗣️")
-                                    .font(.system(size: 12))
                                 Text(playerService.currentReciter.nameEnglish)
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.80))
+                                    .foregroundColor(.white.opacity(0.85))
                                     .lineLimit(1)
+                                Text("(\(playerService.currentReciter.nameArabic))")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(BayanTheme.goldSoft)
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 9, weight: .semibold))
                                     .foregroundColor(.white.opacity(0.40))
@@ -522,13 +549,13 @@ public struct BayanNowPlayingSheet: View {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
                     } label: {
-                        HStack(spacing: 4) {
-                            Text("🗣️")
-                                .font(.system(size: 15))
-                        }
-                        .frame(width: 40, height: 40)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(Circle())
+                        ReciterAvatarView(
+                            reciter: playerService.currentReciter,
+                            size: 38,
+                            isSelected: true,
+                            borderWidth: 1.5,
+                            hasGlow: true
+                        )
                     }
                 }
                 .padding(.horizontal, 22)

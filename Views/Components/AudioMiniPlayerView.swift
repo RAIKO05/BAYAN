@@ -65,8 +65,11 @@ public struct AudioMiniPlayerView: View {
 
                             // Line 2: Connected Audio Device / Reciter in Spotify Green
                             HStack(spacing: 5) {
-                                Text("🗣️")
-                                    .font(.system(size: 11))
+                                ReciterAvatarView(
+                                    reciter: playerService.currentReciter,
+                                    size: 15,
+                                    showBorder: false
+                                )
 
                                 Text(playerService.currentReciter.nameEnglish)
                                     .font(.system(size: 11.5, weight: .medium))

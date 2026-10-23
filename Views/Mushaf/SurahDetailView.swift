@@ -306,12 +306,16 @@ struct SurahDetailView: View {
                         .foregroundColor(playerService.repeatMode.isRepeating ? currentTheme.toolbarAccentColor : currentTheme.toolbarItemColor)
                     }
 
-                    // Reciter Picker Button (Reciter side view emoji)
+                    // Reciter Picker Button (Reciter Portrait Avatar)
                     Button {
                         showingReciterSheet = true
                     } label: {
-                        Text("🗣️")
-                            .font(.system(size: 14))
+                        ReciterAvatarView(
+                            reciter: playerService.currentReciter,
+                            size: 22,
+                            showBorder: true,
+                            borderWidth: 1.0
+                        )
                     }
 
                     // Favorite Button

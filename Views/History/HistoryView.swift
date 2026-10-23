@@ -909,9 +909,12 @@ public struct HistoryView: View {
                 }
 
                 HStack(spacing: 6) {
-                    Text("🗣️ \(item.reciter.nameEnglish)")
-                        .font(.system(size: 11.5))
-                        .foregroundColor(.white.opacity(0.6))
+                    HStack(spacing: 4) {
+                        ReciterAvatarView(reciter: item.reciter, size: 14, showBorder: false)
+                        Text(item.reciter.nameEnglish)
+                    }
+                    .font(.system(size: 11.5))
+                    .foregroundColor(.white.opacity(0.6))
                     Text("•")
                         .font(.system(size: 9))
                         .foregroundColor(.white.opacity(0.3))
@@ -1012,9 +1015,12 @@ public struct HistoryView: View {
                     .font(.system(size: 13.5, weight: .semibold))
                     .foregroundColor(.white)
                 Spacer()
-                Text("🗣️ \(item.reciter.nameEnglish)")
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundColor(spotifyGreen)
+                HStack(spacing: 4) {
+                    ReciterAvatarView(reciter: item.reciter, size: 14, showBorder: false)
+                    Text(item.reciter.nameEnglish)
+                }
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundColor(spotifyGreen)
             }
 
             Text(item.arabicSnippet)

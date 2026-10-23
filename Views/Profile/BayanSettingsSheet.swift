@@ -378,8 +378,13 @@ public struct BayanSettingsSheet: View {
                 showingReciterPicker = true
             } label: {
                 HStack(spacing: 12) {
-                    Text("🗣️")
-                        .font(.system(size: 24))
+                    ReciterAvatarView(
+                        reciter: playerService.currentReciter,
+                        size: 42,
+                        isSelected: true,
+                        borderWidth: 1.5,
+                        hasGlow: true
+                    )
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Active Reciter (القارئ)")
@@ -1089,8 +1094,12 @@ public struct BayanSettingsSheet: View {
                     showingReciterPicker = false
                 } label: {
                     HStack(spacing: 12) {
-                        Text(reciter.id == "omardiaa" ? "👑" : "🗣️")
-                            .font(.system(size: 20))
+                        ReciterAvatarView(
+                            reciter: reciter,
+                            size: 38,
+                            isSelected: isSelected,
+                            borderWidth: 1.5
+                        )
 
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {

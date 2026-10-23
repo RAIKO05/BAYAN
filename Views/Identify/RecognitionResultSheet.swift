@@ -55,14 +55,13 @@ struct RecognitionResultSheet: View {
 
                         // Reciter Tag
                         HStack(spacing: 8) {
-                            Image(systemName: "person.wave.2.fill")
-                                .foregroundColor(BayanTheme.gold)
+                            ReciterAvatarView(reciter: result.reciter, size: 28, isSelected: true, borderWidth: 1)
                             Text(result.reciter.nameEnglish)
-                                .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.9))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.white)
                             Text("(\(result.reciter.riwayah.rawValue))")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(BayanTheme.goldSoft)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)

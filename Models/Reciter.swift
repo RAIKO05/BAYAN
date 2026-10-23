@@ -69,6 +69,95 @@ public struct Reciter: Identifiable, Codable, Hashable {
         audioUrl(surah: 1, ayah: 1)
     }
 
+    /// Base image name for local asset bundle lookup
+    public var imageName: String {
+        switch id {
+        case "abdulbasit_murattal", "abdulbasit_mujawwad", "abdulbasit_warsh":
+            return "abdulbasit"
+        case "minshawi_murattal", "minshawi_mujawwad", "minshawi_muallim":
+            return "minshawi"
+        case "husary_murattal", "husary_mujawwad", "husary_muallim":
+            return "husary"
+        default:
+            return id
+        }
+    }
+
+    /// High-resolution verified CDN Profile Image URL
+    public var imageUrl: URL? {
+        let urlString: String? = {
+            switch id {
+            case "omardiaa":
+                return "https://yt3.googleusercontent.com/S5DRhTqyInj6f6cOxjCJ39fhYSYaeF6DhlM3tJAelSiKbkuq8doGOzBbFc1mdt3NWhhDrQ5kJg=s500-c-k-c0x00ffffff-no-rj"
+            case "alafasy":
+                return "https://static.qurancdn.com/images/reciters/6/mishary-rashid-alafasy-cover.jpeg"
+            case "sudais":
+                return "https://static.qurancdn.com/images/reciters/2/abdul-rahman-al-sudais-cover.jpeg"
+            case "shuraim":
+                return "https://static.qurancdn.com/images/reciters/8/saoud-shuraim-cover.jpeg"
+            case "maher":
+                return "https://static.qurancdn.com/images/reciters/25/Maher-al-Muaiqly-profile.png"
+            case "dosari":
+                return "https://static.qurancdn.com/images/reciters/20/yasser-profile.png"
+            case "ghamdi":
+                return "https://static.qurancdn.com/images/reciters/16/saad-al-ghamdi-cover.jpeg"
+            case "shatri":
+                return "https://static.qurancdn.com/images/reciters/3/abu-bakr-al-shatri-cover.jpeg"
+            case "ali_jaber":
+                return "https://static.qurancdn.com/images/reciters/23/Abdullah-Ali-Jabir-profile.png"
+            case "qatami":
+                return "https://upload.wikimedia.org/wikipedia/commons/c/ca/%D8%B5%D9%88%D8%B1%D8%A9_%D8%B4%D8%AE%D8%B5%D9%8A%D8%A9_%D8%A7%D9%84%D8%B4%D9%8A%D8%AE_%D9%86%D8%A7%D8%B5%D8%B1_%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D9%85%D9%8A.jpg"
+            case "ajamy":
+                return "https://static.qurancdn.com/images/reciters/22/Ahmed-ibn-Ali-al-Ajmy-profile.png"
+            case "juhany":
+                return "https://upload.wikimedia.org/wikipedia/commons/2/25/Abdullah_Al_Juhany_%28Cropped%29.png"
+            case "ayyub":
+                return "https://artwork.qurancentral.com/muhammad-ayyub.jpg"
+            case "hudhaify":
+                return "https://upload.wikimedia.org/wikipedia/commons/d/d7/Huthaify.jpg"
+            case "budair":
+                return "https://upload.wikimedia.org/wikipedia/commons/d/df/Salah_Ibn_Mohammed_Al_Budair.jpg"
+            case "basfar":
+                return "https://artwork.qurancentral.com/abdullah-basfar.jpg"
+            case "fares_abbad":
+                return "https://artwork.qurancentral.com/fares-abbad.jpg"
+            case "hani_rifai":
+                return "https://static.qurancdn.com/images/reciters/4/hani-ar-rifai-cover.jpeg"
+            case "jibreel":
+                return "https://upload.wikimedia.org/wikipedia/commons/3/32/Qari_Muhammad_Jebril%2C_Ramadan_2019.png"
+            case "bukhatir":
+                return "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Bukhatir_Photo.JPG/500px-Bukhatir_Photo.JPG"
+            case "tunaiji":
+                return "https://static.qurancdn.com/images/reciters/11/khalifa-al-tunaiji-cover.jpeg"
+            case "abdulbasit_murattal", "abdulbasit_mujawwad", "abdulbasit_warsh":
+                return "https://static.qurancdn.com/images/reciters/1/abdelbasset-cover.jpeg"
+            case "minshawi_murattal", "minshawi_mujawwad", "minshawi_muallim":
+                return "https://static.qurancdn.com/images/reciters/7/mohamed-siddiq-el-minshawi-cover.jpeg"
+            case "husary_murattal", "husary_mujawwad", "husary_muallim":
+                return "https://static.qurancdn.com/images/reciters/5/mahmoud-khalil-al-hussary-cover.png"
+            case "tablawi":
+                return "https://artwork.qurancentral.com/mohamed-tablawi.jpg"
+            case "banna":
+                return "https://artwork.qurancentral.com/mahmoud-ali-al-banna.jpg"
+            case "mustafa_ismail":
+                return "https://upload.wikimedia.org/wikipedia/commons/a/a8/Mustafa_Ismail_%281%29.jpg"
+            case "ayman_sowaid":
+                return "https://upload.wikimedia.org/wikipedia/commons/e/e2/Aymen_souaid.jpg"
+            case "yassin_warsh":
+                return "https://artwork.qurancentral.com/yassen-al-jazairi.jpg"
+            case "kazabri_warsh":
+                return "https://artwork.qurancentral.com/omar-al-kazabri.jpg"
+            case "ibrahim_dosari_warsh":
+                return "https://artwork.qurancentral.com/ibrahim-al-dossari.jpg"
+            default:
+                return nil
+            }
+        }()
+
+        guard let urlString else { return nil }
+        return URL(string: urlString)
+    }
+
     public static let unknownReciter = Reciter(
         id: "unknown",
         nameArabic: "قارئ غير معروف",

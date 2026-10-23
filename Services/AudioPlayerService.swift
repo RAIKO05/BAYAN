@@ -532,6 +532,8 @@ public final class AudioPlayerService: NSObject {
         statusObservation = nil
     }
 
+    private var listeningAccumulator: Double = 0
+
     private func setupTimeObserver() {
         let interval = CMTime(seconds: 0.25, preferredTimescale: 600)
         timeObserverToken = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
@@ -542,6 +544,13 @@ public final class AudioPlayerService: NSObject {
                !currentItem.duration.seconds.isNaN,
                currentItem.duration.seconds > 0 {
                 self.duration = currentItem.duration.seconds
+            }
+            if self.isPlaying {
+                self.listeningAccumulator += 0.25
+                if self.listeningAccumulator >= 1.0 {
+                    QuranListeningGoalManager.shared.logListening(seconds: self.listeningAccumulator, reciterId: self.currentReciter.id)
+                    self.listeningAccumulator = 0
+                }
             }
         }
     }
