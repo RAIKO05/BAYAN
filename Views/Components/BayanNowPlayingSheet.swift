@@ -334,136 +334,178 @@ public struct BayanNowPlayingSheet: View {
                 .padding(.horizontal, 22)
                 .padding(.top, 8)
 
-                // MARK: - 4b. Secondary Audio Utilities (Speed, Dual Audio, Bedtime Sleep Timer)
-                HStack(spacing: 0) {
-                    // Recitation Speed Pill (0.75x, 1.0x, 1.25x, 1.5x)
-                    Button {
-                        playerService.cyclePlaybackRate()
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "gauge.with.needle")
-                                .font(.system(size: 11, weight: .bold))
-                            Text(String(format: "%.2gx", playerService.playbackRate))
-                                .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        }
-                        .foregroundColor(playerService.playbackRate != 1.0 ? spotifyGreen : .white.opacity(0.85))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(playerService.playbackRate != 1.0 ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
-                        .clipShape(Capsule())
-                    }
-
-                    Spacer()
-
-                    // Hi-Res Audio Quality Profile Selector (24-bit Lossless Studio Master / Dolby 3D Spatial)
-                    Button {
-                        showingAudioQualitySheet = true
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 10, weight: .bold))
-                            Text(playerService.audioQualityProfile.badge)
-                                .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        }
-                        .foregroundColor(BayanTheme.gold)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(BayanTheme.gold.opacity(0.16))
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule().stroke(BayanTheme.gold.opacity(0.35), lineWidth: 0.8)
-                        )
-                    }
-
-                    Spacer()
-
-                    // Dual Audio Mode (Arabic Recitation + English Translation Voiceover)
-                    Button {
-                        playerService.toggleDualAudio()
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        #endif
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "globe")
-                                .font(.system(size: 11, weight: .semibold))
-                            Text("DUAL")
-                                .font(.system(size: 10, weight: .heavy))
-                            if playerService.isDualAudioEnabled {
-                                Circle()
-                                    .fill(playerService.isSpeakingTranslation ? Color.orange : spotifyGreen)
-                                    .frame(width: 6, height: 6)
+                // MARK: - 4b. Secondary Audio Utilities (Horizontal Floating Action Carousel)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        // Recitation Speed Pill (0.75x, 1.0x, 1.25x, 1.5x)
+                        Button {
+                            playerService.cyclePlaybackRate()
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "gauge.with.needle")
+                                    .font(.system(size: 11, weight: .bold))
+                                Text(String(format: "%.2gx", playerService.playbackRate))
+                                    .font(.system(size: 11.5, weight: .heavy, design: .rounded))
                             }
+                            .lineLimit(1)
+                            .foregroundColor(playerService.playbackRate != 1.0 ? spotifyGreen : .white.opacity(0.85))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(playerService.playbackRate != 1.0 ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(playerService.playbackRate != 1.0 ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
                         }
-                        .foregroundColor(playerService.isDualAudioEnabled ? spotifyGreen : .white.opacity(0.65))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(playerService.isDualAudioEnabled ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
-                        .clipShape(Capsule())
-                    }
+                        .buttonStyle(.plain)
 
-                    Spacer()
-
-                    // Ambient Soundscapes Mixer Button
-                    Button {
-                        soundscapeService.toggle()
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        #endif
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(soundscapeService.currentSoundscape.emoji)
-                                .font(.system(size: 11))
-                            Text(soundscapeService.currentSoundscape == .off ? "Soundscape" : soundscapeService.currentSoundscape.title)
-                                .font(.system(size: 11, weight: .bold))
+                        // Hi-Res Audio Quality Profile Selector (24-bit Lossless Studio Master / Dolby 3D Spatial)
+                        Button {
+                            showingAudioQualitySheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text(playerService.audioQualityProfile.badgeText)
+                                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                            }
+                            .lineLimit(1)
+                            .foregroundColor(BayanTheme.gold)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(BayanTheme.gold.opacity(0.16))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(BayanTheme.gold.opacity(0.35), lineWidth: 0.8)
+                            )
                         }
-                        .foregroundColor(soundscapeService.currentSoundscape != .off ? Color(red: 0.20, green: 0.85, blue: 0.95) : .white.opacity(0.65))
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(soundscapeService.currentSoundscape != .off ? Color(red: 0.15, green: 0.45, blue: 0.65).opacity(0.35) : Color.white.opacity(0.08))
-                        .clipShape(Capsule())
-                    }
+                        .buttonStyle(.plain)
 
-                    Spacer()
+                        // Ambient Soundscapes Mixer Button
+                        Button {
+                            soundscapeService.toggle()
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text(soundscapeService.currentSoundscape.emoji)
+                                    .font(.system(size: 11))
+                                Text(soundscapeService.currentSoundscape == .off ? "Soundscape" : soundscapeService.currentSoundscape.title)
+                                    .font(.system(size: 11.5, weight: .bold))
+                            }
+                            .lineLimit(1)
+                            .foregroundColor(soundscapeService.currentSoundscape != .off ? Color(red: 0.20, green: 0.85, blue: 0.95) : .white.opacity(0.70))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(soundscapeService.currentSoundscape != .off ? Color(red: 0.15, green: 0.45, blue: 0.65).opacity(0.35) : Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(soundscapeService.currentSoundscape != .off ? Color(red: 0.20, green: 0.85, blue: 0.95).opacity(0.5) : Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
+                        }
+                        .buttonStyle(.plain)
 
-                    // Bedtime Sleep Timer Button with Countdown
-                    Button {
-                        showingSleepTimerSheet = true
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: playerService.sleepTimerOption != .off ? "moon.zzz.fill" : "moon.zzz")
-                                .font(.system(size: 11, weight: .semibold))
-                            if playerService.sleepTimerOption != .off {
-                                if playerService.sleepTimerRemainingSeconds > 0 {
-                                    Text(playerService.sleepTimerFormatted)
-                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                } else {
-                                    Text(playerService.sleepTimerOption == .endOfAyah ? "Ayah" : "Surah")
-                                        .font(.system(size: 11, weight: .bold))
+                        // Dual Audio Mode (Arabic Recitation + English Translation Voiceover)
+                        Button {
+                            playerService.toggleDualAudio()
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text("Dual Recitation")
+                                    .font(.system(size: 11.5, weight: .bold))
+                                if playerService.isDualAudioEnabled {
+                                    Circle()
+                                        .fill(playerService.isSpeakingTranslation ? Color.orange : spotifyGreen)
+                                        .frame(width: 6, height: 6)
                                 }
-                            } else {
-                                Text("Sleep")
-                                    .font(.system(size: 12, weight: .medium))
                             }
+                            .lineLimit(1)
+                            .foregroundColor(playerService.isDualAudioEnabled ? spotifyGreen : .white.opacity(0.70))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(playerService.isDualAudioEnabled ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(playerService.isDualAudioEnabled ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
                         }
-                        .foregroundColor(playerService.sleepTimerOption != .off ? spotifyGreen : .white.opacity(0.65))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(playerService.sleepTimerOption != .off ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
-                        .clipShape(Capsule())
+                        .buttonStyle(.plain)
+
+                        // Bedtime Sleep Timer Button with Countdown
+                        Button {
+                            showingSleepTimerSheet = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: playerService.sleepTimerOption != .off ? "moon.zzz.fill" : "moon.zzz")
+                                    .font(.system(size: 11, weight: .semibold))
+                                if playerService.sleepTimerOption != .off {
+                                    if playerService.sleepTimerRemainingSeconds > 0 {
+                                        Text(playerService.sleepTimerFormatted)
+                                            .font(.system(size: 11.5, weight: .bold, design: .monospaced))
+                                    } else {
+                                        Text(playerService.sleepTimerOption == .endOfAyah ? "End of Ayah" : "End of Surah")
+                                            .font(.system(size: 11.5, weight: .bold))
+                                    }
+                                } else {
+                                    Text("Sleep Timer")
+                                        .font(.system(size: 11.5, weight: .medium))
+                                }
+                            }
+                            .lineLimit(1)
+                            .foregroundColor(playerService.sleepTimerOption != .off ? spotifyGreen : .white.opacity(0.70))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(playerService.sleepTimerOption != .off ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(playerService.sleepTimerOption != .off ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        // Studio Features Hub
+                        Button {
+                            showingAudioFeaturesHub = true
+                            #if os(iOS)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            #endif
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "slider.horizontal.3")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text("Studio Hub")
+                                    .font(.system(size: 11.5, weight: .medium))
+                            }
+                            .lineLimit(1)
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6.5)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 10)
+                .padding(.top, 8)
+                .padding(.bottom, 2)
 
                 // MARK: - 4c. Active A-B Memorization Loop Indicator
                 if playerService.isABLoopActive {
@@ -566,13 +608,13 @@ public struct BayanNowPlayingSheet: View {
                             .frame(maxWidth: .infinity)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+                .padding(.horizontal, 20)
+                .padding(.top, 14)
+                .padding(.bottom, 14)
 
-                // MARK: - 6. Bottom Utility Dock
-                HStack {
-                    // Lyrics Toggle Button (Speech bubble with quotation)
+                // MARK: - 6. Bottom Utility Dock (Minimalist 3-Pillar Symmetry)
+                HStack(alignment: .center) {
+                    // Lyrics Toggle Button (Synchronized Verses Mode)
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             showingLyricsMode.toggle()
@@ -581,11 +623,20 @@ public struct BayanNowPlayingSheet: View {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
                     } label: {
-                        Image(systemName: "quote.bubble.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(showingLyricsMode ? spotifyGreen : .white.opacity(0.55))
-                            .frame(width: 40, height: 40)
+                        ZStack {
+                            Circle()
+                                .fill(showingLyricsMode ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    Circle().stroke(showingLyricsMode ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                                )
+                            Image(systemName: "quote.bubble.fill")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(showingLyricsMode ? spotifyGreen : .white.opacity(0.70))
+                        }
+                        .frame(width: 42, height: 42)
                     }
+                    .buttonStyle(.plain)
 
                     Spacer()
 
@@ -596,21 +647,33 @@ public struct BayanNowPlayingSheet: View {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         #endif
                     } label: {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 7) {
                             Image(systemName: "character.book.closed.fill")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: 13, weight: .bold))
                             Text("Read & Understand")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 12.5, weight: .bold))
                         }
+                        .lineLimit(1)
                         .foregroundColor(BayanTheme.gold)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 6)
-                        .background(BayanTheme.gold.opacity(0.16))
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule().stroke(BayanTheme.gold.opacity(0.35), lineWidth: 0.8)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color(red: 0.14, green: 0.12, blue: 0.08).opacity(0.85))
                         )
+                        .overlay(
+                            Capsule().stroke(
+                                LinearGradient(
+                                    colors: [BayanTheme.gold.opacity(0.6), BayanTheme.goldSoft.opacity(0.25)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.0
+                            )
+                        )
+                        .shadow(color: BayanTheme.gold.opacity(0.15), radius: 6, y: 2)
                     }
+                    .buttonStyle(.plain)
 
                     Spacer()
 
@@ -624,47 +687,27 @@ public struct BayanNowPlayingSheet: View {
                         ZStack(alignment: .topTrailing) {
                             Circle()
                                 .fill(castService.isCasting ? spotifyGreen.opacity(0.18) : Color.white.opacity(0.08))
-                                .frame(width: 40, height: 40)
+                                .frame(width: 42, height: 42)
                                 .overlay(
-                                    Circle()
-                                        .stroke(castService.isCasting ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                                    Circle().stroke(castService.isCasting ? spotifyGreen.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
                                 )
 
                             Image(systemName: castService.isCasting ? castService.activeDeviceIcon : "airplayaudio")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(castService.isCasting ? spotifyGreen : .white.opacity(0.75))
-                                .frame(width: 40, height: 40)
 
                             if castService.isCasting {
                                 Circle()
                                     .fill(spotifyGreen)
                                     .frame(width: 7, height: 7)
-                                    .offset(x: -4, y: 4)
+                                    .offset(x: -3, y: 3)
                             }
                         }
-                        .frame(width: 40, height: 40)
+                        .frame(width: 42, height: 42)
                     }
                     .buttonStyle(.plain)
-
-                    Spacer()
-
-                    // Reciter Quick Selector
-                    Button {
-                        showingReciterSheet = true
-                        #if os(iOS)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                    } label: {
-                        ReciterAvatarView(
-                            reciter: playerService.currentReciter,
-                            size: 38,
-                            isSelected: true,
-                            borderWidth: 1.5,
-                            hasGlow: true
-                        )
-                    }
                 }
-                .padding(.horizontal, 22)
+                .padding(.horizontal, 28)
                 .padding(.bottom, 16)
             }
             .frame(maxWidth: 720)
