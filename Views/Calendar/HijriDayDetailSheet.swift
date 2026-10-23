@@ -234,11 +234,11 @@ public struct HijriDayDetailSheet: View {
             }
 
             HStack(spacing: 14) {
-                if let fajr = prayerResult.prayers.first(where: { $0.type == .fajr }) {
+                if let fajr = prayerResult.prayers.first(where: { $0.id == "subuh" || $0.nameEnglish == "Fajr" }) {
                     timeBox(title: "Suhoor Ends (Fajr)", time: fajr.timeString, arabic: "الإمساك / الفجر", icon: "sun.haze.fill", color: .cyan)
                 }
 
-                if let maghrib = prayerResult.prayers.first(where: { $0.type == .maghrib }) {
+                if let maghrib = prayerResult.prayers.first(where: { $0.id == "maghrib" || $0.nameEnglish == "Maghrib" }) {
                     timeBox(title: "Iftar (Maghrib)", time: maghrib.timeString, arabic: "الإفطار / المغرب", icon: "sunset.fill", color: .orange)
                 }
             }
