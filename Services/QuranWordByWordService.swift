@@ -1,5 +1,8 @@
 import Foundation
 import AVFoundation
+#if os(iOS)
+import UIKit
+#endif
 
 // MARK: - Word-by-Word Quran Service (كلمات القرآن)
 /// High-efficiency lexical service providing word-by-word breakdown, transliteration,
