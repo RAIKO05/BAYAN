@@ -5,19 +5,21 @@ import UIKit
 
 // MARK: - Bayan Discord Rich Presence Settings View
 /// Allows users to broadcast their active Quran recitation to their Discord profile
-/// featuring live progress bar, Surah name in Arabic & English, reciter, and artwork.
+/// with live progress bar, Surah name in Arabic & English, reciter, and artwork.
+/// Features 1-click seamless official Discord login (zero manual copy-pasting).
 public struct BayanDiscordRPCSettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var discordRPC = DiscordRPCService.shared
     @State private var playerService = AudioPlayerService.shared
 
+    @State private var showingLoginSheet = false
+    @State private var showingManualToken = false
     @State private var inputToken: String = ""
     @State private var isTokenVisible: Bool = false
-    @State private var showingTokenHelpSheet: Bool = false
-    @State private var showingCustomAppIdSheet: Bool = false
+    @State private var showingTokenHelpSheet = false
     @State private var customAppId: String = ""
-    @State private var testPresenceSent: Bool = false
+    @State private var testPresenceSent = false
 
     // Discord Brand Colors
     private let discordBlurple = Color(red: 0.35, green: 0.40, blue: 0.95) // #5865F2
@@ -40,8 +42,8 @@ public struct BayanDiscordRPCSettingsView: View {
                     // MARK: - 2. Master Toggle & Connection Status
                     masterToggleCard
 
-                    // MARK: - 3. Discord Token Management Card
-                    tokenManagementCard
+                    // MARK: - 3. Seamless 1-Click Discord Account Card
+                    accountConnectionCard
 
                     // MARK: - 4. Display Preferences Card
                     displayPreferencesCard
@@ -59,6 +61,10 @@ public struct BayanDiscordRPCSettingsView: View {
         .onAppear {
             inputToken = discordRPC.userToken
             customAppId = discordRPC.applicationId
+        }
+        .sheet(isPresented: $showingLoginSheet) {
+            DiscordLoginSheet()
+                .presentationDetents([.large])
         }
         .sheet(isPresented: $showingTokenHelpSheet) {
             tokenHelpSheet
@@ -261,9 +267,9 @@ public struct BayanDiscordRPCSettingsView: View {
                         .lineLimit(2)
 
                     if !discordRPC.hasToken {
-                        Text("Add your Discord Token below to connect")
+                        Text("Connect your Discord account below to start")
                             .font(.system(size: 11))
-                            .foregroundColor(.orange)
+                            .foregroundColor(.white.opacity(0.5))
                     }
                 }
 
@@ -308,127 +314,208 @@ public struct BayanDiscordRPCSettingsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    // MARK: - 3. Discord Token Management Card
-    private var tokenManagementCard: some View {
+    // MARK: - 3. Seamless 1-Click Discord Account Card
+    private var accountConnectionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("AUTHENTICATION TOKEN")
+                Text("DISCORD ACCOUNT")
                     .font(.system(size: 11.5, weight: .bold))
                     .foregroundColor(.white.opacity(0.6))
                     .tracking(0.5)
 
                 Spacer()
 
-                Button {
-                    showingTokenHelpSheet = true
-                    triggerHaptic()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "questionmark.circle.fill")
-                        Text("How to get it?")
+                if discordRPC.hasToken {
+                    Button("Disconnect") {
+                        discordRPC.removeToken()
+                        inputToken = ""
+                        triggerHaptic()
                     }
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(goldAccent)
+                    .foregroundColor(.red.opacity(0.9))
                 }
             }
 
-            // Secure Input Row
-            HStack(spacing: 10) {
-                Group {
-                    if isTokenVisible {
-                        TextField("Paste Discord Token...", text: $inputToken)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
+            if case .connected(let username, let disc, let avatarUrl, let isBot) = discordRPC.connectionState {
+                // Connected User Profile Row
+                HStack(spacing: 12) {
+                    if let avatarUrl = avatarUrl, let url = URL(string: avatarUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable()
+                                    .scaledToFill()
+                                    .frame(width: 44, height: 44)
+                                    .clipShape(Circle())
+                            default:
+                                fallbackAvatar
+                            }
+                        }
                     } else {
-                        SecureField("Paste Discord Token...", text: $inputToken)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
+                        fallbackAvatar
                     }
-                }
-                .font(.system(size: 13, design: .monospaced))
-                .foregroundColor(.white)
 
-                // Toggle visibility
-                Button {
-                    isTokenVisible.toggle()
-                } label: {
-                    Image(systemName: isTokenVisible ? "eye.slash.fill" : "eye.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.5))
-                }
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Text(username)
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.white)
 
-                // Paste from clipboard button
-                #if canImport(UIKit)
-                Button {
-                    if let string = UIPasteboard.general.string {
-                        inputToken = discordRPC.cleanToken(string)
-                        discordRPC.saveToken(inputToken)
-                        triggerHaptic()
+                            if isBot {
+                                Text("BOT")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 2)
+                                    .background(discordBlurple)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                            }
+                        }
+
+                        Text(disc == "0" || disc.isEmpty ? "@\(username)" : "#\(disc)")
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.55))
                     }
-                } label: {
-                    Text("Paste")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(goldAccent)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                #endif
-            }
-            .padding(12)
-            .background(Color.white.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            // Save / Remove action bar
-            HStack(spacing: 10) {
+                    Spacer()
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(discordGreen)
+                }
+                .padding(14)
+                .background(Color.white.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            } else {
+                // Big 1-Click Connect Button
                 Button {
-                    discordRPC.saveToken(inputToken)
+                    showingLoginSheet = true
                     triggerHaptic()
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "lock.shield.fill")
-                        Text("Save & Connect")
+                    HStack(spacing: 10) {
+                        Image(systemName: "gamecontroller.fill")
+                            .font(.system(size: 16, weight: .bold))
+                        Text("Connect with Discord")
+                            .font(.system(size: 14.5, weight: .bold))
                     }
-                    .font(.system(size: 13, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 14)
                     .background(discordBlurple)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .shadow(color: discordBlurple.opacity(0.35), radius: 8, y: 3)
                 }
 
-                if discordRPC.hasToken {
-                    Button {
-                        inputToken = ""
-                        discordRPC.removeToken()
-                        triggerHaptic()
-                    } label: {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.red.opacity(0.9))
-                            .padding(10)
-                            .background(Color.red.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                Text("Sign in once with your Discord account. No manual token copy-pasting required.")
+                    .font(.system(size: 11.5))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+
+            // Advanced / Manual Token Expander
+            DisclosureGroup(
+                isExpanded: $showingManualToken,
+                content: {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("MANUAL / BOT TOKEN")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.white.opacity(0.5))
+
+                            Spacer()
+
+                            Button {
+                                showingTokenHelpSheet = true
+                                triggerHaptic()
+                            } label: {
+                                Text("Guide")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(goldAccent)
+                            }
+                        }
+                        .padding(.top, 8)
+
+                        HStack(spacing: 8) {
+                            Group {
+                                if isTokenVisible {
+                                    TextField("Paste token...", text: $inputToken)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
+                                } else {
+                                    SecureField("Paste token...", text: $inputToken)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
+                                }
+                            }
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(.white)
+
+                            Button {
+                                isTokenVisible.toggle()
+                            } label: {
+                                Image(systemName: isTokenVisible ? "eye.slash.fill" : "eye.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+
+                            #if canImport(UIKit)
+                            Button {
+                                if let string = UIPasteboard.general.string {
+                                    inputToken = discordRPC.cleanToken(string)
+                                    discordRPC.saveToken(inputToken)
+                                    triggerHaptic()
+                                }
+                            } label: {
+                                Text("Paste")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(goldAccent)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                            }
+                            #endif
+                        }
+                        .padding(10)
+                        .background(Color.white.opacity(0.06))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                        Button {
+                            discordRPC.saveToken(inputToken)
+                            triggerHaptic()
+                        } label: {
+                            Text("Save Token")
+                                .font(.system(size: 12.5, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                                .background(Color.white.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
                     }
+                },
+                label: {
+                    Text("Advanced: Enter Token Manually")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
                 }
-            }
-
-            // Security Disclaimer
-            HStack(alignment: .top, spacing: 8) {
-                Image(systemName: "checkmark.shield.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(goldAccent)
-
-                Text("Supports User Tokens & Bot Tokens. Stored in Apple Keychain and transmitted directly to Discord's official Gateway (wss://gateway.discord.gg).")
-                    .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.45))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            )
+            .tint(Color.white.opacity(0.4))
+            .padding(.top, 4)
         }
         .padding(16)
         .background(Color(red: 0.10, green: 0.11, blue: 0.13))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var fallbackAvatar: some View {
+        Circle()
+            .fill(discordBlurple)
+            .frame(width: 44, height: 44)
+            .overlay(
+                Image(systemName: "person.fill")
+                    .foregroundColor(.white)
+            )
     }
 
     // MARK: - 4. Display Preferences Card
