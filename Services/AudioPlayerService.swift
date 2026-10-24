@@ -741,6 +741,7 @@ public final class AudioPlayerService: NSObject {
         #if canImport(ActivityKit)
         QuranLyricsLiveActivityManager.shared.endActivity()
         #endif
+        DiscordRPCService.shared.clearPresence()
     }
 
     // MARK: - Recitation Speed & Playback Rate Controls
@@ -908,6 +909,7 @@ public final class AudioPlayerService: NSObject {
             #if canImport(ActivityKit)
             QuranLyricsLiveActivityManager.shared.endActivity()
             #endif
+            DiscordRPCService.shared.clearPresence()
             return
         }
 
@@ -919,6 +921,15 @@ public final class AudioPlayerService: NSObject {
             isPlaying: isPlaying
         )
         #endif
+
+        DiscordRPCService.shared.updatePresence(
+            surah: surah,
+            ayah: currentAyah,
+            reciter: currentReciter,
+            currentTime: currentTime,
+            duration: duration,
+            isPlaying: isPlaying
+        )
 
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: "Surah \(surah.nameEnglish) (\(surah.nameArabic))",

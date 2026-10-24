@@ -20,6 +20,7 @@ public struct BayanSettingsSheet: View {
     @State private var downloadService = QuranAudioDownloadService.shared
     @State private var cloudSync = BayanCloudSyncService.shared
     @State private var securityManager = BayanSecurityManager.shared
+    @State private var discordRPC = DiscordRPCService.shared
 
     // Persistent User Preferences
     @AppStorage("bayan_arabic_font_size") private var arabicFontSize: Double = 26.0
@@ -75,6 +76,9 @@ public struct BayanSettingsSheet: View {
 
                         // 4. Lock Screen & Live Activity Section
                         liveActivitySection
+
+                        // 4b. Discord Rich Presence Section
+                        discordRPCSection
 
                         // 5. Prayer Times & Adhan Notifications Section
                         prayerTimesSection
@@ -537,6 +541,41 @@ public struct BayanSettingsSheet: View {
                         Text(isLiveActivityEnabled ? "On • \(liveActivityModeTitle)" : "Off")
                             .font(.system(size: 11.5))
                             .foregroundColor(isLiveActivityEnabled ? spotifyGreen : .white.opacity(0.5))
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.3))
+                }
+            }
+        }
+    }
+
+    // MARK: - 4b. Discord Rich Presence Section
+    private var discordRPCSection: some View {
+        settingsCard(title: "DISCORD RICH PRESENCE", icon: "bubble.left.and.bubble.right.fill") {
+            NavigationLink {
+                BayanDiscordRPCSettingsView()
+            } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color(red: 0.35, green: 0.40, blue: 0.95).opacity(0.18))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "headphones")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(red: 0.35, green: 0.40, blue: 0.95))
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Discord Presence (Listening to Quran)")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text(discordRPC.isEnabled ? (discordRPC.isConnected ? "Connected • Active" : "Enabled • Connecting") : "Off")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(discordRPC.isEnabled && discordRPC.isConnected ? spotifyGreen : .white.opacity(0.5))
                     }
 
                     Spacer()
