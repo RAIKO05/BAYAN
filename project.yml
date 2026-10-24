@@ -41,6 +41,7 @@ targets:
       - sdk: ActivityKit.framework
       - sdk: LocalAuthentication.framework
       - sdk: Security.framework
+      - sdk: DeviceCheck.framework
     settings:
       base:
         PRODUCT_NAME: Bayan

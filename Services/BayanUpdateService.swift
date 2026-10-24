@@ -54,7 +54,9 @@ public final class BayanUpdateService: @unchecked Sendable {
     public var hasDismissedNotice: Bool = false
     public var showingUpdateSheet: Bool = false
 
-    private let githubApiUrl = URL(string: "https://api.github.com/repos/RAIKO05/BAYAN/releases/latest")!
+    private var githubApiUrl: URL {
+        URL(string: "\(BayanSecureNetworkSession.gitHubRepoEndpoint)/releases/latest")!
+    }
 
     // Dynamic Installed Version & Build
     public var currentVersion: String {
@@ -95,7 +97,12 @@ public final class BayanUpdateService: @unchecked Sendable {
             request.setValue("Bayan-iOS-Companion", forHTTPHeaderField: "User-Agent")
             request.timeoutInterval = 12
 
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let attestHeaders = await BayanContainerIntegrityService.shared.attestRequestHeaders(for: githubApiUrl)
+            for (key, val) in attestHeaders {
+                request.setValue(val, forHTTPHeaderField: key)
+            }
+
+            let (data, response) = try await BayanSecureNetworkSession.shared.urlSession.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
                 let status = (response as? HTTPURLResponse)?.statusCode ?? -1

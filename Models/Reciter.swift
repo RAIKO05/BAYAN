@@ -27,25 +27,27 @@ public struct Reciter: Identifiable, Codable, Hashable {
         let ayahStr = String(format: "%03d", ayah)
         let fullAyahCode = "\(surahStr)\(ayahStr)"
 
+        let baseEveryAyah = BayanSecureNetworkSession.everyAyahEndpoint
+
         if id == "kazabri_warsh" {
             // Omar Al-Kazabri Warsh - Verified Cloudflare High-Speed CDN
             return URL(string: "https://cdn.mp3quran.net/audio/omar-kazabri/r1/\(surahStr).mp3")
         }
 
         if id == "yassin_warsh" {
-            return URL(string: "https://everyayah.com/data/warsh/warsh_yassin_al_jazaery_64kbps/\(fullAyahCode).mp3")
+            return URL(string: "\(baseEveryAyah)/warsh/warsh_yassin_al_jazaery_64kbps/\(fullAyahCode).mp3")
         }
 
         if id == "abdulbasit_warsh" {
-            return URL(string: "https://everyayah.com/data/warsh/warsh_Abdul_Basit_128kbps/\(fullAyahCode).mp3")
+            return URL(string: "\(baseEveryAyah)/warsh/warsh_Abdul_Basit_128kbps/\(fullAyahCode).mp3")
         }
 
         if id == "ibrahim_dosari_warsh" {
-            return URL(string: "https://everyayah.com/data/warsh/warsh_ibrahim_aldosary_128kbps/\(fullAyahCode).mp3")
+            return URL(string: "\(baseEveryAyah)/warsh/warsh_ibrahim_aldosary_128kbps/\(fullAyahCode).mp3")
         }
 
         if serverSubdomain.hasPrefix("warsh/") {
-            return URL(string: "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3")
+            return URL(string: "\(baseEveryAyah)/\(serverSubdomain)/\(fullAyahCode).mp3")
         }
 
         if id == "omardiaa" {
@@ -58,10 +60,10 @@ public struct Reciter: Identifiable, Codable, Hashable {
                 return URL(string: "https://archive.org/download/omar-ben-diya-al-din/\(surahStr).mp3")
             }
             // For other surahs, fallback to pristine high-bitrate recitation so it never fails
-            return URL(string: "https://everyayah.com/data/Alafasy_128kbps/\(fullAyahCode).mp3")
+            return URL(string: "\(baseEveryAyah)/Alafasy_128kbps/\(fullAyahCode).mp3")
         }
 
-        let urlString = "https://everyayah.com/data/\(serverSubdomain)/\(fullAyahCode).mp3"
+        let urlString = "\(baseEveryAyah)/\(serverSubdomain)/\(fullAyahCode).mp3"
         return URL(string: urlString)
     }
 

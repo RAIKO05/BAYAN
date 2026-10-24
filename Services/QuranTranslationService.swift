@@ -122,7 +122,8 @@ public final class QuranTranslationService {
         guard !inFlightRequests.contains(cacheKey) else { return }
 
         inFlightRequests.insert(cacheKey)
-        let urlString = "https://api.alquran.cloud/v1/surah/\(surahId)/\(edition)"
+        let endpoint = BayanSecureNetworkSession.alQuranCloudEndpoint
+        let urlString = "\(endpoint)/surah/\(surahId)/\(edition)"
         guard let url = URL(string: urlString) else {
             inFlightRequests.remove(cacheKey)
             return
@@ -132,26 +133,35 @@ public final class QuranTranslationService {
         req.timeoutInterval = 8.0
         req.setValue("BayanApp/1.0", forHTTPHeaderField: "User-Agent")
 
-        URLSession.shared.dataTask(with: req) { [weak self] data, _, error in
-            guard let self = self else { return }
-            defer {
-                DispatchQueue.main.async {
-                    self.inFlightRequests.remove(cacheKey)
-                }
+        Task {
+            // Inject App Attest cryptographic verification and challenge nonce headers
+            let attestHeaders = await BayanContainerIntegrityService.shared.attestRequestHeaders(for: url)
+            for (key, val) in attestHeaders {
+                req.setValue(val, forHTTPHeaderField: key)
             }
 
-            guard let data = data, error == nil else { return }
-            if let root = try? JSONDecoder().decode(AlQuranCloudSurahResponse.self, from: data) {
-                var map: [Int: String] = [:]
-                for ayah in root.data.ayahs {
-                    map[ayah.numberInSurah] = ayah.text
+            // Execute via SPKI Certificate-Pinned ephemeral URLSession
+            BayanSecureNetworkSession.shared.urlSession.dataTask(with: req) { [weak self] data, _, error in
+                guard let self = self else { return }
+                defer {
+                    DispatchQueue.main.async {
+                        self.inFlightRequests.remove(cacheKey)
+                    }
                 }
-                DispatchQueue.main.async {
-                    self.inMemoryCache[cacheKey] = map
-                    self.saveToDisk(cacheKey: cacheKey, map: map)
+
+                guard let data = data, error == nil else { return }
+                if let root = try? JSONDecoder().decode(AlQuranCloudSurahResponse.self, from: data) {
+                    var map: [Int: String] = [:]
+                    for ayah in root.data.ayahs {
+                        map[ayah.numberInSurah] = ayah.text
+                    }
+                    DispatchQueue.main.async {
+                        self.inMemoryCache[cacheKey] = map
+                        self.saveToDisk(cacheKey: cacheKey, map: map)
+                    }
                 }
-            }
-        }.resume()
+            }.resume()
+        }
     }
 
     // MARK: - Disk Persistence Helpers

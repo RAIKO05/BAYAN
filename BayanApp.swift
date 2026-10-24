@@ -6,6 +6,12 @@ struct BayanApp: App {
     @State private var cloudSync = BayanCloudSyncService.shared
     @State private var securityManager = BayanSecurityManager.shared
 
+    init() {
+        // Silent runtime integrity and anti-piracy container validation
+        _ = BayanRuntimeIntegrityGuard.shared
+        _ = BayanContainerIntegrityService.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {

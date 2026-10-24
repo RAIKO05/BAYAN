@@ -817,19 +817,24 @@ public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManage
 
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        // Fuzz coordinates to ~0.1 decimal degrees (~11 km) to protect user privacy
+        let fuzzed = BayanLocationPrivacyGuard.obfuscate(coordinate: location.coordinate)
         DispatchQueue.main.async {
-            self.userCoordinate = location.coordinate
+            self.userCoordinate = fuzzed
         }
 
         // Once valid coordinates are captured, pause GPS tracking to save battery
         manager.stopUpdatingLocation()
 
-        let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
-        defaults.set(location.coordinate.latitude, forKey: "bayan_last_latitude")
-        defaults.set(location.coordinate.longitude, forKey: "bayan_last_longitude")
+        // Persist strictly sanitized/fuzzed coordinates (never raw precise GPS)
+        BayanLocationPrivacyGuard.persistSanitizedCoordinates(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )
 
         if userCityName == nil {
-            geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, _ in
+            let fuzzedLocation = CLLocation(latitude: fuzzed.latitude, longitude: fuzzed.longitude)
+            geocoder.reverseGeocodeLocation(fuzzedLocation) { [weak self] placemarks, _ in
                 if let place = placemarks?.first {
                     let city = place.locality ?? place.administrativeArea ?? place.name ?? "Current Location"
                     let country = place.country ?? ""
@@ -837,6 +842,7 @@ public class CompassHeadingManager: NSObject, ObservableObject, CLLocationManage
                     DispatchQueue.main.async {
                         self?.userCityName = fullCity
                     }
+                    let defaults = UserDefaults(suiteName: "group.tools.rea.Bayan") ?? UserDefaults.standard
                     defaults.set(city, forKey: "bayan_last_city_name")
                 }
             }
