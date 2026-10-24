@@ -19,6 +19,7 @@ public struct BayanSettingsSheet: View {
     @State private var syncManager = QuranSyncManager.shared
     @State private var downloadService = QuranAudioDownloadService.shared
     @State private var cloudSync = BayanCloudSyncService.shared
+    @State private var securityManager = BayanSecurityManager.shared
 
     // Persistent User Preferences
     @AppStorage("bayan_arabic_font_size") private var arabicFontSize: Double = 26.0
@@ -81,7 +82,10 @@ public struct BayanSettingsSheet: View {
                         // 5. Appearance, Themes & Language Section
                         appearanceSection
 
-                        // 6. Storage, Cloud Backup & Data Section
+                        // 6. Security & Hardware Data Encryption Section
+                        securitySection
+
+                        // 7. Storage, Cloud Backup & Data Section
                         storageAndDataSection
 
                         // 7. Haptics & Vibration Section
@@ -730,7 +734,148 @@ public struct BayanSettingsSheet: View {
         }
     }
 
-    // MARK: - 6. Storage, Cloud Backup & Data Section
+    // MARK: - 6. Security & Hardware Data Encryption Section
+    private var securitySection: some View {
+        settingsCard(title: "SECURITY & DATA ENCRYPTION", icon: "shield.lefthalf.filled.badge.checkmark") {
+            // AES-256 CryptoKit Hardware Encryption Status
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(spotifyGreen.opacity(0.18))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "lock.shield.fill")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(spotifyGreen)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text("AES-256-GCM Hardware Encryption")
+                            .font(.system(size: 13.5, weight: .bold))
+                            .foregroundColor(.white)
+
+                        Text("ACTIVE")
+                            .font(.system(size: 9, weight: .heavy))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(spotifyGreen)
+                            .clipShape(Capsule())
+                    }
+
+                    Text("All bookmarks, prayer logs & user sessions are encrypted at rest via Apple CryptoKit with Secure Enclave keys.")
+                        .font(.system(size: 11.5))
+                        .foregroundColor(.white.opacity(0.55))
+                }
+            }
+
+            Divider().background(Color.white.opacity(0.1))
+
+            // Biometric App Lock (Face ID / Touch ID)
+            Toggle(isOn: Binding(
+                get: { securityManager.isBiometricLockEnabled },
+                set: { newValue in
+                    if newValue {
+                        Task {
+                            let success = await securityManager.authenticateUser(reason: "Enable \(securityManager.supportedBiometricType.title) to lock Bayan.")
+                            if success {
+                                securityManager.isBiometricLockEnabled = true
+                            }
+                        }
+                    } else {
+                        securityManager.isBiometricLockEnabled = false
+                    }
+                    triggerHaptic()
+                }
+            )) {
+                HStack(spacing: 10) {
+                    Image(systemName: securityManager.supportedBiometricType.iconName)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(BayanTheme.gold)
+                        .frame(width: 24)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("App Lock (\(securityManager.supportedBiometricType.title))")
+                            .font(.system(size: 13.5, weight: .medium))
+                            .foregroundColor(.white)
+                        Text("Require biometric authentication to open the app and view personal data.")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+                }
+            }
+            .tint(BayanTheme.gold)
+
+            // Auto-Lock Timeout Picker (only if biometric lock is enabled)
+            if securityManager.isBiometricLockEnabled {
+                Divider().background(Color.white.opacity(0.1))
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Require Lock")
+                            .font(.system(size: 13.5, weight: .medium))
+                            .foregroundColor(.white)
+                        Text("Time elapsed in background before locking.")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+
+                    Spacer()
+
+                    Picker("Timeout", selection: $securityManager.autoLockTimeoutMinutes) {
+                        Text("Immediately").tag(0)
+                        Text("After 1 min").tag(1)
+                        Text("After 5 min").tag(5)
+                    }
+                    .pickerStyle(.menu)
+                    .tint(BayanTheme.goldSoft)
+                }
+            }
+
+            Divider().background(Color.white.opacity(0.1))
+
+            // App Switcher Privacy Shield (Screen Obfuscation)
+            Toggle(isOn: $securityManager.isPrivacyShieldEnabled) {
+                HStack(spacing: 10) {
+                    Image(systemName: "eye.slash.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(red: 0.35, green: 0.75, blue: 0.95))
+                        .frame(width: 24)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("App Switcher Privacy Blur")
+                            .font(.system(size: 13.5, weight: .medium))
+                            .foregroundColor(.white)
+                        Text("Obfuscates app contents in the iOS multitasking switcher to prevent visual capture.")
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+                }
+            }
+            .tint(Color(red: 0.35, green: 0.75, blue: 0.95))
+
+            Divider().background(Color.white.opacity(0.1))
+
+            // Keychain Isolation Notice
+            HStack(spacing: 10) {
+                Image(systemName: "key.fill")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(BayanTheme.goldSoft)
+                    .frame(width: 24)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Secure Enclave Keychain Storage")
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text("Device credentials and keys are protected with hardware-isolated `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.50))
+                }
+            }
+        }
+    }
+
+    // MARK: - 7. Storage, Cloud Backup & Data Section
     private var storageAndDataSection: some View {
         settingsCard(title: "STORAGE & ICLOUD DATA", icon: "externaldrive.fill") {
             // iCloud Sync Status

@@ -36,19 +36,41 @@ public struct BayanUser: Codable, Equatable {
 public final class BayanAuthService: NSObject {
     public static let shared = BayanAuthService()
 
-    private let userDefaults = UserDefaults.standard
+    private let keychain = BayanKeychainService.shared
+    private let encryption = BayanDataEncryptionService.shared
+    private let kSecureUserKey = "bayan_secure_auth_user_aes256"
     private let kIsSignedInKey = "bayan_auth_is_signed_in"
-    private let kUserKey = "bayan_auth_user_data"
+    private let kLegacyUserKey = "bayan_auth_user_data"
 
     public var isSignedIn: Bool = false
     public var currentUser: BayanUser? = nil
 
     override private init() {
         super.init()
-        self.isSignedIn = userDefaults.bool(forKey: kIsSignedInKey)
-        if let data = userDefaults.data(forKey: kUserKey),
-           let user = try? JSONDecoder().decode(BayanUser.self, from: data) {
+        loadSecureSession()
+    }
+
+    private func loadSecureSession() {
+        // 1. Attempt reading from hardware-isolated Keychain (AES-256 Encrypted)
+        if let encryptedData = keychain.getData(forKey: kSecureUserKey),
+           let user = try? encryption.decryptCodable(BayanUser.self, from: encryptedData) {
             self.currentUser = user
+            self.isSignedIn = true
+            return
+        }
+
+        // 2. Seamless Migration: If legacy plaintext exists in UserDefaults, encrypt into Keychain and purge plaintext
+        if let legacyData = UserDefaults.standard.data(forKey: kLegacyUserKey),
+           let user = try? JSONDecoder().decode(BayanUser.self, from: legacyData) {
+            self.currentUser = user
+            self.isSignedIn = true
+            if let encrypted = try? encryption.encryptCodable(user) {
+                keychain.set(data: encrypted, forKey: kSecureUserKey)
+            }
+            // Purge plaintext from UserDefaults for privacy
+            UserDefaults.standard.removeObject(forKey: kLegacyUserKey)
+        } else {
+            self.isSignedIn = UserDefaults.standard.bool(forKey: kIsSignedInKey)
         }
     }
 
@@ -105,10 +127,13 @@ public final class BayanAuthService: NSObject {
         self.currentUser = user
         self.isSignedIn = true
 
-        userDefaults.set(true, forKey: kIsSignedInKey)
-        if let data = try? JSONEncoder().encode(user) {
-            userDefaults.set(data, forKey: kUserKey)
+        UserDefaults.standard.set(true, forKey: kIsSignedInKey)
+        // Encrypt credentials with AES-256 and store in hardware Keychain
+        if let encrypted = try? encryption.encryptCodable(user) {
+            keychain.set(data: encrypted, forKey: kSecureUserKey)
         }
+        // Purge plaintext from UserDefaults
+        UserDefaults.standard.removeObject(forKey: kLegacyUserKey)
 
         // Sync with BayanSocialService profile
         let social = BayanSocialService.shared
@@ -126,8 +151,9 @@ public final class BayanAuthService: NSObject {
     public func signOut() {
         self.isSignedIn = false
         self.currentUser = nil
-        userDefaults.set(false, forKey: kIsSignedInKey)
-        userDefaults.removeObject(forKey: kUserKey)
+        UserDefaults.standard.set(false, forKey: kIsSignedInKey)
+        UserDefaults.standard.removeObject(forKey: kLegacyUserKey)
+        keychain.delete(forKey: kSecureUserKey)
 
         #if os(iOS)
         UIImpactFeedbackGenerator(style: .light).impactOccurred()

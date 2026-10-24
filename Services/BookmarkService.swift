@@ -7,7 +7,9 @@ public final class BookmarkService {
     public static let shared = BookmarkService()
 
     public var bookmarks: [AyahBookmark] = []
-    private let storageKey = "bayan_ayah_bookmarks"
+    private let secureStorageKey = "bayan_ayah_bookmarks_aes256"
+    private let legacyStorageKey = "bayan_ayah_bookmarks"
+    private let encryption = BayanDataEncryptionService.shared
 
     private init() {
         loadBookmarks()
@@ -63,16 +65,26 @@ public final class BookmarkService {
     }
 
     private func saveBookmarks() {
-        if let encoded = try? JSONEncoder().encode(bookmarks) {
-            UserDefaults.standard.set(encoded, forKey: storageKey)
+        if let encrypted = try? encryption.encryptCodable(bookmarks) {
+            UserDefaults.standard.set(encrypted, forKey: secureStorageKey)
+            UserDefaults.standard.removeObject(forKey: legacyStorageKey)
             BayanCloudSyncService.shared.pushLocalChanges()
         }
     }
 
     private func loadBookmarks() {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
+        // 1. Attempt reading hardware AES-256 encrypted bookmarks
+        if let encryptedData = UserDefaults.standard.data(forKey: secureStorageKey),
+           let decoded = try? encryption.decryptCodable([AyahBookmark].self, from: encryptedData) {
+            self.bookmarks = decoded
+            return
+        }
+
+        // 2. Seamless migration from legacy plaintext format
+        if let data = UserDefaults.standard.data(forKey: legacyStorageKey),
            let decoded = try? JSONDecoder().decode([AyahBookmark].self, from: data) {
             self.bookmarks = decoded
+            saveBookmarks()
         }
     }
 }

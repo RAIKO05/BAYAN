@@ -25,6 +25,10 @@
     <key>NSMicrophoneUsageDescription</key>
     <string>Bayan requires microphone access to listen to and recognize Quranic recitations.</string>
     
+    <!-- Face ID Permission for Secure App Lock -->
+    <key>NSFaceIDUsageDescription</key>
+    <string>Bayan uses Face ID to securely protect your personal prayer records, bookmarks, and Quran reflections.</string>
+    
     <!-- Location Permission for Qibla Compass Direction -->
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Bayan requires location access to calculate the exact direction to the Holy Kaaba (Qibla) and local prayer times from your current location.</string>

@@ -31,7 +31,12 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
         let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
         let dir = paths[0].appendingPathComponent(cacheDirectoryName, isDirectory: true)
         if !FileManager.default.fileExists(atPath: dir.path) {
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try? FileManager.default.createDirectory(
+                at: dir,
+                withIntermediateDirectories: true,
+                attributes: [FileAttributeKey.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication]
+            )
+            BayanSecurityManager.shared.excludeFromBackup(url: dir)
         }
         return dir
     }
