@@ -324,68 +324,98 @@ public struct BayanDiscordRPCSettingsView: View {
                     .tracking(0.5)
 
                 Spacer()
-
-                if discordRPC.hasToken {
-                    Button("Disconnect") {
-                        discordRPC.removeToken()
-                        inputToken = ""
-                        triggerHaptic()
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.red.opacity(0.9))
-                }
             }
 
             if case .connected(let username, let disc, let avatarUrl, let isBot) = discordRPC.connectionState {
-                // Connected User Profile Row
-                HStack(spacing: 12) {
-                    if let avatarUrl = avatarUrl, let url = URL(string: avatarUrl) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image.resizable()
-                                    .scaledToFill()
-                                    .frame(width: 44, height: 44)
-                                    .clipShape(Circle())
-                            default:
-                                fallbackAvatar
+                VStack(spacing: 10) {
+                    // Connected User Profile Row
+                    HStack(spacing: 12) {
+                        if let avatarUrl = avatarUrl, let url = URL(string: avatarUrl) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image.resizable()
+                                        .scaledToFill()
+                                        .frame(width: 44, height: 44)
+                                        .clipShape(Circle())
+                                default:
+                                    fallbackAvatar
+                                }
                             }
+                        } else {
+                            fallbackAvatar
                         }
-                    } else {
-                        fallbackAvatar
-                    }
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(username)
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(.white)
-
-                            if isBot {
-                                Text("BOT")
-                                    .font(.system(size: 10, weight: .bold))
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(username)
+                                    .font(.system(size: 15, weight: .bold))
                                     .foregroundColor(.white)
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(discordBlurple)
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+
+                                if isBot {
+                                    Text("BOT")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(discordBlurple)
+                                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                                }
                             }
+
+                            Text(disc == "0" || disc.isEmpty ? "@\(username)" : "#\(disc)")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.55))
                         }
 
-                        Text(disc == "0" || disc.isEmpty ? "@\(username)" : "#\(disc)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.55))
+                        Spacer()
+
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(discordGreen)
                     }
+                    .padding(14)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                    Spacer()
+                    // Action Buttons: Switch Account & Disconnect
+                    HStack(spacing: 10) {
+                        Button {
+                            discordRPC.removeToken()
+                            inputToken = ""
+                            triggerHaptic()
+                            showingLoginSheet = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                Text("Switch Account")
+                            }
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(discordBlurple)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
 
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(discordGreen)
+                        Button {
+                            discordRPC.removeToken()
+                            inputToken = ""
+                            triggerHaptic()
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                Text("Disconnect")
+                            }
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.red.opacity(0.9))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color.red.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                    }
                 }
-                .padding(14)
-                .background(Color.white.opacity(0.06))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             } else {
                 // Big 1-Click Connect Button

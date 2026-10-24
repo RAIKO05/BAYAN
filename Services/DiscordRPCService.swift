@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import WebKit
 
 // MARK: - Discord Rich Presence Connection State
 public enum DiscordConnectionState: Equatable {
@@ -225,6 +226,28 @@ public final class DiscordRPCService: NSObject, URLSessionWebSocketDelegate, @un
     public func removeToken() {
         self.userToken = ""
         disconnect()
+        clearDiscordWebSession()
+    }
+
+    /// Clears any cached Discord web login sessions and cookies
+    public func clearDiscordWebSession(completion: (() -> Void)? = nil) {
+        DispatchQueue.main.async {
+            let dataStore = WKWebsiteDataStore.default()
+            let types = WKWebsiteDataStore.allWebsiteDataTypes()
+            dataStore.fetchDataRecords(ofTypes: types) { records in
+                let discordRecords = records.filter { $0.displayName.lowercased().contains("discord") }
+                dataStore.removeData(ofTypes: types, for: discordRecords) {
+                    if let cookies = HTTPCookieStorage.shared.cookies {
+                        for cookie in cookies where cookie.domain.lowercased().contains("discord") {
+                            HTTPCookieStorage.shared.deleteCookie(cookie)
+                        }
+                    }
+                    DispatchQueue.main.async {
+                        completion?()
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Gateway Connection Management

@@ -2,15 +2,15 @@ import SwiftUI
 import WebKit
 
 // MARK: - Discord 1-Click Login Web Sheet
-/// Presents Discord's official web login page in a secure WKWebView sandbox.
-/// Automatically detects successful authentication, extracts the session token,
-/// saves it to Apple Keychain, and connects Discord RPC with zero manual copy-pasting.
+/// Presents Discord's official web login page in a clean, isolated WKWebView sandbox.
+/// Uses a non-persistent website data store to guarantee that users can switch accounts
+/// at any time without being trapped in a previous session.
 public struct DiscordLoginSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isLoading = true
     @State private var authDetected = false
-    @State private var errorMessage: String?
+    @State private var reloadTrigger = UUID()
 
     private let discordBlurple = Color(red: 0.35, green: 0.40, blue: 0.95)
     private let goldAccent = Color(red: 0.95, green: 0.78, blue: 0.35)
@@ -48,6 +48,7 @@ public struct DiscordLoginSheet: View {
                         .background(Color(red: 0.08, green: 0.09, blue: 0.11))
                     } else {
                         DiscordAuthWebView(
+                            reloadTrigger: reloadTrigger,
                             isLoading: $isLoading,
                             onTokenReceived: { token in
                                 handleReceivedToken(token)
@@ -68,15 +69,25 @@ public struct DiscordLoginSheet: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "lock.shield.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(goldAccent)
-                        Text("Official")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(goldAccent)
+                    Button {
+                        DiscordRPCService.shared.clearDiscordWebSession {
+                            reloadTrigger = UUID()
+                            #if canImport(UIKit)
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            #endif
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                            Text("Switch Account")
+                        }
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(goldAccent)
                     }
                 }
+            }
+            .onAppear {
+                DiscordRPCService.shared.clearDiscordWebSession()
             }
         }
     }
@@ -119,8 +130,9 @@ private struct LinearProgressView: View {
     }
 }
 
-// MARK: - WKWebView Representable with Token Extraction Script
+// MARK: - WKWebView Representable with Non-Persistent Data Store
 private struct DiscordAuthWebView: UIViewRepresentable {
+    let reloadTrigger: UUID
     @Binding var isLoading: Bool
     let onTokenReceived: (String) -> Void
 
@@ -185,7 +197,6 @@ private struct DiscordAuthWebView: UIViewRepresentable {
                 return false;
             }
 
-            // Expose globally
             window.bayanExtractToken = extractAndSendToken;
 
             // Run on load and periodically
@@ -206,34 +217,46 @@ private struct DiscordAuthWebView: UIViewRepresentable {
         config.userContentController = contentController
         config.defaultWebpagePreferences.allowsContentJavaScript = true
 
+        // Use nonPersistent data store so cookies & sessions do NOT trap the user across account switches
+        config.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
         webView.scrollView.bounces = false
         webView.isOpaque = false
         webView.backgroundColor = UIColor(red: 0.08, green: 0.09, blue: 0.11, alpha: 1.0)
 
-        // Set Discord Desktop/Mobile User-Agent for modern web app compatibility
+        // Set modern iOS user agent
         webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Discord/220.0"
 
-        // Load official Discord login page
-        if let loginURL = URL(string: "https://discord.com/login") {
-            let request = URLRequest(url: loginURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 20)
-            webView.load(request)
-        }
+        loadLoginPage(webView: webView)
 
         return webView
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        if context.coordinator.lastReloadTrigger != reloadTrigger {
+            context.coordinator.lastReloadTrigger = reloadTrigger
+            loadLoginPage(webView: uiView)
+        }
+    }
+
+    private func loadLoginPage(webView: WKWebView) {
+        if let loginURL = URL(string: "https://discord.com/login") {
+            let request = URLRequest(url: loginURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 20)
+            webView.load(request)
+        }
+    }
 
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: DiscordAuthWebView
+        var lastReloadTrigger: UUID?
 
         init(_ parent: DiscordAuthWebView) {
             self.parent = parent
+            self.lastReloadTrigger = parent.reloadTrigger
         }
 
-        // JavaScript message receiver
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "discordAuth", let tokenString = message.body as? String {
                 let clean = tokenString.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -256,15 +279,12 @@ private struct DiscordAuthWebView: UIViewRepresentable {
             DispatchQueue.main.async {
                 self.parent.isLoading = false
             }
-
-            // Trigger extraction directly once page finishes loading
             webView.evaluateJavaScript("window.bayanExtractToken ? window.bayanExtractToken() : false") { _, _ in }
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if let url = navigationAction.request.url {
                 let path = url.path.lowercased()
-                // If user reached app dashboard, trigger token extraction aggressively
                 if path.contains("/channels") || path.contains("/app") {
                     webView.evaluateJavaScript("window.bayanExtractToken ? window.bayanExtractToken() : false") { _, _ in }
                 }
