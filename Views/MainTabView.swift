@@ -231,10 +231,14 @@ public struct MainTabView: View {
             let surahIdStr = components?.queryItems?.first(where: { $0.name == "id" || $0.name == "surah" })?.value
             let ayahIdStr = components?.queryItems?.first(where: { $0.name == "ayah" })?.value
 
-            if let sId = Int(surahIdStr ?? ""), let surah = QuranDataService.shared.surah(for: sId) {
-                let aId = Int(ayahIdStr ?? "") ?? 1
+            // Strictly validate Surah ID (1...114) and clamp Ayah index within totalAyahs (VULN-02)
+            if let sId = Int(surahIdStr ?? ""),
+               (1...114).contains(sId),
+               let surah = QuranDataService.shared.surah(for: sId) {
+                let rawAyah = Int(ayahIdStr ?? "") ?? 1
+                let safeAyah = max(1, min(rawAyah, surah.totalAyahs))
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    AudioPlayerService.shared.play(surah: surah, ayah: aId)
+                    AudioPlayerService.shared.play(surah: surah, ayah: safeAyah)
                 }
             }
         case "prayer", "prayers", "qibla":

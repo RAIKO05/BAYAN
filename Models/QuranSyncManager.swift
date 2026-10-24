@@ -26,6 +26,7 @@ public final class QuranSyncManager {
     public var favoriteSurahIds: Set<Int> = [1, 18, 36, 55, 67]
 
     private let historyStorageKey = "bayan_recognition_history"
+    private let encryptedFileName = "bayan_recognition_history.enc"
 
     public init() {
         loadHistory()
@@ -73,19 +74,36 @@ public final class QuranSyncManager {
         saveHistory()
     }
 
+    // MARK: - Hardware AES-256-GCM Encrypted Storage (VULN-03)
     private func saveHistory() {
-        if let encoded = try? JSONEncoder().encode(recentRecognitions) {
-            UserDefaults.standard.set(encoded, forKey: historyStorageKey)
+        do {
+            let data = try JSONEncoder().encode(recentRecognitions)
+            try BayanDataEncryptionService.shared.encrypt(data: data, toFileNamed: encryptedFileName)
+        } catch {
+            #if DEBUG
+            print("⚠️ Failed to encrypt recognition history: \(error)")
+            #endif
         }
     }
 
     private func loadHistory() {
+        // 1. Hardware AES-256-GCM decryption
+        if let decryptedData = try? BayanDataEncryptionService.shared.decrypt(fromFileNamed: encryptedFileName),
+           let decoded = try? JSONDecoder().decode([RecognitionResult].self, from: decryptedData) {
+            self.recentRecognitions = decoded
+            return
+        }
+
+        // 2. Legacy Migration: Decrypt/migrate from plaintext UserDefaults and purge
         if let data = UserDefaults.standard.data(forKey: historyStorageKey),
            let decoded = try? JSONDecoder().decode([RecognitionResult].self, from: data) {
             self.recentRecognitions = decoded
-        } else {
-            // Pre-fill with a sample recognition
-            self.recentRecognitions = [RecognitionResult.sample]
+            saveHistory()
+            UserDefaults.standard.removeObject(forKey: historyStorageKey)
+            return
         }
+
+        // Pre-fill with a sample recognition
+        self.recentRecognitions = [RecognitionResult.sample]
     }
 }

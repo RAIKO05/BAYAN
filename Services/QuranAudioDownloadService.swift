@@ -17,6 +17,12 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
     private var urlSession: URLSession!
     private var taskToSurahKey: [Int: (reciterId: String, surahId: Int, ayah: Int, totalAyahs: Int)] = [:]
 
+    // Bounded Concurrency Worker Queue (VULN-05 Rate Limiting Guardrail)
+    private let maxConcurrentDownloads = 3
+    private var pendingDownloadQueue: [(reciterId: String, surahId: Int, ayah: Int, totalAyahs: Int, remoteUrl: URL)] = []
+    private var activeDownloadCount = 0
+    private let queueLock = NSLock()
+
     private let cacheDirectoryName = "BayanAudioOfflineCache"
 
     private override init() {
@@ -78,16 +84,29 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
         activeDownloads.insert(key)
         downloadProgress[key] = 0.05
 
-        // Sequential or parallel download of all Ayahs in Surah
+        // Bounded Concurrency Queue: Append missing Ayahs safely (VULN-05)
+        queueLock.lock()
         for ayah in 1...surah.totalAyahs {
-            if localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah) != nil {
-                continue
+            if localAudioUrl(reciterId: reciter.id, surah: surah.id, ayah: ayah) == nil,
+               let remoteUrl = reciter.audioUrl(surah: surah.id, ayah: ayah) {
+                pendingDownloadQueue.append((reciter.id, surah.id, ayah, surah.totalAyahs, remoteUrl))
             }
-            if let remoteUrl = reciter.audioUrl(surah: surah.id, ayah: ayah) {
-                let task = urlSession.downloadTask(with: remoteUrl)
-                taskToSurahKey[task.taskIdentifier] = (reciter.id, surah.id, ayah, surah.totalAyahs)
-                task.resume()
-            }
+        }
+        queueLock.unlock()
+
+        processNextQueuedDownloads()
+    }
+
+    private func processNextQueuedDownloads() {
+        queueLock.lock()
+        defer { queueLock.unlock() }
+
+        while activeDownloadCount < maxConcurrentDownloads && !pendingDownloadQueue.isEmpty {
+            let item = pendingDownloadQueue.removeFirst()
+            activeDownloadCount += 1
+            let task = urlSession.downloadTask(with: item.remoteUrl)
+            taskToSurahKey[task.taskIdentifier] = (item.reciterId, item.surahId, item.ayah, item.totalAyahs)
+            task.resume()
         }
     }
 
@@ -95,6 +114,10 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
         let key = "\(reciterId)_\(surah.id)"
         activeDownloads.remove(key)
         downloadProgress.removeValue(forKey: key)
+
+        queueLock.lock()
+        pendingDownloadQueue.removeAll { $0.reciterId == reciterId && $0.surahId == surah.id }
+        queueLock.unlock()
 
         for ayah in 1...surah.totalAyahs {
             let filename = String(format: "%@_%03d%03d.mp3", reciterId, surah.id, ayah)
@@ -193,10 +216,17 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
         return total
     }
 
-    // MARK: - URLSessionDownloadDelegate
+    // MARK: - URLSessionDownloadDelegate (Bounded Worker Management)
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let info = taskToSurahKey[downloadTask.taskIdentifier] else { return }
+        queueLock.lock()
+        activeDownloadCount = max(0, activeDownloadCount - 1)
+        guard let info = taskToSurahKey[downloadTask.taskIdentifier] else {
+            queueLock.unlock()
+            processNextQueuedDownloads()
+            return
+        }
         taskToSurahKey.removeValue(forKey: downloadTask.taskIdentifier)
+        queueLock.unlock()
 
         let targetFilename = String(format: "%@_%03d%03d.mp3", info.reciterId, info.surahId, info.ayah)
         let destination = baseCacheURL.appendingPathComponent(targetFilename)
@@ -224,12 +254,23 @@ public final class QuranAudioDownloadService: NSObject, URLSessionDownloadDelega
             activeDownloads.remove(key)
             downloadProgress.removeValue(forKey: key)
         }
+
+        // Dispatch next queued item in worker pipeline
+        processNextQueuedDownloads()
     }
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        queueLock.lock()
+        activeDownloadCount = max(0, activeDownloadCount - 1)
+        taskToSurahKey.removeValue(forKey: task.taskIdentifier)
+        queueLock.unlock()
+
         if let err = error {
             print("⚠️ Audio download task failed: \(err)")
         }
+
+        // Dispatch next queued item in worker pipeline
+        processNextQueuedDownloads()
     }
 
     // MARK: - Cache Storage Diagnostics & Cleanup

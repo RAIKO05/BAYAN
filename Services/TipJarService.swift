@@ -26,14 +26,28 @@ public struct TipProduct: Identifiable, Sendable {
 public final class TipJarService {
     public static let shared = TipJarService()
 
+    private let kKeychainSupporterKey = "bayan_secure_is_supporter"
+    private let kKeychainTierKey = "bayan_secure_supporter_tier"
+
     public var isSupporter: Bool {
-        get { UserDefaults.standard.bool(forKey: "bayan_is_supporter") }
-        set { UserDefaults.standard.set(newValue, forKey: "bayan_is_supporter") }
+        get {
+            return BayanKeychainService.shared.getString(forKey: kKeychainSupporterKey) == "1"
+        }
+        set {
+            BayanKeychainService.shared.set(string: newValue ? "1" : "0", forKey: kKeychainSupporterKey)
+            // Purge plaintext from UserDefaults for security
+            UserDefaults.standard.removeObject(forKey: "bayan_is_supporter")
+        }
     }
 
     public var supporterTierName: String {
-        get { UserDefaults.standard.string(forKey: "bayan_supporter_tier") ?? "" }
-        set { UserDefaults.standard.set(newValue, forKey: "bayan_supporter_tier") }
+        get {
+            return BayanKeychainService.shared.getString(forKey: kKeychainTierKey) ?? ""
+        }
+        set {
+            BayanKeychainService.shared.set(string: newValue, forKey: kKeychainTierKey)
+            UserDefaults.standard.removeObject(forKey: "bayan_supporter_tier")
+        }
     }
 
     public var isPurchasing: Bool = false
@@ -88,6 +102,7 @@ public final class TipJarService {
         startTransactionListener()
         Task {
             await fetchStoreProducts()
+            await verifyActiveEntitlements()
         }
     }
 
@@ -182,6 +197,28 @@ public final class TipJarService {
         } catch {
             self.errorMessage = error.localizedDescription
             self.isPurchasing = false
+        }
+    }
+
+    // MARK: - Cryptographic JWS Entitlements Verification (VULN-04)
+    @MainActor
+    public func verifyActiveEntitlements() async {
+        var hasValidEntitlement = false
+        var verifiedTier = ""
+
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result else {
+                continue
+            }
+            if Self.productIdentifiers.contains(transaction.productID) && transaction.revocationDate == nil {
+                hasValidEntitlement = true
+                verifiedTier = transaction.productID
+            }
+        }
+
+        if hasValidEntitlement {
+            self.isSupporter = true
+            self.supporterTierName = verifiedTier
         }
     }
 

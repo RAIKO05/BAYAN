@@ -136,11 +136,13 @@ public final class BayanCastService: NSObject {
         }
     }
 
-    // MARK: - Local IP Address
+    // MARK: - Local IP Address & Single-Session Authentication Token
+    private var sessionAccessToken: String = UUID().uuidString.prefix(8).lowercased()
+
     public func refreshLocalIP() {
         self.localIPAddress = getWiFiAddress()
         if let ip = localIPAddress {
-            self.webCastURL = "http://\(ip):\(webCastPort)"
+            self.webCastURL = "http://\(ip):\(webCastPort)?token=\(sessionAccessToken)"
         } else {
             self.webCastURL = nil
         }
@@ -318,6 +320,9 @@ public final class BayanCastService: NSObject {
         let endpoint = "http://\(host):\(port)/AVTransport/control"
         guard let url = URL(string: endpoint) else { return }
 
+        // XML-escape the media URI to prevent SOAP parameter injection (VULN-01)
+        let safeMediaUri = audioUrl.absoluteString.xmlEscaped
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("text/xml; charset=\"utf-8\"", forHTTPHeaderField: "Content-Type")
@@ -329,7 +334,7 @@ public final class BayanCastService: NSObject {
           <s:Body>
             <u:SetAVTransportURI xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">
               <InstanceID>0</InstanceID>
-              <CurrentURI>\(audioUrl.absoluteString)</CurrentURI>
+              <CurrentURI>\(safeMediaUri)</CurrentURI>
               <CurrentURIMetaData></CurrentURIMetaData>
             </u:SetAVTransportURI>
           </s:Body>
@@ -368,6 +373,7 @@ public final class BayanCastService: NSObject {
     // MARK: - Embedded Local HTTP Web Cast Server (Android / Windows / Any Browser)
     public func startWebCastServer() {
         guard webListener == nil else { return }
+        self.sessionAccessToken = UUID().uuidString.prefix(8).lowercased()
         refreshLocalIP()
 
         do {
@@ -420,26 +426,36 @@ public final class BayanCastService: NSObject {
         let parts = firstLine.components(separatedBy: " ")
         guard parts.count >= 2 else { return "HTTP/1.1 400 Bad Request\r\n\r\n".data(using: .utf8)! }
 
-        let path = parts[1]
+        let rawPath = parts[1]
+        let urlComponents = URLComponents(string: rawPath)
+        let path = urlComponents?.path ?? rawPath
+        let token = urlComponents?.queryItems?.first(where: { $0.name == "token" })?.value
 
-        // REST API Endpoints
-        if path.hasPrefix("/api/status") {
-            return generateStatusJSONResponse()
-        } else if path.hasPrefix("/api/toggle") {
-            DispatchQueue.main.async {
-                AudioPlayerService.shared.togglePlayPause()
+        // Enforce Single-Session Token Authentication on all API endpoints (VULN-06)
+        if path.hasPrefix("/api/") {
+            guard token == sessionAccessToken else {
+                let unauth = "HTTP/1.1 401 Unauthorized\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: null\r\nContent-Length: 43\r\n\r\nUnauthorized: Missing or invalid access token."
+                return unauth.data(using: .utf8)!
             }
-            return generateStatusJSONResponse()
-        } else if path.hasPrefix("/api/next") {
-            DispatchQueue.main.async {
-                AudioPlayerService.shared.nextAyah()
+
+            if path.hasPrefix("/api/status") {
+                return generateStatusJSONResponse()
+            } else if path.hasPrefix("/api/toggle") {
+                DispatchQueue.main.async {
+                    AudioPlayerService.shared.togglePlayPause()
+                }
+                return generateStatusJSONResponse()
+            } else if path.hasPrefix("/api/next") {
+                DispatchQueue.main.async {
+                    AudioPlayerService.shared.nextAyah()
+                }
+                return generateStatusJSONResponse()
+            } else if path.hasPrefix("/api/prev") {
+                DispatchQueue.main.async {
+                    AudioPlayerService.shared.previousAyah()
+                }
+                return generateStatusJSONResponse()
             }
-            return generateStatusJSONResponse()
-        } else if path.hasPrefix("/api/prev") {
-            DispatchQueue.main.async {
-                AudioPlayerService.shared.previousAyah()
-            }
-            return generateStatusJSONResponse()
         }
 
         // Default: Serve Full-Screen HTML5 Web Player for Android & Windows
@@ -466,7 +482,8 @@ public final class BayanCastService: NSObject {
         ]
 
         let data = (try? JSONSerialization.data(withJSONObject: json, options: [])) ?? Data()
-        let headers = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: \(data.count)\r\n\r\n"
+        // Restrict Access-Control-Allow-Origin from wildcard to local origin (VULN-06)
+        let headers = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: null\r\nContent-Length: \(data.count)\r\n\r\n"
         var full = headers.data(using: .utf8)!
         full.append(data)
         return full
@@ -475,11 +492,12 @@ public final class BayanCastService: NSObject {
     private func generateHTMLWebPlayerResponse() -> Data {
         let player = AudioPlayerService.shared
         let surah = player.currentSurah
-        let surahName = surah?.nameEnglish ?? "Surah Al-Mulk"
-        let surahArabic = surah?.nameArabic ?? "الملك"
+        let surahName = (surah?.nameEnglish ?? "Surah Al-Mulk").htmlEscaped
+        let surahArabic = (surah?.nameArabic ?? "الملك").htmlEscaped
         let ayahNumber = player.currentAyah
-        let reciterName = player.currentReciter.nameEnglish
-        let audioUrl = currentPlaybackAudioUrl()?.absoluteString ?? ""
+        let reciterName = player.currentReciter.nameEnglish.htmlEscaped
+        let audioUrl = (currentPlaybackAudioUrl()?.absoluteString ?? "").htmlEscaped
+        let activeToken = sessionAccessToken
 
         let html = """
         <!DOCTYPE html>
@@ -574,27 +592,30 @@ public final class BayanCastService: NSObject {
 
           <script>
             const audio = document.getElementById('audioEl');
+            const sessionToken = "\(activeToken)";
             let currentUrl = "\(audioUrl)";
 
             function apiCall(endpoint) {
-              fetch(endpoint).then(r => r.json()).then(updateUI);
+              const url = endpoint + '?token=' + encodeURIComponent(sessionToken);
+              fetch(url).then(r => r.json()).then(updateUI).catch(() => {});
             }
 
             function togglePlay() {
               if (audio.paused) {
                 audio.play();
-                fetch('/api/toggle');
+                apiCall('/api/toggle');
               } else {
                 audio.pause();
-                fetch('/api/toggle');
+                apiCall('/api/toggle');
               }
             }
 
             function updateUI(data) {
-              document.getElementById('surahTitle').innerText = data.surah;
-              document.getElementById('arTitle').innerText = data.surahArabic;
-              document.getElementById('ayahNum').innerText = data.ayah;
-              document.getElementById('reciterName').innerText = data.reciter;
+              if (!data) return;
+              if (data.surah) document.getElementById('surahTitle').innerText = data.surah;
+              if (data.surahArabic) document.getElementById('arTitle').innerText = data.surahArabic;
+              if (data.ayah) document.getElementById('ayahNum').innerText = data.ayah;
+              if (data.reciter) document.getElementById('reciterName').innerText = data.reciter;
               if (data.audioUrl && data.audioUrl !== currentUrl) {
                 currentUrl = data.audioUrl;
                 audio.src = data.audioUrl;
@@ -602,9 +623,12 @@ public final class BayanCastService: NSObject {
               }
             }
 
-            // Real-time synchronization polling every 2.5 seconds
+            // Real-time synchronization polling every 2.5 seconds with session token
             setInterval(() => {
-              fetch('/api/status').then(r => r.json()).then(updateUI).catch(() => {});
+              fetch('/api/status?token=' + encodeURIComponent(sessionToken))
+                .then(r => r.json())
+                .then(updateUI)
+                .catch(() => {});
             }, 2500);
 
             // Auto-advance to next Ayah when finished
@@ -617,7 +641,7 @@ public final class BayanCastService: NSObject {
         """
 
         let bodyData = html.data(using: .utf8)!
-        let headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: \(bodyData.count)\r\n\r\n"
+        let headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nAccess-Control-Allow-Origin: null\r\nContent-Length: \(bodyData.count)\r\n\r\n"
         var res = headers.data(using: .utf8)!
         res.append(bodyData)
         return res
@@ -634,5 +658,26 @@ public final class BayanCastService: NSObject {
         let scaled = outputImage.transformed(by: CGAffineTransform(scaleX: 8, y: 8))
         guard let cgImage = context.createCGImage(scaled, from: scaled.extent) else { return nil }
         return UIImage(cgImage: cgImage)
+    }
+}
+
+// MARK: - String Sanitization Extensions (VULN-01 / VULN-06)
+extension String {
+    public var xmlEscaped: String {
+        return self
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
+    }
+
+    public var htmlEscaped: String {
+        return self
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&#39;")
     }
 }
