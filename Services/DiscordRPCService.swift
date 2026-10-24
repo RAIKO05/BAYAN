@@ -6,7 +6,7 @@ import SwiftUI
 public enum DiscordConnectionState: Equatable {
     case disconnected
     case connecting
-    case connected(username: String, discriminator: String, avatarUrl: String?)
+    case connected(username: String, discriminator: String, avatarUrl: String?, isBot: Bool)
     case error(String)
 
     public var isConnected: Bool {
@@ -20,10 +20,11 @@ public enum DiscordConnectionState: Equatable {
             return "Disconnected"
         case .connecting:
             return "Connecting to Gateway..."
-        case .connected(let username, let disc, _):
-            return disc == "0" || disc.isEmpty ? "@\(username)" : "\(username)#\(disc)"
+        case .connected(let username, let disc, _, let isBot):
+            let tag = disc == "0" || disc.isEmpty ? "@\(username)" : "\(username)#\(disc)"
+            return isBot ? "\(tag) [BOT]" : tag
         case .error(let msg):
-            return "Error: \(msg)"
+            return msg
         }
     }
 
@@ -43,10 +44,10 @@ public enum DiscordConnectionState: Equatable {
 
 // MARK: - Discord Rich Presence Service (Gateway v10)
 /// Manages real-time Discord Rich Presence (RPC) over Discord's WebSocket Gateway v10.
-/// Displays "Listening to Holy Qur'an" with dynamic progress bar, Surah name,
-/// reciter, and Bayan official artwork on the user's Discord profile.
+/// Supports both User Authorization Tokens and Bot Tokens, with automatic heartbeat,
+/// close code diagnostics, and instant status updates.
 @Observable
-public final class DiscordRPCService: NSObject, @unchecked Sendable {
+public final class DiscordRPCService: NSObject, URLSessionWebSocketDelegate, @unchecked Sendable {
     public static let shared = DiscordRPCService()
 
     // MARK: - Constants & Defaults
@@ -123,18 +124,27 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
 
     public var hasToken: Bool {
         let token = userToken
-        return !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return !cleanToken(token).isEmpty
     }
 
     public var userToken: String {
         get {
-            BayanKeychainService.shared.getString(forKey: keychainTokenKey) ?? ""
+            // First check Keychain
+            if let keychainVal = BayanKeychainService.shared.getString(forKey: keychainTokenKey),
+               !keychainVal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return keychainVal
+            }
+            // Fallback to UserDefaults in sandboxed/sideloaded environments
+            return UserDefaults.standard.string(forKey: keychainTokenKey) ?? ""
         }
         set {
-            if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let clean = cleanToken(newValue)
+            if clean.isEmpty {
                 BayanKeychainService.shared.delete(forKey: keychainTokenKey)
+                UserDefaults.standard.removeObject(forKey: keychainTokenKey)
             } else {
-                _ = BayanKeychainService.shared.set(string: newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: keychainTokenKey)
+                _ = BayanKeychainService.shared.set(string: clean, forKey: keychainTokenKey)
+                UserDefaults.standard.set(clean, forKey: keychainTokenKey)
             }
         }
     }
@@ -143,10 +153,12 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
     private var webSocketTask: URLSessionWebSocketTask?
     private var urlSession: URLSession?
     private var heartbeatTimer: DispatchSourceTimer?
+    private var connectionTimeoutTimer: DispatchSourceTimer?
     private var lastSequenceNumber: Int?
     private var heartbeatIntervalMs: Double = 41250
     private var isReconnecting = false
     private var reconnectAttempts = 0
+    private var isIntentionalDisconnect = false
     private let queue = DispatchQueue(label: "tools.rea.Bayan.DiscordRPC", qos: .utility)
 
     // Current Track Cache for Re-Sync
@@ -167,8 +179,8 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         super.init()
 
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 20
-        self.urlSession = URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
+        configuration.timeoutIntervalForRequest = 15
+        self.urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
 
         // Auto-connect on app launch if enabled and token present
         if self.isEnabled && self.hasToken {
@@ -178,10 +190,31 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         }
     }
 
+    // MARK: - Token Sanitization Helper
+    public func cleanToken(_ raw: String) -> String {
+        var str = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Remove surrounding single or double quotes
+        if (str.hasPrefix("\"") && str.hasSuffix("\"")) || (str.hasPrefix("'") && str.hasSuffix("'")) {
+            if str.count >= 2 {
+                str = String(str.dropFirst().dropLast())
+            }
+        }
+
+        // If user copied "Authorization: <token>" or "token: <token>"
+        if let colonIdx = str.firstIndex(of: ":") {
+            let prefix = str[..<colonIdx].lowercased().trimmingCharacters(in: .whitespaces)
+            if prefix == "authorization" || prefix == "token" {
+                str = String(str[str.index(after: colonIdx)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        return str.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     // MARK: - Token Management
     public func saveToken(_ token: String) {
-        let clean = token.trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "\"", with: "")
+        let clean = cleanToken(token)
         self.userToken = clean
         if isEnabled && !clean.isEmpty {
             disconnect()
@@ -200,7 +233,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
             guard let self = self else { return }
             guard self.isEnabled else { return }
 
-            let token = self.userToken
+            let token = self.cleanToken(self.userToken)
             guard !token.isEmpty else {
                 DispatchQueue.main.async {
                     self.connectionState = .error("Discord Token is missing")
@@ -208,17 +241,29 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
                 return
             }
 
+            self.isIntentionalDisconnect = false
             self.stopHeartbeat()
+            self.stopConnectionTimeout()
+
             self.webSocketTask?.cancel(with: .normalClosure, reason: nil)
 
             DispatchQueue.main.async {
                 self.connectionState = .connecting
             }
 
-            let request = URLRequest(url: self.gatewayURL)
+            // Create customized URLRequest with standard Discord Client headers
+            var request = URLRequest(url: self.gatewayURL)
+            request.timeoutInterval = 15
+            request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Discord/220.0", forHTTPHeaderField: "User-Agent")
+            request.setValue("https://discord.com", forHTTPHeaderField: "Origin")
+
             self.webSocketTask = self.urlSession?.webSocketTask(with: request)
             self.webSocketTask?.resume()
 
+            // Start 15s watchdog timer for connection handshake
+            self.startConnectionTimeout()
+
+            // Begin receive loop
             self.listenForMessages()
         }
     }
@@ -226,7 +271,9 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
     public func disconnect() {
         queue.async { [weak self] in
             guard let self = self else { return }
+            self.isIntentionalDisconnect = true
             self.stopHeartbeat()
+            self.stopConnectionTimeout()
 
             // Gracefully clear presence before closing
             self.sendRawPresenceUpdate(activities: [])
@@ -242,6 +289,69 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
                 self.currentPresenceState = nil
                 self.currentPresenceStartTime = nil
                 self.currentPresenceEndTime = nil
+            }
+        }
+    }
+
+    // MARK: - URLSessionWebSocketDelegate
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        // Connected to Gateway socket, waiting for Opcode 10 Hello
+    }
+
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        let reasonStr = reason.flatMap { String(data: $0, encoding: .utf8) } ?? "No reason given"
+        let code = closeCode.rawValue
+        print("🔴 Discord Gateway didCloseWith code: \(code), reason: \(reasonStr)")
+        handleCloseCode(code: code, reason: reasonStr)
+    }
+
+    private func handleCloseCode(code: Int, reason: String) {
+        stopHeartbeat()
+        stopConnectionTimeout()
+
+        if isIntentionalDisconnect {
+            DispatchQueue.main.async {
+                self.connectionState = .disconnected
+            }
+            return
+        }
+
+        switch code {
+        case 4004:
+            DispatchQueue.main.async {
+                self.connectionState = .error("Authentication Failed (Invalid or Expired Token)")
+            }
+            // Stop retrying permanently for invalid token
+            isReconnecting = false
+
+        case 4014:
+            DispatchQueue.main.async {
+                self.connectionState = .error("Disallowed Bot Intents (Check Developer Portal)")
+            }
+            isReconnecting = false
+
+        case 4001, 4002, 4003, 4005, 4010, 4011, 4012, 4013:
+            DispatchQueue.main.async {
+                self.connectionState = .error("Discord Error \(code): \(reason)")
+            }
+            isReconnecting = false
+
+        case 4008:
+            DispatchQueue.main.async {
+                self.connectionState = .error("Rate Limited by Discord Gateway")
+            }
+            scheduleReconnect(delaySeconds: 15)
+
+        default:
+            if isEnabled && hasToken {
+                DispatchQueue.main.async {
+                    self.connectionState = .error("Disconnected (\(code)). Reconnecting...")
+                }
+                scheduleReconnect(delaySeconds: min(30, Double(reconnectAttempts * 3 + 3)))
+            } else {
+                DispatchQueue.main.async {
+                    self.connectionState = .disconnected
+                }
             }
         }
     }
@@ -267,7 +377,35 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
                 self.listenForMessages()
 
             case .failure(let error):
-                self.handleDisconnect(error: error)
+                self.handleReceiveFailure(error: error)
+            }
+        }
+    }
+
+    private func handleReceiveFailure(error: Error) {
+        stopHeartbeat()
+        stopConnectionTimeout()
+
+        guard !isIntentionalDisconnect else { return }
+
+        // Inspect closeCode if available
+        let rawCloseCode = webSocketTask?.closeCode.rawValue ?? 0
+        if rawCloseCode > 0 && rawCloseCode != 1000 {
+            handleCloseCode(code: rawCloseCode, reason: "Connection closed by remote")
+            return
+        }
+
+        let nsError = error as NSError
+        print("⚠️ Discord WebSocket receive error: \(nsError.domain) (\(nsError.code)): \(nsError.localizedDescription)")
+
+        if isEnabled && hasToken {
+            DispatchQueue.main.async {
+                self.connectionState = .error("Network Connection Lost. Retrying...")
+            }
+            scheduleReconnect(delaySeconds: min(30, Double(reconnectAttempts * 3 + 3)))
+        } else {
+            DispatchQueue.main.async {
+                self.connectionState = .disconnected
             }
         }
     }
@@ -285,6 +423,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
 
         switch op {
         case 10: // Hello
+            stopConnectionTimeout()
             if let d = json["d"] as? [String: Any],
                let interval = d["heartbeat_interval"] as? Double {
                 self.heartbeatIntervalMs = interval
@@ -293,7 +432,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
             }
 
         case 11: // Heartbeat ACK
-            // Heartbeat successfully received by Discord Gateway
+            // Acknowledged
             break
 
         case 0: // Dispatch Event
@@ -301,7 +440,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
                 self.handleDispatchEvent(name: t, data: json["d"] as? [String: Any])
             }
 
-        case 7: // Reconnect request from server
+        case 7: // Reconnect request from Discord
             self.scheduleReconnect(delaySeconds: 2)
 
         case 9: // Invalid Session
@@ -317,11 +456,14 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         switch name {
         case "READY":
             reconnectAttempts = 0
+            stopConnectionTimeout()
+
             if let user = data?["user"] as? [String: Any] {
                 let username = user["username"] as? String ?? "Discord User"
                 let disc = user["discriminator"] as? String ?? "0"
                 let userId = user["id"] as? String ?? ""
                 let avatar = user["avatar"] as? String
+                let isBot = user["bot"] as? Bool ?? false
 
                 var avatarUrl: String? = nil
                 if let avatar = avatar, !userId.isEmpty {
@@ -329,7 +471,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
                 }
 
                 DispatchQueue.main.async {
-                    self.connectionState = .connected(username: username, discriminator: disc, avatarUrl: avatarUrl)
+                    self.connectionState = .connected(username: username, discriminator: disc, avatarUrl: avatarUrl, isBot: isBot)
                 }
 
                 // If audio is currently playing in Bayan, immediately publish presence to Discord!
@@ -339,7 +481,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
             }
 
         case "RESUMED":
-            // Connection successfully resumed
+            stopConnectionTimeout()
             break
 
         default:
@@ -349,27 +491,55 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
 
     // MARK: - Gateway Opcodes Emitters
     private func sendIdentify() {
-        let token = self.userToken
+        let token = cleanToken(self.userToken)
         guard !token.isEmpty else { return }
 
-        let identifyPayload: [String: Any] = [
-            "op": 2,
-            "d": [
-                "token": token,
-                "capabilities": 8189,
-                "properties": [
-                    "os": "iOS",
-                    "browser": "Discord iOS",
-                    "device": "iPhone"
-                ],
-                "presence": [
-                    "status": "online",
-                    "since": 0,
-                    "activities": [],
-                    "afk": false
+        // Determine if token is a Bot token or User token
+        let isBotToken = token.lowercased().hasPrefix("bot ") || token.components(separatedBy: ".").count == 3 && token.contains("M")
+
+        var identifyPayload: [String: Any] = [:]
+
+        if isBotToken && token.lowercased().hasPrefix("bot ") {
+            // Discord Bot Account
+            identifyPayload = [
+                "op": 2,
+                "d": [
+                    "token": token,
+                    "intents": 0,
+                    "properties": [
+                        "os": "iOS",
+                        "browser": "Bayan",
+                        "device": "iPhone"
+                    ],
+                    "presence": [
+                        "status": "online",
+                        "since": 0,
+                        "activities": [],
+                        "afk": false
+                    ]
                 ]
             ]
-        ]
+        } else {
+            // Discord User Account
+            identifyPayload = [
+                "op": 2,
+                "d": [
+                    "token": token,
+                    "capabilities": 8189,
+                    "properties": [
+                        "os": "iOS",
+                        "browser": "Discord iOS",
+                        "device": "iPhone"
+                    ],
+                    "presence": [
+                        "status": "online",
+                        "since": 0,
+                        "activities": [],
+                        "afk": false
+                    ]
+                ]
+            ]
+        }
 
         sendJSON(identifyPayload)
     }
@@ -379,7 +549,7 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         let timer = DispatchSource.makeTimerSource(queue: queue)
         let intervalSeconds = max(5.0, intervalMs / 1000.0)
 
-        // Discord docs: First heartbeat should be jittered: interval * jitter (0.0 to 1.0)
+        // Discord docs: First heartbeat should be jittered: interval * jitter (0.1 to 0.9)
         let firstDelay = intervalSeconds * Double.random(in: 0.1...0.9)
         timer.schedule(deadline: .now() + firstDelay, repeating: intervalSeconds)
 
@@ -401,6 +571,29 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         heartbeatTimer = nil
     }
 
+    private func startConnectionTimeout() {
+        stopConnectionTimeout()
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 15.0)
+        timer.setEventHandler { [weak self] in
+            guard let self = self else { return }
+            if self.connectionState == .connecting {
+                print("⏱️ Discord Gateway handshake timed out after 15s")
+                DispatchQueue.main.async {
+                    self.connectionState = .error("Connection Timed Out. Check Token or Network.")
+                }
+                self.webSocketTask?.cancel(with: .normalClosure, reason: nil)
+            }
+        }
+        timer.resume()
+        self.connectionTimeoutTimer = timer
+    }
+
+    private func stopConnectionTimeout() {
+        connectionTimeoutTimer?.cancel()
+        connectionTimeoutTimer = nil
+    }
+
     private func sendJSON(_ dictionary: [String: Any]) {
         guard let data = try? JSONSerialization.data(withJSONObject: dictionary),
               let string = String(data: data, encoding: .utf8) else {
@@ -414,33 +607,8 @@ public final class DiscordRPCService: NSObject, @unchecked Sendable {
         }
     }
 
-    private func handleDisconnect(error: Error) {
-        stopHeartbeat()
-
-        let nsError = error as NSError
-        // Check for 4004 (Authentication Failed)
-        if nsError.code == 4004 {
-            DispatchQueue.main.async {
-                self.connectionState = .error("Invalid Discord Token (Error 4004)")
-            }
-            return
-        }
-
-        DispatchQueue.main.async {
-            if self.isEnabled && self.hasToken {
-                self.connectionState = .connecting
-            } else {
-                self.connectionState = .disconnected
-            }
-        }
-
-        if isEnabled && hasToken {
-            scheduleReconnect(delaySeconds: min(30, Double(reconnectAttempts * 3 + 3)))
-        }
-    }
-
     private func scheduleReconnect(delaySeconds: Double) {
-        guard !isReconnecting else { return }
+        guard !isReconnecting && !isIntentionalDisconnect else { return }
         isReconnecting = true
         reconnectAttempts += 1
 

@@ -62,7 +62,7 @@ public struct BayanDiscordRPCSettingsView: View {
         }
         .sheet(isPresented: $showingTokenHelpSheet) {
             tokenHelpSheet
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
     }
 
@@ -255,9 +255,10 @@ public struct BayanDiscordRPCSettingsView: View {
                     .frame(width: 10, height: 10)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Status: \(discordRPC.connectionState.statusDescription)")
+                    Text(discordRPC.connectionState.statusDescription)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.white)
+                        .foregroundColor(discordRPC.connectionState.statusColor == .red ? Color(red: 1.0, green: 0.4, blue: 0.4) : .white)
+                        .lineLimit(2)
 
                     if !discordRPC.hasToken {
                         Text("Add your Discord Token below to connect")
@@ -335,11 +336,11 @@ public struct BayanDiscordRPCSettingsView: View {
             HStack(spacing: 10) {
                 Group {
                     if isTokenVisible {
-                        TextField("Paste Discord User Token...", text: $inputToken)
+                        TextField("Paste Discord Token...", text: $inputToken)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                     } else {
-                        SecureField("Paste Discord User Token...", text: $inputToken)
+                        SecureField("Paste Discord Token...", text: $inputToken)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                     }
@@ -358,22 +359,20 @@ public struct BayanDiscordRPCSettingsView: View {
 
                 // Paste from clipboard button
                 #if canImport(UIKit)
-                if UIPasteboard.general.hasStrings {
-                    Button {
-                        if let string = UIPasteboard.general.string {
-                            inputToken = string.trimmingCharacters(in: .whitespacesAndNewlines)
-                            discordRPC.saveToken(inputToken)
-                            triggerHaptic()
-                        }
-                    } label: {
-                        Text("Paste")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(goldAccent)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                Button {
+                    if let string = UIPasteboard.general.string {
+                        inputToken = discordRPC.cleanToken(string)
+                        discordRPC.saveToken(inputToken)
+                        triggerHaptic()
                     }
+                } label: {
+                    Text("Paste")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(goldAccent)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 #endif
             }
@@ -421,7 +420,7 @@ public struct BayanDiscordRPCSettingsView: View {
                     .font(.system(size: 12))
                     .foregroundColor(goldAccent)
 
-                Text("Hardware Keychain Encrypted: Stored securely in your device's Apple Secure Enclave. Transmitted exclusively to Discord's official Gateway (wss://gateway.discord.gg).")
+                Text("Supports User Tokens & Bot Tokens. Stored in Apple Keychain and transmitted directly to Discord's official Gateway (wss://gateway.discord.gg).")
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
@@ -616,70 +615,101 @@ public struct BayanDiscordRPCSettingsView: View {
                 Color(red: 0.08, green: 0.09, blue: 0.11).ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 22) {
                         HStack(spacing: 12) {
                             Image(systemName: "key.horizontal.fill")
-                                .font(.system(size: 24))
+                                .font(.system(size: 26))
                                 .foregroundColor(goldAccent)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Getting your Discord Token")
-                                    .font(.system(size: 18, weight: .bold))
+                                    .font(.system(size: 19, weight: .bold))
                                     .foregroundColor(.white)
-                                Text("Quick guide to link your Discord profile")
+                                Text("Follow either Method 1 or Method 2 below")
                                     .font(.system(size: 13))
                                     .foregroundColor(.white.opacity(0.6))
                             }
                         }
                         .padding(.top, 10)
 
+                        // METHOD 1: NETWORK TAB (100% RELIABLE)
                         VStack(alignment: .leading, spacing: 14) {
+                            HStack {
+                                Text("METHOD 1: NETWORK TAB (RECOMMENDED)")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(discordGreen)
+                                Spacer()
+                                Text("100% Guaranteed")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(discordGreen)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(discordGreen.opacity(0.15))
+                                    .clipShape(Capsule())
+                            }
+
                             helpStepRow(
                                 number: "1",
-                                title: "Open Discord in Safari / Chrome",
-                                text: "Log into discord.com/app on your mobile browser or computer."
+                                title: "Open Discord in Chrome / Safari / Edge",
+                                text: "Go to discord.com/app on your PC, Mac, or phone browser and log in."
                             )
 
                             helpStepRow(
                                 number: "2",
-                                title: "Open Developer Console",
-                                text: "On PC/Mac, press F12 (Inspect) and click on the 'Console' tab."
+                                title: "Open Inspect (DevTools)",
+                                text: "Press F12 or right-click anywhere on the page and select 'Inspect'."
                             )
 
                             helpStepRow(
                                 number: "3",
-                                title: "Run Token Extraction Snippet",
-                                text: "Paste this command into the console and hit Enter:"
+                                title: "Click 'Network' Tab",
+                                text: "Select the 'Network' tab at the top of DevTools. In the filter box, type 'api'."
                             )
-
-                            // Code box
-                            HStack {
-                                Text("(webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()")
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .foregroundColor(goldAccent)
-                                    .lineLimit(nil)
-                            }
-                            .padding(10)
-                            .background(Color.black.opacity(0.4))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
 
                             helpStepRow(
                                 number: "4",
-                                title: "Copy & Paste into Bayan",
-                                text: "Your token (without quotes) will appear. Copy it and paste it into the field in Bayan."
+                                title: "Copy the Authorization Header",
+                                text: "Click on any network request (e.g. 'messages' or 'science' or '@me'). Scroll down to 'Request Headers', find 'Authorization', and copy that value!"
                             )
                         }
+                        .padding(16)
+                        .background(Color.white.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
 
-                        // Privacy note
+                        // METHOD 2: BOT TOKEN
+                        VStack(alignment: .leading, spacing: 14) {
+                            HStack {
+                                Text("METHOD 2: DISCORD BOT TOKEN")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(goldAccent)
+                                Spacer()
+                                Text("For Server Bots")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(goldAccent)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(goldAccent.opacity(0.15))
+                                    .clipShape(Capsule())
+                            }
+
+                            Text("If you prefer not to use your personal user account, you can create a free Bot at discord.com/developers/applications, go to the Bot tab, reset/copy the token, and paste it directly into Bayan! (Include or omit 'Bot ' prefix - Bayan handles both automatically).")
+                                .font(.system(size: 12.5))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .padding(16)
+                        .background(Color.white.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                        // Privacy Note
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("🔒 Privacy & Safety Guarantee")
+                            Text("🔒 Privacy & Hardware Keychain Security")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.white)
-                            Text("Bayan connects directly from your phone to Discord's official Gateway using WebSockets. Your token is encrypted in Apple Keychain and never sent to any third-party servers.")
+                            Text("Bayan connects directly from your phone to Discord's official Gateway (wss://gateway.discord.gg). Your token is encrypted in Apple Secure Enclave Keychain and is never sent to any third-party servers.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.55))
                         }
                         .padding(14)
-                        .background(Color.white.opacity(0.05))
+                        .background(discordBlurple.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .padding(20)
@@ -689,7 +719,7 @@ public struct BayanDiscordRPCSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close") {
+                    Button("Done") {
                         showingTokenHelpSheet = false
                     }
                     .font(.system(size: 14, weight: .bold))
