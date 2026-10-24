@@ -26,7 +26,7 @@ public final class QuranSyncManager {
     public var favoriteSurahIds: Set<Int> = [1, 18, 36, 55, 67]
 
     private let historyStorageKey = "bayan_recognition_history"
-    private let encryptedFileName = "bayan_recognition_history.enc"
+    private let secureStorageKey = "bayan_recognition_history_aes256"
 
     public init() {
         loadHistory()
@@ -76,20 +76,16 @@ public final class QuranSyncManager {
 
     // MARK: - Hardware AES-256-GCM Encrypted Storage (VULN-03)
     private func saveHistory() {
-        do {
-            let data = try JSONEncoder().encode(recentRecognitions)
-            try BayanDataEncryptionService.shared.encrypt(data: data, toFileNamed: encryptedFileName)
-        } catch {
-            #if DEBUG
-            print("⚠️ Failed to encrypt recognition history: \(error)")
-            #endif
+        if let encrypted = try? BayanDataEncryptionService.shared.encryptCodable(recentRecognitions) {
+            UserDefaults.standard.set(encrypted, forKey: secureStorageKey)
+            UserDefaults.standard.removeObject(forKey: historyStorageKey)
         }
     }
 
     private func loadHistory() {
         // 1. Hardware AES-256-GCM decryption
-        if let decryptedData = try? BayanDataEncryptionService.shared.decrypt(fromFileNamed: encryptedFileName),
-           let decoded = try? JSONDecoder().decode([RecognitionResult].self, from: decryptedData) {
+        if let encryptedData = UserDefaults.standard.data(forKey: secureStorageKey),
+           let decoded = try? BayanDataEncryptionService.shared.decryptCodable([RecognitionResult].self, from: encryptedData) {
             self.recentRecognitions = decoded
             return
         }
@@ -99,7 +95,6 @@ public final class QuranSyncManager {
            let decoded = try? JSONDecoder().decode([RecognitionResult].self, from: data) {
             self.recentRecognitions = decoded
             saveHistory()
-            UserDefaults.standard.removeObject(forKey: historyStorageKey)
             return
         }
 
